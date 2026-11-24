@@ -247,7 +247,7 @@ function SongSheet({ i, close }: { i: number; close: () => void }) {
   const [line, setLine] = useState(-1);
   // no audio yet: the lines light up one by one to sing along
   useEffect(() => { if (s.a || line < 0) return; const t = setTimeout(() => setLine(l => l >= lines.length - 1 ? -1 : l + 1), 3000); return () => clearTimeout(t); }, [line, s.a, lines.length]);
-  const active = s.a ? (song.playing || song.time > 0 ? lineAt(lines, song.time, song.dur) : -1) : line;
+  const active = s.a ? (song.playing || song.time > 0 ? lineAt(lines, s.ts, song.time) : -1) : line;
   return (
     <Sheet open onClose={() => { song.stop(); close(); }} title={s.t}>
       <Sub style={{ textAlign: 'center', marginTop: -4, marginBottom: 16 }}>{s.tag} · sing it together</Sub>

@@ -64,11 +64,27 @@ export default function Kid() {
       </Card>
       </View>
       <SectionHead title="Potty songs" right={`${SONGS.length} songs`} />
+      <Card pad={14} style={{ marginBottom: 10 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <IconBox name="hour" tone="ok" />
+          <View style={{ flex: 1 }}>
+            <T w="s" size={14}>Potty time song</T>
+            <T size={12} color={C.ink2}>{S.sitSong != null && SONGS[S.sitSong] ? `${SONGS[S.sitSong].t} plays while ${S.child.name || 'your child'} sits` : 'Surprise me: a favourite (or any song) each sit'}</T>
+          </View>
+          {S.sitSong != null ? <Pressable onPress={() => update(st => { st.sitSong = null; })} hitSlop={8}><T w="s" size={13} color={C.brand}>Surprise me</T></Pressable> : null}
+        </View>
+        <Sub style={{ fontSize: 12, marginTop: 8 }}>Tap "Pick" on any song below to make it the potty time song.</Sub>
+      </Card>
       <Card pad={4} style={{ paddingHorizontal: 18 }}>
-        {SONGS.map((s, i) => { const fav = S.favs.includes(i); return (
+        {SONGS.map((s, i) => { const fav = S.favs.includes(i); const picked = S.sitSong === i; return (
           <View key={s.t} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11, borderTopWidth: i ? 1 : 0, borderTopColor: C.line }}>
             <Pressable onPress={() => emit('song', i)} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center' }}><Icon name="music" size={16} color={C.brand} /></Pressable>
             <Pressable onPress={() => emit('song', i)} style={{ flex: 1 }}><T w="s" size={14}>{s.t}</T><T size={12} color={C.ink2} numberOfLines={1}>{s.tag} · {lyr(i)[0]}</T></Pressable>
+            <Pressable onPress={() => { update(st => { st.sitSong = picked ? null : i; }); if (!picked) toast(`${s.t} is the potty time song`); }} hitSlop={6} accessibilityLabel={picked ? 'Potty time song (tap to unpick)' : 'Pick as potty time song'}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 10, backgroundColor: picked ? C.brand : C.sunk }}>
+              {picked ? <Icon name="check" size={13} color="#fff" stroke={2.4} /> : null}
+              <T w="s" size={12} color={picked ? '#fff' : C.ink2}>{picked ? 'Picked' : 'Pick'}</T>
+            </Pressable>
             <Pressable onPress={() => update(st => { st.favs = fav ? st.favs.filter(x => x !== i) : [...st.favs, i]; })} hitSlop={10}><Icon name="heart" size={20} color={fav ? C.acc : C.ink3} fill={fav ? C.acc : 'none'} /></Pressable>
           </View>); })}
       </Card>

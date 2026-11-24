@@ -56,7 +56,7 @@ function SitTimer() {
   const song = useSong(open && S.sitMusic ? sitSong?.a : undefined, { autoplay: true, loop: true });
   useEffect(() => { if (!open || !S.sitMusic || sitSong?.a) return; const t = setInterval(() => setLine(l => (l + 1) % Math.max(1, sitLines.length)), 3500); return () => clearInterval(t); }, [open, si]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (!open) song.stop(); }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
-  const shown = sitSong?.a ? Math.max(0, sitLines.indexOf(lyr(si)[Math.max(0, lineAt(lyr(si), song.time, song.dur))])) : line;
+  const shown = sitSong?.a ? Math.max(0, sitLines.indexOf(lyr(si)[Math.max(0, lineAt(lyr(si), sitSong?.ts, song.time))])) : line;
   const done = (v: 'success' | 'tried') => { setOpen(false); logPotty(v, v === 'success' ? 'wee' : null); if (v === 'success') emit('celebrate'); else toast('Logged: sat, nothing came', 'Practice still counts'); };
   if (!open) return null;
   const Cc = 2 * Math.PI * 96; const sing = S.sitMusic;

@@ -13,14 +13,18 @@ async function audioMode() {
   await setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
 }
 
-/** Which lyric line is being sung, estimated from how far through the song we are. */
-export function lineAt(lines: string[], t: number, dur: number) {
-  if (!dur) return -1;
+/** Which lyric line is being sung right now (index into lines), from Suno's word timings.
+ *  ts holds the start second of each sung (non-empty) line; null where there's no timing. */
+export function lineAt(lines: string[], ts: (number | null)[] | undefined, t: number) {
+  if (!ts?.length || t <= 0) return -1;
   const sung = lines.map((l, k) => (l.trim() ? k : -1)).filter(k => k >= 0);
-  const intro = Math.min(8, dur * 0.08), outro = Math.min(6, dur * 0.06);
-  const f = (t - intro) / Math.max(1, dur - intro - outro);
-  if (f < 0 || f >= 1) return -1;
-  return sung[Math.min(sung.length - 1, Math.floor(f * sung.length))];
+  const now = t + 0.25; // light the line up a touch early so little readers are ready
+  let cur = -1;
+  ts.forEach((s, k) => { if (s != null && s <= now) cur = k; });
+  if (cur < 0) return -1;
+  const next = ts.slice(cur + 1).find(s => s != null);
+  if (next == null && cur < ts.length - 1 && now > (ts[cur] as number) + 6) return -1; // no timings past here
+  return sung[cur] ?? -1;
 }
 
 /** A play / pause control with a progress bar. Calls onTime so the caller can highlight lyrics. */
