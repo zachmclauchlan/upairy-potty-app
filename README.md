@@ -313,3 +313,16 @@ eas build --platform android --profile preview        # installable test APK
 eas build --platform ios --profile production         # TestFlight / App Store (needs Apple developer account)
 npx expo export --platform web && eas deploy --prod   # update the web version
 ```
+
+---
+
+## Updating the coach playbook
+
+The AI coach's knowledge lives in [`coach-playbook/`](coach-playbook/), one Markdown page per topic. The pages are researched from NHS, NICE, AAP, ERIC, Kids Health NZ, children's hospitals and real parent threads. How the coach *behaves* (tone, safety, length) is in `supabase/functions/coach/skill.ts`.
+
+To change what the coach knows:
+1. Edit or add a page in `coach-playbook/` (files starting with a number are included, in order).
+2. Run `python scripts/build-playbook.py`. It writes `supabase/functions/coach/playbook.md`.
+3. Paste that file's contents into Supabase → Table editor → `coach_content` → row `playbook` → `body`. The coach picks it up within 10 minutes. No redeploy needed.
+
+The playbook (about 16k words) is sent with every question but cached for an hour, so repeat questions read it at about a tenth of the normal price.

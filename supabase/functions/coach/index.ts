@@ -6,6 +6,16 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import Anthropic from 'npm:@anthropic-ai/sdk@1.13.0';
 import { COACH_SKILL } from './skill.ts';
 
+// The UpAiry Potty Playbook (coach-playbook/*.md) lives in the coach_content table, so it can be
+// updated without redeploying. Kept in memory for 10 minutes.
+let playbook = { text: '', at: 0 };
+async function loadPlaybook(admin: ReturnType<typeof createClient>) {
+  if (playbook.text && Date.now() - playbook.at < 600_000) return playbook.text;
+  const { data } = await admin.from('coach_content').select('body').eq('id', 'playbook').maybeSingle();
+  if (data?.body) playbook = { text: data.body as string, at: Date.now() };
+  return playbook.text;
+}
+
 const DAILY_LIMIT = 20;            // questions per parent per day
 const MODEL = 'claude-opus-5-5';
 
@@ -57,12 +67,17 @@ Deno.serve(async (req) => {
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
       output_config: { effort: 'low' },
-      system: COACH_SKILL + '\n\nCurrent data about this child (anonymous):\n' + clip(body.context, 3000),
+      // The skill + playbook never change between requests, so they're cached (1 hour). The child's data comes after.
+      system: [
+        { type: 'text', text: COACH_SKILL + '\n\n# UpAiry Potty Playbook\n\n' + (await loadPlaybook(admin)), cache_control: { type: 'ephemeral', ttl: '1h' } },
+        { type: 'text', text: 'Current data about this child (anonymous):\n' + clip(body.context, 3000) },
+      ],
       messages,
     } as any);
     if (res.stop_reason === 'refusal') {
       return json({ reply: "Sorry, I can't help with that one. For anything about your child's health, please check with your doctor or nurse.", remaining: Math.max(0, DAILY_LIMIT - (used as number)) });
     }
+    console.log('coach usage', JSON.stringify(res.usage));
     const reply = res.content.filter((b: any) => b.type === 'text').map((b: any) => b.text).join('').trim();
     return json({ reply, remaining: Math.max(0, DAILY_LIMIT - (used as number)) });
   } catch (e) {
