@@ -13,7 +13,7 @@ Potty training app for UpAiry customers. It gives parents a personal program (3-
 | `expo-login.cmd` | Sign in to Expo for cloud builds |
 
 ## Running it
-The app needs Node 22+. On Windows the scripts use a portable Node in `.tools/`, which isn't committed. To recreate it, download the Node 24 LTS Windows zip from nodejs.org and unzip it into `.tools/`, then:
+The app needs Node 22+. On Windows the scripts use a portable Node in `.tools/`, which isn't committed. To recreate it, download the Node 24 LTS Windows zip from nodejs.org and unzip it into `.tools/`. For cloud builds, install the Expo build tool there too: `cd .tools && mkdir eas && cd eas && npm init -y && npm install eas-cli`. Then:
 
 ```
 cd app
