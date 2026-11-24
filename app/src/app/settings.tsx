@@ -27,7 +27,8 @@ export default function Settings() {
   const scroll = useRef<any>(null); const shopY = useRef(0);
   useEffect(() => { if (focus === 'shop') setTimeout(() => scroll.current?.scrollTo({ y: shopY.current - 20, animated: true }), 350); }, [focus]);
   const free = S.account?.plan === 'free';
-  const close = () => router.back();
+  // Opened straight from a link or a page reload there is nothing to go back to: go to Today instead.
+  const close = () => router.canGoBack() ? router.back() : router.replace('/');
   const open = (k: string) => { close(); setTimeout(() => emit(k), 350); };
   const signOut = async () => { await backupNow().catch(() => false); close(); cancelAll(); serverSignOut(); update(s => { s.account = null; }); toast('Signed out'); };
   const clearSample = () => confirm('Clear the sample week?', 'This removes the example logs and check-ins so you can start fresh. Your child, method and settings stay.', () => { update(s => { s.events = []; s.checkins = {}; s.days = {}; s.steps = {}; s.pIdx = 0; s.pDay = 1; s.start = sod(Date.now()); s.spent = 0; s.sample = false; }); toast('Sample data cleared', 'Ready for real logs'); }, 'Clear');
