@@ -1,0 +1,1729 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UpAiry Potty</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F4EF; --surface:#FFFFFF; --sunk:#EFEDE7; --line:#E6E3DB;
+  --ink:#16181B; --ink-2:#5E6269; --ink-3:#9A9DA3;
+  --brand:#3E7F33; --brand-ink:#2B5C23; --brand-soft:#E8F2E3; --brand-tint:#CFE5C6;
+  --acc:#C9762A; --acc-soft:#FBEEDF;
+  --water:#3A78C9; --water-soft:#E6EFFA;
+  --sun:#C79A1E; --sun-soft:#FBF3DA;
+  --poo:#8B6447; --poo-soft:#F3EAE2;
+  --radius:22px;
+  --shadow:0 1px 2px rgba(22,24,27,.04),0 8px 24px rgba(22,24,27,.05);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:#E4E2DA;font-family:Poppins,system-ui,sans-serif;font-size:15px;line-height:1.4;color:var(--ink);display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer;padding:0;text-align:inherit}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.num{font-variant-numeric:tabular-nums}
+
+.phone{position:relative;width:100%;max-width:400px;height:100dvh;background:var(--bg);color:var(--ink);overflow:hidden;display:flex;flex-direction:column}
+@media (min-width:520px){.phone{height:844px;max-width:390px;border-radius:52px;box-shadow:0 0 0 11px #121314,0 40px 90px rgba(0,0,0,.28)}}
+.status{height:50px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:6px 30px 0;font-weight:600;font-size:15px;position:relative;z-index:60}
+.status .island{width:118px;height:34px;border-radius:20px;background:#121314}
+@media (max-width:519px){.status{display:none}}
+.status .sig{display:flex;gap:6px;align-items:center}
+.screen{flex:1;overflow-y:auto;padding:8px 20px 120px;scrollbar-width:none}
+.screen::-webkit-scrollbar{display:none}
+
+/* header */
+.hd{display:flex;align-items:flex-end;justify-content:space-between;margin:6px 0 18px;gap:10px}
+.hd .eyebrow{font-size:13px;color:var(--ink-2);font-weight:500}
+.hd h1{font-size:30px;line-height:1.1;margin:2px 0 0;font-weight:700;letter-spacing:-.02em}
+.kidchip{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:99px;background:var(--surface);box-shadow:var(--shadow);font-weight:600;font-size:14px;flex:none}
+.av{width:30px;height:30px;border-radius:50%;background:var(--brand-soft);color:var(--brand-ink);display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
+.iconbtn{width:40px;height:40px;border-radius:50%;background:var(--surface);box-shadow:var(--shadow);display:grid;place-items:center;flex:none}
+
+.seg{display:flex;background:var(--sunk);border-radius:12px;padding:3px;gap:2px}
+.seg button{flex:1;padding:7px 10px;border-radius:10px;font-weight:600;font-size:13px;color:var(--ink-2);display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.seg svg.i{width:16px;height:16px}
+
+.card{background:var(--surface);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:12px}
+.sec{display:flex;align-items:baseline;justify-content:space-between;margin:22px 2px 10px}
+.sec h2{font-size:17px;margin:0;font-weight:600;letter-spacing:-.01em}
+.sec .link,.link{font-size:13px;font-weight:600;color:var(--brand)}
+.lbl{font-size:12px;font-weight:600;color:var(--ink-2);letter-spacing:.02em}
+.sub{font-size:13px;color:var(--ink-2)}
+
+/* next try */
+.next{padding:20px 18px 18px;text-align:center}
+.next .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.ring{position:relative;width:216px;height:216px;margin:4px auto 6px}
+.ring svg{transform:rotate(-90deg)}
+.ring .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 28px}
+.ring .n{font-size:60px;font-weight:600;letter-spacing:-.04em;line-height:1}
+.ring .u{font-size:13px;color:var(--ink-2);margin-top:6px}
+.ring.due .n{color:var(--acc);font-size:38px}
+.ring.idle .n{font-size:20px;letter-spacing:-.01em;line-height:1.25}
+.why{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2);background:var(--sunk);padding:6px 12px;border-radius:14px;margin-top:4px;text-align:left}
+.why svg.i{width:15px;height:15px}
+.learn{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;border-radius:14px;background:var(--water-soft);text-align:left}
+.learn .tx{flex:1;font-size:12.5px;color:#28507F}
+.learn .tx b{font-weight:600;display:block;font-size:13px;color:#1F4370}
+.dotsrow{display:flex;gap:3px;margin-top:6px}
+.dotsrow i{width:14px;height:5px;border-radius:9px;background:rgba(58,120,201,.2)}
+.dotsrow i.on{background:var(--water)}
+.primary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:54px;border-radius:16px;background:var(--brand);color:#fff;font-weight:600;font-size:16px;margin-top:16px;transition:transform .1s;text-align:center}
+.primary:active{transform:scale(.98)}
+.primary.sm{height:46px;font-size:15px;margin-top:12px}
+.ghost{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:16px;background:var(--sunk);font-weight:600;margin-top:10px;text-align:center}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.q{display:flex;flex-direction:column;align-items:center;gap:6px;padding:11px 4px;border-radius:14px;background:var(--sunk);font-size:12px;font-weight:600;color:var(--ink)}
+.q .ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center}
+.q:active{transform:scale(.96)}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 4px}
+.stats div{text-align:center;border-left:1px solid var(--line)}
+.stats div:first-child{border-left:0}
+.stats b{display:block;font-size:22px;font-weight:600;letter-spacing:-.02em}
+.stats small{font-size:11px;color:var(--ink-2);font-weight:500}
+
+/* alert */
+.alert{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:18px;background:var(--poo-soft);margin-bottom:12px}
+.alert .ic{width:36px;height:36px;border-radius:12px;background:#fff;display:grid;place-items:center;color:var(--poo);flex:none}
+.alert b{font-weight:600;font-size:14px;display:block}
+.alert p{margin:2px 0 0;font-size:13px;color:var(--ink-2)}
+.alert .more{font-size:13px;font-weight:600;color:var(--poo);margin-top:6px;display:inline-block}
+
+/* plan */
+.plan .head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.plan h3{margin:6px 0 2px;font-size:17px;font-weight:600}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--brand-ink);background:var(--brand-soft);padding:4px 9px;border-radius:99px;white-space:nowrap}
+.badge svg.i{width:13px;height:13px}
+.badge.grey{background:var(--sunk);color:var(--ink-2)}
+.badge.blue{background:var(--water-soft);color:#28507F}
+.expect{font-size:13px;color:var(--ink-2);margin:4px 0 0}
+.step{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line);width:100%;text-align:left;font-size:14px}
+.step:first-of-type{margin-top:12px}
+.box{flex:none;width:22px;height:22px;border-radius:7px;border:1.8px solid #CFCBC1;display:grid;place-items:center;color:transparent;margin-top:1px}
+.box svg.i{width:14px;height:14px;stroke-width:2.6}
+.step.done .box{background:var(--brand);border-color:var(--brand);color:#fff}
+.step.done span{color:var(--ink-3);text-decoration:line-through}
+.checkin{display:flex;align-items:center;gap:12px;width:100%;margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--sunk);text-align:left}
+.checkin.hot{background:var(--brand-soft);color:var(--brand-ink)}
+.checkin .tx{flex:1}
+.checkin b{font-weight:600;font-size:14px;display:block}
+.checkin small{font-size:12px;color:var(--ink-2)}
+.meter{height:6px;background:var(--sunk);border-radius:9px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--brand);border-radius:9px}
+
+/* timeline */
+.tl{padding:6px 18px}
+.ev{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.ev:first-child{border-top:0}
+.ev .ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none}
+.ev .ic svg.i{width:18px;height:18px}
+.ev .tx{flex:1;min-width:0}
+.ev .tx b{font-weight:600;font-size:14px;display:block}
+.ev .tx small{font-size:12px;color:var(--ink-2)}
+.ev .tm{font-size:13px;color:var(--ink-2);text-align:right}
+.ev .del{color:var(--ink-3);padding:6px;margin-right:-6px}
+.gap{font-size:11px;color:var(--ink-3);padding:0 0 0 50px;margin:-4px 0 -4px}
+.empty{padding:22px 0;text-align:center;color:var(--ink-2);font-size:14px}
+
+/* tones */
+.t-ok{background:var(--brand-soft);color:var(--brand-ink)}
+.t-acc{background:var(--acc-soft);color:var(--acc)}
+.t-try{background:var(--sunk);color:var(--ink-2)}
+.t-water{background:var(--water-soft);color:var(--water)}
+.t-sun{background:var(--sun-soft);color:var(--sun)}
+.t-poo{background:var(--poo-soft);color:var(--poo)}
+.t-meal{background:#F1ECF7;color:#7559A8}
+
+/* history */
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.week .dw{font-size:11px;color:var(--ink-3);font-weight:500;padding-bottom:4px}
+.dcell{padding:8px 0 6px;border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:5px;font-weight:600;font-size:15px;text-align:center}
+.dcell.sel{background:var(--ink);color:#fff}
+.dcell.sel .pct{color:rgba(255,255,255,.7)}
+.dcell.out{color:var(--ink-3)}
+.dcell .pct{font-size:10px;font-weight:600;color:var(--ink-2);height:12px}
+.dots{display:flex;gap:2px;height:5px}
+.dots i{width:5px;height:5px;border-radius:50%}
+.calnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.calnav b{font-weight:600}
+.calnav button{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--sunk)}
+.daysum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.daysum div{background:var(--surface);box-shadow:var(--shadow);border-radius:18px;padding:12px 14px}
+.daysum b{font-size:22px;font-weight:600;display:block;letter-spacing:-.02em}
+.daysum small{font-size:12px;color:var(--ink-2)}
+
+/* insights */
+.lrow{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--line)}
+.lrow:first-of-type{margin-top:8px}
+.lrow .ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none}
+.lrow .tx{flex:1;min-width:0}
+.lrow .tx b{font-weight:600;font-size:14px;display:block}
+.lrow .tx small{font-size:12px;color:var(--ink-2)}
+.lrow .v{text-align:right;font-weight:600;font-size:15px;white-space:nowrap}
+.lrow .v small{display:block;font-weight:500;font-size:11px;color:var(--ink-3)}
+.conf{display:flex;gap:2px;margin-top:5px}
+.conf i{width:16px;height:4px;border-radius:9px;background:var(--sunk)}
+.conf i.on{background:var(--water)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.metric{background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:14px 16px}
+.metric b{display:block;font-size:28px;font-weight:600;letter-spacing:-.03em;margin:4px 0 0}
+.metric .d{font-size:12px;font-weight:600}
+.up{color:var(--brand)} .down{color:var(--acc)}
+.chart{display:flex;align-items:flex-end;gap:6px;height:120px;margin-top:14px}
+.chart .c{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px}
+.chart .bar{width:100%;border-radius:6px 6px 3px 3px;background:var(--brand-tint)}
+.chart .c.last .bar{background:var(--brand)}
+.chart small{font-size:10px;color:var(--ink-3);font-weight:500}
+.heat{display:grid;grid-template-columns:repeat(13,1fr);gap:3px;margin-top:14px}
+.heat i{height:34px;border-radius:6px;background:var(--sunk)}
+.heatlbl{display:flex;justify-content:space-between;font-size:10px;color:var(--ink-3);margin-top:6px}
+.tipbox{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:18px;background:var(--brand-soft);color:var(--brand-ink);font-size:14px;margin-bottom:12px}
+.tipbox svg.i{margin-top:2px}
+
+/* program */
+.pitem{display:flex;gap:14px;padding:14px 0;border-top:1px solid var(--line);width:100%;text-align:left;align-items:flex-start}
+.pitem:first-child{border-top:0}
+.pitem .n{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:600;background:var(--sunk);color:var(--ink-2)}
+.pitem .n svg.i{width:15px;height:15px;stroke-width:2.4}
+.pitem.done .n{background:var(--brand-soft);color:var(--brand)}
+.pitem.cur .n{background:var(--brand);color:#fff}
+.pitem .tx{flex:1}
+.pitem b{font-weight:600;font-size:15px;display:block}
+.pitem small{font-size:13px;color:var(--ink-2)}
+.pitem .chev{color:var(--ink-3);margin-top:4px}
+.phero{border-radius:var(--radius);padding:20px;background:var(--brand);color:#fff;margin-bottom:12px}
+.phero .lbl{color:rgba(255,255,255,.75)}
+.phero h2{margin:6px 0 4px;font-size:24px;font-weight:600;letter-spacing:-.02em}
+.phero p{margin:0;font-size:14px;opacity:.88}
+.phero .row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.phero .pill{background:rgba(255,255,255,.16);border-radius:99px;padding:6px 11px;font-size:12px;font-weight:600;display:inline-flex;gap:6px;align-items:center}
+.phero .pill svg.i{width:14px;height:14px}
+.phero .meter{background:rgba(255,255,255,.2);margin-top:14px}
+.phero .meter i{background:#fff}
+.art{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line);width:100%;text-align:left}
+.art:first-child{border-top:0}
+.art .th{width:46px;height:46px;border-radius:14px;flex:none;display:grid;place-items:center}
+.art b{font-size:14px;font-weight:600;display:block}
+.art small{font-size:12px;color:var(--ink-2)}
+.art .chev{margin-left:auto;color:var(--ink-3)}
+
+/* tabbar */
+.tabs{position:absolute;left:0;right:0;bottom:0;height:84px;padding-bottom:20px;display:flex;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);border-top:1px solid var(--line);z-index:5}
+.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:500;color:var(--ink-3)}
+.tabs button svg.i{width:23px;height:23px}
+.tabs button.on{color:var(--brand)}
+
+/* sheet */
+.scrim{position:absolute;inset:0;background:rgba(15,17,20,.38);z-index:20;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.show{opacity:1;pointer-events:auto}
+.sheet{width:100%;background:var(--bg);border-radius:28px 28px 0 0;padding:8px 20px 34px;max-height:90%;overflow-y:auto;transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.scrim.show .sheet{transform:none}
+.grab{width:38px;height:5px;border-radius:9px;background:#D3D0C8;margin:4px auto 14px}
+.sheethd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px}
+.sheethd h2{margin:0;font-size:19px;font-weight:600;text-align:center}
+.sheethd button{font-weight:600;color:var(--ink-2);font-size:15px}
+.field{margin-bottom:18px}
+.field>.lbl{display:block;margin:0 0 8px 2px}
+.opts{display:grid;gap:8px}
+.opt{border-radius:14px;background:var(--surface);border:1.5px solid var(--line);padding:12px 8px;font-weight:600;font-size:14px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.opt svg.i{width:20px;height:20px}
+.opt.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand-ink)}
+.opt.on.acc{border-color:var(--acc);background:var(--acc-soft);color:#8A4E15}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:8px 14px;border-radius:99px;background:var(--surface);border:1.5px solid var(--line);font-size:13px;font-weight:600}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.txt{width:100%;padding:14px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);font-size:16px}
+.txt:focus{outline:none;border-color:var(--brand)}
+.pre{white-space:pre-wrap;background:var(--surface);border-radius:16px;padding:16px;font-size:14px;line-height:1.55;border:1px solid var(--line)}
+.rec{border-radius:18px;padding:16px;background:var(--surface);border:1px solid var(--line);margin:14px 0 4px}
+.rec .lbl{display:flex;align-items:center;gap:6px}
+.rec b{display:block;font-size:16px;font-weight:600;margin:6px 0 4px}
+.rec p{margin:0;font-size:13.5px;color:var(--ink-2)}
+.textbtn{display:block;width:100%;text-align:center;font-weight:600;color:var(--ink-2);font-size:14px;margin-top:14px}
+
+/* option cards (onboarding / method) */
+.ocard{display:flex;gap:14px;align-items:flex-start;width:100%;padding:15px 16px;border-radius:18px;background:var(--surface);border:1.5px solid var(--line);margin-bottom:10px;text-align:left}
+.ocard.on{border-color:var(--brand);background:var(--brand-soft)}
+.ocard .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none}
+.ocard .tx{flex:1}
+.ocard b{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;flex-wrap:wrap}
+.ocard small{display:block;font-size:13px;color:var(--ink-2);margin-top:2px}
+.ocard .meta{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.radio{width:22px;height:22px;border-radius:50%;border:1.8px solid #CFCBC1;flex:none;margin-top:2px;display:grid;place-items:center}
+.ocard.on .radio{border-color:var(--brand);background:var(--brand);box-shadow:inset 0 0 0 4px var(--brand-soft)}
+
+/* toast + banner */
+.toast{position:absolute;left:16px;right:16px;bottom:96px;background:var(--ink);color:#fff;border-radius:16px;padding:13px 16px;display:flex;align-items:center;gap:12px;font-size:14px;z-index:30;transform:translateY(20px);opacity:0;pointer-events:none;transition:all .25s}
+.toast.show{transform:none;opacity:1;pointer-events:auto}
+.toast .tx{flex:1}
+.toast .tx small{display:block;color:rgba(255,255,255,.65);font-size:12px}
+.toast button{font-weight:600;color:#9DD68F;font-size:14px}
+.banner{position:absolute;left:10px;right:10px;top:10px;z-index:70;background:rgba(250,250,248,.94);backdrop-filter:blur(20px);border-radius:22px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 10px 30px rgba(0,0,0,.18);transform:translateY(-140%);transition:transform .4s cubic-bezier(.2,.9,.2,1);color:#16181B}
+@media (min-width:520px){.banner{top:52px}}
+.banner.show{transform:none}
+.banner .app{width:38px;height:38px;border-radius:10px;background:var(--brand);color:#fff;display:grid;place-items:center;font-family:Chewy,cursive;font-size:18px;flex:none}
+.banner .tx{flex:1;font-size:13.5px}
+.banner .tx b{font-weight:600;display:block}
+.banner .tx span{color:#5E6269}
+.banner .when{font-size:12px;color:#9A9DA3}
+
+/* sit timer + celebrate */
+.full{position:absolute;inset:0;z-index:40;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
+.full.show{display:flex}
+.sit{background:#FBF7EC;z-index:46}
+.sit .big{font-family:Chewy,cursive;font-size:44px;line-height:1;color:var(--ink)}
+.sit p{font-size:15px;color:var(--ink-2);margin:10px 0 0}
+.sit .sand{width:220px;height:220px;margin-bottom:14px}
+.celeb{background:var(--brand);color:#fff;overflow:hidden}
+.celeb h2{font-family:Chewy,cursive;font-weight:400;font-size:52px;line-height:1;margin:18px 0 8px}
+.celeb p{margin:0;font-size:16px;opacity:.85}
+.celeb .star{width:180px;height:180px;animation:pop .7s cubic-bezier(.2,1.6,.4,1)}
+.celeb .hint{position:absolute;bottom:44px;font-size:13px;opacity:.7}
+@keyframes pop{0%{transform:scale(.2) rotate(-30deg)}100%{transform:scale(1) rotate(0)}}
+.cf{position:absolute;top:-12px;width:8px;height:12px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(880px) rotate(540deg)}}
+
+/* tour */
+.tour{position:absolute;inset:0;z-index:55;display:none}
+.tour.show{display:block}
+.tour .spot{position:absolute;border-radius:20px;box-shadow:0 0 0 2000px rgba(15,17,20,.62);transition:all .3s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+.tour .tip{position:absolute;left:16px;right:16px;background:var(--surface);color:var(--ink);border-radius:20px;padding:16px 18px;box-shadow:0 12px 40px rgba(0,0,0,.25);transition:top .3s}
+.tour .tip .lbl{color:var(--brand)}
+.tour .tip b{display:block;font-size:17px;font-weight:600;margin:4px 0 4px}
+.tour .tip p{margin:0;font-size:14px;color:var(--ink-2)}
+.tour .tip .row{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+.tour .tip .row button.nx{background:var(--brand);color:#fff;font-weight:600;padding:9px 16px;border-radius:12px;font-size:14px}
+.tour .tip .row button.sk{font-weight:600;color:var(--ink-2);font-size:14px}
+
+/* night */
+.night{--bg:#141A2E;--surface:#1E2540;--sunk:#283052;--line:#2D3558;--ink:#EEF0F8;--ink-2:#A3A9C4;--ink-3:#6E7597;--shadow:none;--brand-soft:#24402A;--brand-tint:#3A5E3B;--acc-soft:#4A3424}
+.night .tabs{background:rgba(20,26,46,.92)}
+.night .tipbox{background:#1F3326;color:#CFE5C6}
+.night .t-ok{color:#A8D99B}
+.night .checkin.hot{color:#CFE5C6}
+.nstrip{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;margin-top:14px}
+.nstrip i{height:38px;border-radius:7px;background:var(--sunk)}
+.nstrip i.d{background:#7C8CF0}.nstrip i.w{background:#4A3E5E}
+
+/* onboarding */
+.ob{position:absolute;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;padding:64px 24px 30px}
+@media (max-width:519px){.ob{padding-top:28px}}
+.ob .bars{display:flex;gap:6px;margin-bottom:24px;align-items:center}
+.ob .bars i{flex:1;height:4px;border-radius:9px;background:var(--line)}
+.ob .bars i.on{background:var(--brand)}
+.ob .back{width:32px;height:32px;margin-right:6px;display:grid;place-items:center;color:var(--ink-2)}
+.ob h1{font-size:28px;font-weight:700;letter-spacing:-.02em;line-height:1.15;margin:0 0 8px}
+.ob .lead{color:var(--ink-2);margin:0 0 22px;font-size:15px}
+.ob .body{flex:1;overflow-y:auto;scrollbar-width:none;margin:0 -4px;padding:0 4px}
+.wordmark{font-family:Chewy,cursive;font-size:34px;color:var(--brand);letter-spacing:.03em}
+.feat{display:flex;gap:14px;align-items:flex-start;margin-bottom:18px}
+.feat .ic{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;flex:none}
+.feat b{font-weight:600;display:block;font-size:15px}
+.feat small{color:var(--ink-2);font-size:13px}
+.qrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 0;border-top:1px solid var(--line);font-size:14px}
+.qrow .chips{flex:none;flex-wrap:nowrap}
+.qrow .chip{padding:6px 12px}
+.ob .field .lbl{display:block;margin-bottom:8px}
+.qblock{padding:12px 0;border-top:1px solid var(--line)}
+.qblock .qq{font-size:14px;font-weight:500;margin-bottom:8px;display:block}
+.qblock .chips .chip{padding:6px 12px}
+
+/* coach */
+.chat{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.bub{max-width:86%;padding:11px 14px;border-radius:18px;font-size:14px;line-height:1.5;white-space:pre-wrap}
+.bub.me{align-self:flex-end;background:var(--brand);color:#fff;border-bottom-right-radius:6px}
+.bub.ai{align-self:flex-start;background:var(--surface);box-shadow:var(--shadow);border-bottom-left-radius:6px}
+.bub.ai.typing{color:var(--ink-3)}
+.bub .src{display:block;font-size:11px;color:var(--ink-3);margin-top:6px}
+.askrow{display:flex;gap:8px;align-items:center}
+.askrow .txt{flex:1;padding:12px 14px;font-size:15px}
+.askrow .send{width:46px;height:46px;border-radius:14px;background:var(--brand);color:#fff;display:grid;place-items:center;flex:none}
+.sugg{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:10px -20px 0;padding:0 20px}
+.sugg::-webkit-scrollbar{display:none}
+.sugg .chip{white-space:nowrap;flex:none}
+.sitgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sitc{background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:14px;text-align:left;display:flex;flex-direction:column;gap:10px}
+.sitc .ic{width:36px;height:36px;border-radius:12px;display:grid;place-items:center}
+.sitc b{font-size:14px;font-weight:600;line-height:1.3}
+.say{border-left:3px solid var(--brand);background:var(--surface);padding:10px 14px;border-radius:0 12px 12px 0;font-size:14px;margin-bottom:8px;font-style:italic}
+.ol{counter-reset:s;margin:0 0 16px;padding:0;list-style:none}
+.ol li{counter-increment:s;display:flex;gap:12px;padding:8px 0;font-size:14px}
+.ol li::before{content:counter(s);flex:none;width:24px;height:24px;border-radius:50%;background:var(--brand-soft);color:var(--brand-ink);font-weight:600;font-size:12px;display:grid;place-items:center}
+
+/* kid zone */
+.starhero{border-radius:var(--radius);padding:20px;background:#FFF3CF;color:#3D2E00;display:flex;align-items:center;gap:16px;margin-bottom:12px}
+.starhero .big{font-family:Chewy,cursive;font-size:56px;line-height:1}
+.starhero small{display:block;font-size:13px;opacity:.75}
+.starhero .primary{margin-top:12px;height:44px;font-size:14px}
+.stickers{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px}
+.stk{aspect-ratio:1;border-radius:14px;background:var(--sunk);display:grid;place-items:center}
+.stk svg{width:70%;height:70%}
+.stk.on{background:#FFF8E6}
+.stk.new{animation:pop .6s cubic-bezier(.2,1.6,.4,1)}
+.rw{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--line)}
+.rw:first-of-type{border-top:0}
+.rw .tx{flex:1;min-width:0}
+.rw b{font-weight:600;font-size:14px;display:block}
+.rw small{font-size:12px;color:var(--ink-2)}
+.rw .meter{margin-top:6px}
+.rw .meter i{background:var(--sun)}
+.btn-s{padding:7px 12px;border-radius:10px;background:var(--brand);color:#fff;font-weight:600;font-size:13px;flex:none}
+.btn-s.off{background:var(--sunk);color:var(--ink-3)}
+.song{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line);width:100%;text-align:left}
+.song:first-child{border-top:0}
+.song .play{width:38px;height:38px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;flex:none}
+.song .play svg.i{width:16px;height:16px}
+.song b{font-weight:600;font-size:14px;display:block}
+.song small{font-size:12px;color:var(--ink-2)}
+.song .fav{margin-left:auto;color:var(--ink-3)}
+.song .fav.on{color:var(--acc)}
+.song .fav.on svg.i{fill:currentColor}
+.lyrics{font-family:Chewy,cursive;font-size:24px;line-height:1.35;text-align:center;margin:10px 0 18px}
+.lyrics div{color:var(--ink-3);transition:color .2s,transform .2s}
+.lyrics div.on{color:var(--ink);transform:scale(1.04)}
+.sit .lyrics{font-size:22px;margin:16px 0 0;min-height:60px}
+.sit .lyrics div{display:none}
+.sit .lyrics div.on{display:block;color:#16181B;transform:none}
+.sit .songpick{margin-top:6px;font-size:13px;color:var(--ink-2);display:inline-flex;gap:6px;align-items:center;font-weight:600}
+
+/* kid mode */
+.kid{background:#FBF7EC;color:#16181B;z-index:45;justify-content:flex-start;padding:70px 20px 30px}
+@media (max-width:519px){.kid{padding-top:28px}}
+.kid h2{font-family:Chewy,cursive;font-weight:400;font-size:44px;margin:0;line-height:1}
+.kid .stars{font-family:Chewy,cursive;font-size:22px;color:#8A6400;margin:6px 0 20px;display:flex;gap:6px;align-items:center}
+.kgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;flex:1}
+.kt{border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-family:Chewy,cursive;font-size:24px;color:#fff;transition:transform .1s}
+.kt:active{transform:scale(.95)}
+.kt svg.i{width:64px;height:64px;stroke-width:1.6}
+.kexit{margin-top:18px;font-size:13px;font-weight:600;color:#5E6269;padding:10px 16px;border-radius:99px;background:#EFE7D2;position:relative;overflow:hidden;user-select:none;-webkit-user-select:none}
+.kexit i{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(62,127,51,.25)}
+.kexit.hold i{width:100%;transition:width 1.5s linear}
+
+/* sign in */
+.auth{position:absolute;inset:0;z-index:52;background:var(--bg);display:flex;flex-direction:column;padding:70px 24px 28px;overflow-y:auto;scrollbar-width:none}
+.auth::-webkit-scrollbar{display:none}
+.auth>*{flex-shrink:0}
+@media (max-width:519px){.auth{padding-top:28px}}
+.auth h1{font-size:28px;font-weight:700;letter-spacing:-.02em;line-height:1.15;margin:20px 0 8px}
+.auth .lead{color:var(--ink-2);margin:0 0 20px;font-size:15px}
+.auth .field{margin-bottom:12px}
+.auth .txt{margin-top:6px}
+.or{display:flex;align-items:center;gap:12px;color:var(--ink-3);font-size:12px;font-weight:600;margin:22px 0 6px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.faq{display:flex;align-items:center;gap:12px;width:100%;padding:14px 0;border-top:1px solid var(--line);text-align:left;color:inherit;text-decoration:none}
+.faq:first-of-type{border-top:0}
+.faq .tx{flex:1}
+.faq b{font-weight:600;font-size:14px;display:block}
+.faq small{font-size:12px;color:var(--ink-2)}
+.faq .chev{color:var(--ink-3)}
+.faqa{font-size:13px;color:var(--ink-2);padding:0 0 14px 50px;margin-top:-6px}
+.found{width:72px;height:72px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;margin:30px auto 0}
+.found svg.i{width:36px;height:36px;stroke-width:2.4}
+
+/* daily rhythm */
+.rhythm{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.rh{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:10px 10px 11px;text-align:left;display:flex;flex-direction:column;gap:6px;position:relative}
+.rh .top{display:flex;align-items:center;justify-content:space-between}
+.rh .ic{width:28px;height:28px;border-radius:50%;display:grid;place-items:center}
+.rh .ic svg.i{width:15px;height:15px}
+.rh .ck{width:18px;height:18px;border-radius:50%;border:1.6px solid #CFCBC1;display:grid;place-items:center;color:transparent}
+.rh .ck svg.i{width:11px;height:11px;stroke-width:3}
+.rh.done .ck{background:var(--brand);border-color:var(--brand);color:#fff}
+.rh.now{outline:2px solid var(--brand)}
+.rh b{font-size:12.5px;font-weight:600;line-height:1.25}
+.rh small{font-size:11px;color:var(--ink-2);line-height:1.3}
+.cistep{display:flex;gap:5px;justify-content:center;margin:-6px 0 14px}
+.cistep i{width:22px;height:4px;border-radius:9px;background:var(--line)}
+.cistep i.on{background:var(--brand)}
+.mood{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+textarea.txt{resize:none;height:80px;font-size:15px;line-height:1.45}
+.addrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+/* settings screen + shop */
+.setscr{position:absolute;inset:0;z-index:15;background:var(--bg);overflow-y:auto;padding:70px 20px 40px;transform:translateX(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);scrollbar-width:none}
+.setscr::-webkit-scrollbar{display:none}
+.setscr.show{transform:none}
+@media (max-width:519px){.setscr{padding-top:24px}}
+.member{border-radius:var(--radius);padding:18px;background:linear-gradient(150deg,#3E7F33,#2B5C23);color:#fff;margin-bottom:12px}
+.prod{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:10px 14px 10px 10px;margin-bottom:10px;color:inherit;text-decoration:none}
+.prod img{width:72px;height:72px;border-radius:14px;object-fit:cover;background:var(--sunk);flex:none}
+.prod .tx{flex:1;min-width:0}
+.prod b{display:block;font-weight:600;font-size:14px;line-height:1.3}
+.prod small{display:block;font-size:12px;color:var(--ink-2);margin-top:2px}
+.prod .pr{display:block;font-size:13px;font-weight:600;color:var(--brand);margin-top:4px}
+.prod .pr span{color:var(--ink-3);font-weight:500}
+.prod .chev{color:var(--ink-3)}
+.designs{display:flex;gap:10px;overflow-x:auto;margin:0 -20px 12px;padding:2px 20px 6px;scrollbar-width:none}
+.designs::-webkit-scrollbar{display:none}
+.designs a{flex:none;width:96px;text-decoration:none;color:inherit;text-align:center}
+.designs img{width:96px;height:96px;border-radius:18px;object-fit:cover;background:var(--surface);box-shadow:var(--shadow);display:block}
+.designs span{display:block;font-size:12px;font-weight:600;margin-top:6px}
+.stepper{display:flex;align-items:center;gap:4px;background:var(--sunk);border-radius:12px;padding:3px}
+.stepper button{width:32px;height:32px;border-radius:9px;font-size:18px;font-weight:600;display:grid;place-items:center}
+.stepper button:active{background:var(--surface)}
+.stepper b{min-width:26px;text-align:center;font-weight:600}
+
+/* switch */
+.sw{width:46px;height:28px;border-radius:99px;background:#D3D0C8;position:relative;flex:none;transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s}
+.sw.on{background:var(--brand)}
+.sw.on::after{transform:translateX(18px)}
+.setrow{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--line);width:100%;text-align:left}
+.setrow:first-child{border-top:0}
+.setrow .tx{flex:1}
+.setrow b{font-weight:600;font-size:14px;display:block}
+.setrow small{font-size:12px;color:var(--ink-2)}
+.privacy{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:18px;background:var(--water-soft);color:#1F4370;font-size:13px;margin-bottom:12px}
+.privacy b{display:block;font-size:14px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="status"><span id="clock">9:41</span><span class="island"></span><span class="sig"><svg width="18" height="11" viewBox="0 0 18 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="6" rx="1" fill="currentColor"/><rect x="10" y="2.5" width="3" height="8.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="11" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="16" height="8" rx="1.8" fill="currentColor"/><rect x="24" y="4" width="1.5" height="4" rx=".7" fill="currentColor" opacity=".4"/></svg></span></div>
+  <main class="screen" id="screen"></main>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="scrim" id="scrim"><div class="sheet" id="sheet"></div></div>
+  <div class="toast" id="toast"></div>
+  <div class="banner" id="banner"></div>
+  <div class="full sit" id="sit"></div>
+  <div class="full celeb" id="celeb"></div>
+  <div class="full kid" id="kid"></div>
+  <div class="setscr" id="settings"><div id="setbody"></div></div>
+  <div class="tour" id="tour"><div class="spot" id="spot"></div><div class="tip" id="tip"></div></div>
+  <div id="ob"></div>
+  <div id="auth"></div>
+</div>
+
+<script>
+/* ================= icons ================= */
+const P={
+ drop:'<path d="M12 3.2c3.2 3.9 6.2 7.2 6.2 10.8a6.2 6.2 0 0 1-12.4 0c0-3.6 3-6.9 6.2-10.8z"/>',
+ poo:'<path d="M7.5 19.5h9a3 3 0 0 0 .6-5.9 2.6 2.6 0 0 0-2.2-3.9 2.2 2.2 0 0 0-2.6-2.9c.4 1.1-.8 2-1.9 2.4a2.6 2.6 0 0 0-1.6 4.4 3 3 0 0 0-1.3 5.9z"/>',
+ cup:'<path d="M6 4h12l-1.4 14.6a2 2 0 0 1-2 1.9H9.4a2 2 0 0 1-2-1.9z"/><path d="M6.6 9.5h10.8"/>',
+ meal:'<path d="M7 3v7m-2.2-7v4.6a2.2 2.2 0 0 0 4.4 0V3M7 10.5V21"/><path d="M17.5 21V3c-2 1.2-3 3.5-3 6.5 0 2 1 3 3 3"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
+ moon:'<path d="M19.5 14.6A8 8 0 1 1 9.4 4.5a6.4 6.4 0 0 0 10.1 10.1z"/>',
+ sunrise:'<path d="M5 18a7 7 0 0 1 14 0"/><path d="M3 21h18M12 3v5m-3-2 3-3 3 3"/>',
+ clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+ check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+ x:'<path d="M6 6l12 12M18 6 6 18"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ hour:'<path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/>',
+ share:'<path d="M12 15V3.5m0 0L8 7.5m4-4 4 4"/><path d="M7 11H5.5A1.5 1.5 0 0 0 4 12.5v6A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-6a1.5 1.5 0 0 0-1.5-1.5H17"/>',
+ home:'<path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19z"/>',
+ cal:'<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+ chart:'<path d="M4 20h16"/><rect x="5.5" y="11" width="3" height="6" rx="1"/><rect x="10.5" y="6" width="3" height="11" rx="1"/><rect x="15.5" y="13.5" width="3" height="3.5" rx="1"/>',
+ book:'<path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/>',
+ route:'<circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/>',
+ chevR:'<path d="m9 5 7 7-7 7"/>',
+ chevL:'<path d="m15 5-7 7 7 7"/>',
+ chevD:'<path d="m6 9 6 6 6-6"/>',
+ bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2v.1h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>',
+ speak:'<path d="M5 18.5V6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v6a2.5 2.5 0 0 1-2.5 2.5H9z"/><path d="M9 9.5h6M9 12h3.5"/>',
+ trash:'<path d="M5 7h14M10 11v6M14 11v6M6.5 7l1 12a1.5 1.5 0 0 0 1.5 1.4h6a1.5 1.5 0 0 0 1.5-1.4l1-12M9.5 7V4.5h5V7"/>',
+ car:'<path d="M5 16.5V12l1.8-4.6A2 2 0 0 1 8.7 6h6.6a2 2 0 0 1 1.9 1.4L19 12v4.5"/><path d="M4 12h16v4.5H4z"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/>',
+ heart:'<path d="M12 20s-7.5-4.4-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.6-7.5 10-7.5 10z"/>',
+ bed:'<path d="M3 19v-9M21 19v-4.5a3 3 0 0 0-3-3h-8V15H3M3 15h18"/><circle cx="6.5" cy="12" r="1.8"/>',
+ copy:'<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6.5A2.5 2.5 0 0 0 13.5 4h-7A2.5 2.5 0 0 0 4 6.5v7A2.5 2.5 0 0 0 6.5 16H8"/>',
+ users:'<circle cx="9" cy="8" r="3.2"/><path d="M3 19.5a6 6 0 0 1 12 0M16 4.9a3.2 3.2 0 0 1 0 6.2M21 19.5a6 6 0 0 0-3.5-5.4"/>',
+ bolt:'<path d="M13 3 5 13.5h6l-1 7.5 8-10.5h-6z"/>',
+ leaf:'<path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15"/><path d="M5 19c3-4 6-6.5 10-8.5"/>',
+ spark:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>',
+ replay:'<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/>',
+ pause:'<rect x="6.5" y="5" width="3.5" height="14" rx="1"/><rect x="14" y="5" width="3.5" height="14" rx="1"/>',
+ info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>',
+ music:'<path d="M9 18V5.5l10-2V16"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',
+ send:'<path d="M4 12 20 4l-6 16-3-7z"/><path d="m11 13 9-9"/>',
+ gift:'<rect x="3.5" y="9" width="17" height="11.5" rx="2"/><path d="M3.5 13h17M12 9v11.5M12 9C10 5 6.5 5.5 7 7.5S12 9 12 9zm0 0c2-4 5.5-3.5 5-1.5S12 9 12 9z"/>',
+ shield:'<path d="M12 3 5 6v5.5c0 4.3 3 7.7 7 9.5 4-1.8 7-5.2 7-9.5V6z"/><path d="m9 12 2.2 2.2L15.5 10"/>',
+ key:'<circle cx="8" cy="15" r="4"/><path d="m11 12 8.5-8.5M16 7l2.5 2.5M14 9l2 2"/>',
+ bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+ download:'<path d="M12 4v11m0 0-4-4m4 4 4-4M5 19.5h14"/>',
+ star:'<path d="M12 3.2l2.7 5.5 6 .9-4.4 4.2 1 6-5.3-2.8-5.3 2.8 1-6L3.3 9.6l6-.9z"/>',
+ smile:'<circle cx="12" cy="12" r="8.5"/><path d="M8.5 14a4 4 0 0 0 7 0M9 9.5h.01M15 9.5h.01"/>',
+ chat:'<path d="M4 18.5V7a2.5 2.5 0 0 1 2.5-2.5h11A2.5 2.5 0 0 1 20 7v7a2.5 2.5 0 0 1-2.5 2.5H8z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/>',
+};
+const I=(n,cls='')=>`<svg class="i ${cls}" viewBox="0 0 24 24">${P[n]}</svg>`;
+
+/* ================= helpers ================= */
+const MIN=6e4,HR=36e5,DAY=864e5;
+const sod=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};
+const fmt=t=>new Date(t).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+const dayName=(t,o={weekday:'short'})=>new Date(t).toLocaleDateString([], o);
+function dur(ms){const m=Math.round(ms/MIN);if(m<60)return m+' min';return Math.floor(m/60)+' h'+(m%60?' '+m%60+' min':'')}
+const median=a=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y);const k=Math.floor(s.length/2);return s.length%2?s[k]:(s[k-1]+s[k])/2};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+const $=id=>document.getElementById(id);
+
+/* ================= programs ================= */
+// rule: what has to be true on a day for the program to suggest moving on
+const RULES={
+  always:{t:'Moves on after one day',ok:()=>true},
+  catch3:{t:'At least 3 wees on the potty in a day',ok:s=>s.s>=3},
+  catch2:{t:'2 or more wees on the potty in a day',ok:s=>s.s>=2},
+  rate50:{t:'Half or more of wees on the potty',ok:s=>s.rate!=null&&s.rate>=50&&s.s>=3},
+  rate60:{t:'60% of wees on the potty',ok:s=>s.rate!=null&&s.rate>=60&&s.s>=3},
+  rate75:{t:'75% of wees on the potty',ok:s=>s.rate!=null&&s.rate>=75&&s.s>=3},
+  rate80:{t:'80% on the potty and telling you first',ok:s=>s.rate!=null&&s.rate>=80&&s.told>=2},
+  night4:{t:'4 or more dry mornings in a week',ok:()=>dryNights7()>=4},
+  night5:{t:'5 or more dry nights in a week',ok:()=>dryNights7()>=5},
+  done:{t:'Last step. Keep going until it feels normal.',ok:()=>false},
+};
+const METHODS={
+ threeday:{name:'3-day intensive',ic:'bolt',tone:'t-sun',blurb:'Three full days at home with nothing on the bottom half. Fastest, but needs your full attention.',need:'3 days at home',pace:'About 1 week',items:[
+  {t:'Get ready',d:'The day before',len:1,iv:null,rule:'always',steps:['Put the potty in the room you spend most time in','Stock up: training pants, spare clothes, drinks and snacks','Clear your plans for the next 3 days','Tell them: "Tomorrow the nappies are going bye-bye"'],expect:'Tomorrow is the big day. Nothing to log yet.'},
+  {t:'Day 1: Bare bottom',d:'Day 1',len:1,iv:15,rule:'catch3',steps:['Nappies away, nothing on the bottom half','Offer the potty when the timer runs out','Give extra drinks so there are more chances to practise','Stay close and watch for wiggling or stopping'],expect:'5 to 10 accidents is normal today. Each one teaches them the feeling.'},
+  {t:'Day 2: Bare bottom',d:'Day 2',len:1,iv:20,rule:'rate50',steps:['Offer when the timer runs out and after drinks','Ask less, watch more: wait for them to head to the potty','Make a big deal of it when they tell you','Keep accidents boring: "Wee goes in the potty"'],expect:'Accidents usually drop. Many children tell you once or twice today.'},
+  {t:'Day 3: First outing',d:'Day 3',len:1,iv:30,rule:'rate60',steps:['Wee right before a 20-minute walk','Training pants on for the outing','Bring spare clothes and wipes','Offer as soon as you get home'],expect:'A dry walk is a big win. A few accidents at home is fine.'},
+  {t:'Pants on',d:'Days 4–7',len:4,iv:45,rule:'rate75',steps:['Training pants on at home','Offer before leaving the house and after naps','Wait for them to tell you, prompt less','Praise telling you first'],expect:'Accidents tend to happen when tired, busy playing, or out.'},
+  {t:'Out and about',d:'Week 2',len:7,iv:60,rule:'rate80',steps:['Wee before every outing','Find the toilet as soon as you arrive','Travel potty in the car','One longer outing today'],expect:'New places make children forget. Offer more often than at home.'},
+  {t:'Independence',d:'Weeks 3–4',len:14,iv:90,rule:'done',steps:['Turn the timer off for the morning','Only remind before leaving and at bedtime','Let them do pants and handwashing alone'],expect:'Daytime is done when they tell you most of the time and accidents are rare.'},
+ ]},
+ barebottom:{name:'Bare bottom at home',ic:'home',tone:'t-ok',blurb:'Bare bottom at home in the mornings, then all day. More relaxed, and works around daycare.',need:'Mornings at home',pace:'About 3–4 weeks',items:[
+  {t:'Get ready',d:'3 days',len:3,iv:null,rule:'always',steps:['Read a potty book together','Sit on the potty after waking and before bath','Let them see you use the toilet','Put training pants and the potty where they can see them'],expect:'Just making the potty normal. Log any sits so the app starts learning.'},
+  {t:'Bare-bottom mornings',d:'Week 1',len:7,iv:30,rule:'rate60',steps:['Bare bottom from breakfast to lunch','Offer when the timer runs out','Nappy or pull-up for nap and afternoon','Log every wee and accident in the morning'],expect:'Lots of accidents on the first two mornings, then fewer.'},
+  {t:'Bare bottom all day at home',d:'Week 2',len:7,iv:40,rule:'rate70x',steps:['Bare bottom whenever you are home','Offer after drinks and meals','Training pants when you go out','Notice the signs they show before a wee'],expect:'Outings may still be wet. That is normal this week.'},
+  {t:'Pants on at home',d:'Week 3',len:7,iv:50,rule:'rate80',steps:['Training pants on at home','Let the timer stretch','Offer before leaving the house'],expect:'Some children have more accidents in pants at first. It settles.'},
+  {t:'Out and about',d:'Week 4',len:7,iv:60,rule:'rate80',steps:['Wee before every outing','Find the toilet as soon as you arrive','Travel potty in the car'],expect:'Offer more often in new places.'},
+  {t:'Independence',d:'Weeks 5–6',len:14,iv:90,rule:'done',steps:['Turn the timer off for the morning','Only remind before leaving and at bedtime'],expect:'Daytime is done when they tell you most of the time.'},
+ ]},
+ gentle:{name:'Gentle, child-led',ic:'leaf',tone:'t-water',blurb:'Nappies stay on to begin with. The potty becomes part of the daily routine until they start using it.',need:'No time off needed',pace:'1–3 months',items:[
+  {t:'Potty in the routine',d:'1–3 weeks',len:14,iv:null,rule:'catch2',steps:['Sit on the potty after waking up','Sit after meals and before bath','Read a book while they sit','Log every sit, even if nothing comes'],expect:'Nothing has to happen yet. Each log teaches the app their rhythm.'},
+  {t:'Pants in the mornings',d:'1–2 weeks',len:7,iv:60,rule:'rate60',steps:['Training pants on until lunch','Offer when the timer runs out','Nappy for nap and afternoon'],expect:'Expect a few wet pants. Keep it light.'},
+  {t:'Pants all day',d:'1–2 weeks',len:7,iv:60,rule:'rate75',steps:['Training pants all day','Offer after drinks, meals and waking','Nappy only for sleep'],expect:'Accidents tend to come when tired or busy.'},
+  {t:'Out and about',d:'1–2 weeks',len:7,iv:75,rule:'rate80',steps:['Wee before every outing','Find the toilet when you arrive'],expect:'Offer more often in new places.'},
+  {t:'Independence',d:'Ongoing',len:14,iv:90,rule:'done',steps:['Wait for them to tell you','Only remind before leaving and at bedtime'],expect:'Daytime is done when they tell you most of the time.'},
+ ]},
+ night:{name:'Nights',ic:'moon',tone:'t-water',blurb:'For children dry in the day. Night dryness depends on a hormone that develops on its own schedule.',need:'Day dry first',pace:'Varies',items:[
+  {t:'Watch dry mornings',d:'1–2 weeks',len:14,iv:null,rule:'night4',steps:['Check the nappy every morning','Log dry or wet','Log the last drink of the day'],expect:'4 or more dry mornings a week means they are likely ready.'},
+  {t:'Bedtime routine',d:'1 week',len:7,iv:null,rule:'always',steps:['Last drink an hour before bed','Wee before bath and again right before sleep','Night light on the way to the potty'],expect:'Building habits before the nappy comes off.'},
+  {t:'Nappy-free nights',d:'2+ weeks',len:14,iv:null,rule:'night5',steps:['Bed mat and spare sheets ready','Training pants at night','Log every morning'],expect:'Wet nights are common for weeks. Stay calm and keep logging.'},
+  {t:'7 dry nights',d:'Finish line',len:7,iv:null,rule:'done',steps:['Keep the bedtime routine going'],expect:'If most nights are still wet after a month, it is fine to pause and try again later.'},
+ ]},
+};
+RULES.rate70x={t:'70% of wees on the potty',ok:s=>s.rate!=null&&s.rate>=70&&s.s>=3};
+const ARTICLES=[
+ {t:'Holding in poo',m:4,ic:'poo',tone:'t-poo',body:'Holding in poo is the most common snag in potty training. It hurts a bit, so they hold it, so it hurts more.\n\nWhat helps: plenty of water, fruit and fibre. Let them poo in a nappy if they ask, sitting in the bathroom, then work toward the potty. A footstool so knees are above hips. Never force them to sit.\n\nSee a doctor if they have not pooed for 4 days, or if it hurts every time.'},
+ {t:'When it goes backwards',m:3,ic:'heart',tone:'t-acc',body:'Regression is normal after a new sibling, a move, starting daycare, or illness.\n\nGo back one step in the program, bring back a shorter timer, and keep reactions boring. Most regressions pass in 1 to 2 weeks.'},
+ {t:'Daycare and grandparents',m:3,ic:'users',tone:'t-water',body:'Consistency matters more than method. Share the words your child uses, how often to offer the potty, and what you do after accidents.\n\nUse the share button on the Today screen to send a quick update before drop-off.'},
+ {t:'Out and about',m:2,ic:'car',tone:'t-sun',body:'Always offer a wee before leaving. Keep a spare set of clothes and a travel potty in the car. Find the toilet when you arrive, before they need it.'},
+];
+
+/* ================= coach: situation guides (work offline) ================= */
+const SITUATIONS=[
+ {k:'refuse',t:'Refusing to sit',ic:'x',tone:'t-acc',kw:['refus','won\'t sit','wont sit','says no','no potty','tantrum','fight'],
+  steps:['Stay calm and keep your voice light. No pleading.','Offer a choice, not a question: "Potty now, or after this song?"','Drop it if they still say no. Try again in 15–20 minutes.','Make sitting fun: a book, a song, or the sit timer.','Never hold them on the potty. It turns it into a power struggle.'],
+  say:['"Do you want to walk or hop to the potty?"','"Your body will tell you. We\'ll try again soon."']},
+ {k:'accident',t:'Just had an accident',ic:'drop',tone:'t-acc',kw:['accident','wet','peed on','pooed in','floor','pants wet'],
+  steps:['Keep your face and voice neutral. No sighs, no "oh no".','Take them to the potty to finish, even if nothing comes.','Let them help clean up, as a job, not a punishment.','Change into fresh pants and move on.','Log it. Patterns in accidents tell you when to offer the potty.'],
+  say:['"Wee goes in the potty. Let\'s sit and see if there\'s any more."','"That\'s okay. You\'re learning."']},
+ {k:'poo',t:'Holding in poo',ic:'poo',tone:'t-poo',kw:['poo','poop','constipat','hold','withhold','hiding to poo','hides'],
+  steps:['Lots of water, fruit and fibre today.','A sit 15–20 minutes after meals, with feet on a stool.','If they ask for a nappy to poo, say yes, in the bathroom. Then work toward the potty.','Blow bubbles or a balloon while sitting to relax the tummy.','See a doctor if it\'s been 4+ days, if it hurts every time, or there\'s blood.'],
+  say:['"Your poo wants to go in the potty. Let\'s give it a cosy place."','"You can do it when you\'re ready."']},
+ {k:'public',t:'Out in public',ic:'car',tone:'t-sun',kw:['public','shop','outside','car','park','restaurant','travel','loud flush','out and about'],
+  steps:['Wee before you leave, every time.','Find the toilet as soon as you arrive.','Bring a travel potty and a full change of clothes.','Cover the auto-flush sensor with a sticky note if they\'re scared of it.','Offer more often than at home. New places make them forget.'],
+  say:['"Let\'s find the potty first, then we can explore."']},
+ {k:'night',t:'Wet nights',ic:'moon',tone:'t-water',kw:['night','bed','wet the bed','sleep','nappy at night','overnight'],
+  steps:['Night dryness depends on a hormone, not effort. Don\'t push it.','Last drink an hour before bed, and a wee right before sleep.','Bed mat and spare sheets ready to make changes fast.','Log mornings. 4+ dry a week means they\'re likely ready.','Most children are dry at night months after the day.'],
+  say:['"Your body is still learning at night. That\'s okay."']},
+ {k:'regress',t:'Going backwards',ic:'heart',tone:'t-acc',kw:['regress','backward','was doing well','new baby','sibling','daycare','started again','moving house'],
+  steps:['Look for a trigger: new sibling, daycare, illness, a move.','Go back one step in the program for a few days.','Bring the timer back to a shorter gap.','Keep reactions boring and praise effort.','Most regressions pass in 1–2 weeks. Check for pain or a UTI if it\'s sudden.'],
+  say:['"Let\'s practise together again. You\'re doing great."']},
+ {k:'scared',t:'Scared of the toilet',ic:'smile',tone:'t-water',kw:['scared','afraid','fear','flush','falling in','big toilet'],
+  steps:['Use a potty or a seat insert so they feel secure.','Let them flush after they\'ve left the room at first.','Let a toy "go" first.','Never force them onto the big toilet.'],
+  say:['"You\'re safe. I\'m right here."','"Teddy wants to try first. Can you help him?"']},
+ {k:'busy',t:'Too busy playing',ic:'bolt',tone:'t-sun',kw:['playing','too busy','won\'t stop','ignores','distracted','tv','screen'],
+  steps:['Use transitions: "When the timer beeps, potty, then back to play."','Pause the toy or show, so it\'s waiting for them.','Bring the toy to the bathroom.','Let them press start on the sit timer themselves.'],
+  say:['"Potty first, then the blocks are waiting for you."']},
+];
+
+/* ================= songs (original, written for UpAiry) ================= */
+// Songs: lyrics written for UpAiry. Audio is produced in Suno and dropped into songs/<slug>.mp3.
+// Until a file exists, the app runs lyrics only (lines advance on their own so parents can sing along).
+const SONGS=[
+ {t:'Potty Time Hop',tag:'Sitting',l:['Hop, hop, it\'s potty time,','Sit right down, you\'re doing fine,','Listen to your tummy say,','Wee goes in the potty today!']},
+ {t:'Sit and Wait',tag:'Sitting',l:['Sit and wait, sit and wait,','Count to ten, you\'re doing great,','If it\'s quick or if it\'s slow,','Your body knows when it\'s time to go.']},
+ {t:'The Tinkle Train',tag:'Sitting',l:['Choo choo, here\'s the tinkle train,','Pulling in from tummy lane,','All aboard the potty seat,','Toot toot, that\'s a treat!']},
+ {t:'My Big Kid Pants',tag:'Pants on',l:['I\'ve got my big kid pants on,','Dry and comfy all day long,','When I feel I need to go,','I tell my grown-up so they know!']},
+ {t:'Wash Wash Hands',tag:'After',l:['Bubbles here and bubbles there,','Rub the soap in everywhere,','Rinse it off and shake, shake, shake,','Clean hands, high five, mate!']},
+ {t:'Flush Goodbye',tag:'After',l:['Wave goodbye and flush it down,','Swirling, whirling round and round,','Lid goes down and off we go,','Bye bye, see you, cheerio!']},
+ {t:'Tummy Talk',tag:'Learning',l:['My tummy talks, it says hello,','It tells me when I need to go,','I stop my play and run so fast,','The potty\'s here, I made it at last!']},
+ {t:'Five Little Drops',tag:'Sitting',l:['Five little drops went splish and splash,','Into the potty in a flash,','Four, three, two, and one more too,','Well done {name}, that was you!']},
+ {t:'Potty Superstar',tag:'Celebrate',l:['Who\'s the potty superstar?','{name} is, yes, there you are!','Sitting tall and feeling proud,','Give a cheer and say it loud!']},
+ {t:'Slow and Steady',tag:'Calm',l:['Slow and steady, take your time,','Every try is just fine,','Breathe in deep and blow it out,','That\'s what potty\'s all about.']},
+ {t:'Morning Wee',tag:'Routine',l:['Good morning sun, good morning me,','First thing first, a morning wee,','Out of bed and on the seat,','Then it\'s brekkie time to eat!']},
+ {t:'The Poo Song',tag:'Calm',l:['Sometimes poo is slow to come,','Rub your tummy, hum hum hum,','Feet up high on the little stool,','Pushing gently, nice and cool.']},
+ {t:'Before We Go',tag:'Routine',l:['Before we go out to play,','Potty first, hip hip hooray,','Shoes and hat and one more wee,','Now we\'re ready, one two three!']},
+ {t:'Oops-a-Daisy',tag:'Accidents',l:['Oops-a-daisy, that\'s okay,','Accidents happen every day,','Clean it up and try again,','Next time potty, you\'ll know when.']},
+ {t:'Dino Stomp',tag:'Sitting',l:['Stomp, stomp, dino feet,','Stomping to the potty seat,','Roar a big roar, then sit down,','Best little dino in the town!']},
+ {t:'Sleepy Wee',tag:'Bedtime',l:['Stars are out, the moon is high,','One last wee before bye-bye,','Cosy bed and dreams so sweet,','Dry all night from head to feet.']},
+ {t:'Countdown',tag:'Sitting',l:['Ten, nine, eight, sit on the seat,','Seven, six, five, wiggle your feet,','Four, three, two, nearly done,','One! Potty time is so much fun!']},
+ {t:'Animal Parade',tag:'Sitting',l:['The duck says quack, the cow says moo,','The cat goes potty, so can you,','The dog says woof, the sheep says baa,','{name} goes potty, ta-da-da!']},
+ {t:'Pants Down, Pants Up',tag:'Learning',l:['Pants down, sit down, nice and slow,','Wait and listen, here we go,','Wipe and flush and pants back up,','Wash your hands, and that\'s enough!']},
+ {t:'I Did It!',tag:'Celebrate',l:['I did it, I did it, all by me,','I went in the potty, can\'t you see,','Clap your hands and stamp your feet,','Being a big kid is so sweet!']},
+];
+const slug=t=>t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+let songStop=null,songIdx=null,songLineCb=null,songAudio=null,noAudioWarned=false;
+function playSong(i,loop,onLine){
+  stopSong();const s=SONGS[i];songIdx=i;songLineCb=onLine;let stopped=false,timer=null;
+  const lyricsOnly=()=>{let li=0;onLine&&onLine(0);timer=setInterval(()=>{li++;if(li>=4){if(!loop){clearInterval(timer);songIdx=null;onLine&&onLine(-1);return}li=0}onLine&&onLine(li)},3500)};
+  const au=new Audio('songs/'+slug(s.t)+'.mp3');au.loop=!!loop;songAudio=au;
+  au.addEventListener('timeupdate',()=>{if(!stopped&&au.duration)onLine&&onLine(Math.min(3,Math.floor(au.currentTime/au.duration*4)))});
+  au.addEventListener('ended',()=>{if(!loop){songIdx=null;onLine&&onLine(-1)}});
+  au.addEventListener('error',()=>{if(stopped)return;if(!noAudioWarned){noAudioWarned=true;toast('Song audio coming soon','Lyrics only for now. Sing along!')}lyricsOnly()});
+  au.play().catch(()=>{});
+  songStop=()=>{stopped=true;clearInterval(timer);try{au.pause()}catch(e){}songAudio=null;songIdx=null};
+}
+function stopSong(){if(songStop){songStop();songStop=null}}
+const lyr=(s)=>s.l.map(x=>x.replace('{name}',S.child.name||'you'));
+
+/* stickers: simple shapes, drawn in code */
+const STK=[
+ c=>`<svg viewBox="0 0 24 24"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="${c}"/></svg>`,
+ c=>`<svg viewBox="0 0 24 24"><path d="M12 21s-8-4.7-8-10.7A4.6 4.6 0 0 1 12 7.6a4.6 4.6 0 0 1 8 2.7C20 16.3 12 21 12 21z" fill="${c}"/></svg>`,
+ c=>`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="${c}"/><g stroke="${c}" stroke-width="2.2" stroke-linecap="round"><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></g></svg>`,
+ c=>`<svg viewBox="0 0 24 24"><path d="M12 3.5c3.2 3.9 6.2 7.2 6.2 10.8a6.2 6.2 0 0 1-12.4 0c0-3.6 3-6.9 6.2-10.8z" fill="${c}"/></svg>`,
+ c=>`<svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="3.6" fill="${c}"/><circle cx="7" cy="12" r="3.6" fill="${c}"/><circle cx="17" cy="12" r="3.6" fill="${c}"/><circle cx="12" cy="17" r="3.6" fill="${c}"/><circle cx="12" cy="12" r="2.6" fill="#FFD55A"/></svg>`,
+ c=>`<svg viewBox="0 0 24 24"><path d="M19.5 14.6A8 8 0 1 1 9.4 4.5a6.4 6.4 0 0 0 10.1 10.1z" fill="${c}"/></svg>`,
+];
+const STKC=['#F2B705','#E8735A','#5AA35A','#4A8BD6','#B27AD6','#F29E4C'];
+const sticker=i=>STK[i%STK.length](STKC[(i*5+Math.floor(i/6))%STKC.length]);
+
+/* ================= state ================= */
+const KEY='upairy-potty-v3';
+function fresh(){return {account:null,days:{},onboarded:false,toured:false,child:{name:'',age:'',words:''},method:null,where:null,home3:null,quiz:{},
+  pIdx:0,pDay:1,start:sod(Date.now()),mode:'smart',interval:45,tab:'today',night:false,
+  events:[],steps:{},checkins:{},histSel:sod(Date.now()),histMonth:null,bedtime:19.5,notifFor:0,
+  progView:'ins',ai:{key:''},chat:[],favs:[],spent:0,
+  rewards:[{id:'r1',t:'Pick the bedtime story',cost:6},{id:'r2',t:'Ice cream after dinner',cost:15},{id:'r3',t:'Trip to the park',cost:25}],
+  rem:{on:true,lead:5,meals:true,bed:true,morning:true,evening:true}}}
+let S=load();
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.events){const q=s.quiz&&Object.values(s.quiz).some(v=>v===1)&&Object.keys(s.quiz).length<8?{}:s.quiz;const o=Object.assign(fresh(),s,{quiz:q||{}});o.rem=Object.assign(fresh().rem,s.rem||{});return o}}catch(e){}return fresh()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function sampleWeek(){
+  let r=11;const rnd=()=>(r=(r*9301+49297)%233280)/233280;
+  const now=Date.now(),today=sod(now),start=today-6*DAY;const ev=[];
+  const push=(ts,o)=>{if(ts<now)ev.push({id:uid(),ts,...o})};
+  for(let d=0;d<7;d++){
+    const base=start+d*DAY,p=d/6;
+    const wake=base+(6.8+rnd()*.4)*HR;push(wake,{type:'wake'});
+    [7.4,12.1,17.5].forEach(h=>{push(base+(h+rnd()*.2)*HR,{type:'meal'});push(base+(h+.1)*HR,{type:'drink'})});
+    [9.9,15.3].forEach(h=>push(base+(h+rnd()*.3)*HR,{type:'drink'}));
+    const nap=[12.75,14.4];push(base+nap[1]*HR,{type:'wake'});
+    const pooAt=(d===0||d===2||d===4)?2:-1;
+    let t=wake+12*MIN,i=0;
+    while(t<base+18.8*HR){
+      const h=(t-base)/HR;
+      if(h>nap[0]&&h<nap[1]){t=base+nap[1]*HR+8*MIN;continue}
+      const x=rnd(),accP=.46-p*.36,tryP=.2-p*.1;
+      let outcome=x<accP?'accident':x<accP+tryP?'tried':'success';
+      if(i===pooAt&&outcome==='tried')outcome='success';
+      push(t,{type:'potty',outcome,what:outcome==='tried'?null:(i===pooAt?'poo':'wee'),by:outcome==='success'&&rnd()<.04+p*.5?'child':'prompt'});
+      t+=(24+p*34+rnd()*16)*MIN;i++;
+    }
+  }
+  ['wet','wet','dry','wet','dry','dry'].forEach((o,k)=>push(start+(k+1)*DAY+6.6*HR,{type:'night',outcome:o}));
+  S.events=ev;S.start=start;S.memberSince=now-18*DAY;S.pants=6;
+  // walk the program forward as if each day's check-in said "move on"
+  const items=METHODS[S.method].items;S.pIdx=items[0].iv==null&&S.method!=='night'?1:0;S.pDay=1;
+  for(let d=0;d<6;d++){const it=items[S.pIdx];S.checkins[start+d*DAY]='Moved on';if(S.pDay<it.len)S.pDay++;else if(S.pIdx<items.length-1){S.pIdx++;S.pDay=1}}
+}
+
+/* ================= derived ================= */
+const evs=()=>S.events.slice().sort((a,b)=>a.ts-b.ts);
+const onDay=(d,f=()=>true)=>evs().filter(e=>sod(e.ts)===d&&f(e));
+const isPotty=e=>e.type==='potty';
+const isWee=e=>isPotty(e)&&(e.outcome==='success'||e.outcome==='accident');
+function dayStats(d){const p=onDay(d,isPotty);const s=p.filter(e=>e.outcome==='success').length,a=p.filter(e=>e.outcome==='accident').length;
+  return{s,a,t:p.filter(e=>e.outcome==='tried').length,told:p.filter(e=>e.by==='child').length,rate:s+a?Math.round(100*s/(s+a)):null}}
+const dryNights7=()=>S.events.filter(e=>e.type==='night'&&e.outcome==='dry'&&e.ts>sod(Date.now())-6*DAY).length;
+const M=()=>METHODS[S.method||'threeday'];
+const item=()=>M().items[S.pIdx];
+const lastPoo=()=>[...evs()].reverse().find(e=>isPotty(e)&&(e.what==='poo'||e.what==='both'));
+
+/* ---- learning: everything below is measured from this child's own logs ---- */
+const NEED={gap:6,drink:3,wake:3,poo:3};
+function learned(){
+  const from=sod(Date.now())-5*DAY;const all=evs().filter(e=>e.ts>=from);
+  const w=all.filter(isWee);
+  const gaps=[],am=[],pm=[];
+  for(let i=1;i<w.length;i++){if(sod(w[i].ts)!==sod(w[i-1].ts))continue;
+    const between=all.some(e=>e.type==='wake'&&e.ts>w[i-1].ts&&e.ts<w[i].ts); if(between)continue;
+    const g=(w[i].ts-w[i-1].ts)/MIN;if(g>180)continue;gaps.push(g);(new Date(w[i-1].ts).getHours()<12?am:pm).push(g)}
+  const lag=(type)=>{const out=[];all.filter(e=>e.type===type).forEach(e=>{const n=w.find(x=>x.ts>e.ts&&x.ts-e.ts<2*HR);if(n)out.push((n.ts-e.ts)/MIN)});return out};
+  const dl=lag('drink'),wl=lag('wake');
+  const poos=S.events.filter(e=>isPotty(e)&&(e.what==='poo'||e.what==='both')).map(e=>{const d=new Date(e.ts);return d.getHours()+d.getMinutes()/60});
+  const r=v=>v==null?null:Math.round(v);
+  return{
+    gap:{n:gaps.length,v:r(median(gaps)),ok:gaps.length>=NEED.gap,am:am.length>=3?r(median(am)):null,pm:pm.length>=3?r(median(pm)):null},
+    drink:{n:dl.length,v:r(median(dl)),ok:dl.length>=NEED.drink},
+    wake:{n:wl.length,v:r(median(wl)),ok:wl.length>=NEED.wake},
+    poo:{n:poos.length,v:median(poos),ok:poos.length>=NEED.poo},
+  };
+}
+function predict(){const p=timerState();return p&&p.state==='run'?p:null}
+function timerState(){
+  const now=Date.now(),today=sod(now),L=learned(),it=item();
+  const def=S.mode==='fixed'?S.interval:(it.iv||60);
+  let gap=def,src='program';
+  if(S.mode==='smart'&&L.gap.ok){gap=Math.max(15,Math.min(120,(new Date(now).getHours()<12?L.gap.am:L.gap.pm)||L.gap.v));src='learned'}
+  // never stretch far beyond what the current step allows
+  if(src==='learned'&&it.iv)gap=Math.min(gap,Math.round(it.iv*1.6));
+  // quiet hours and pauses come first: the timer simply rests
+  if(quietNow())return{state:'quiet',until:quietEndTs()};
+  if(S.pausedUntil>now)return{state:'paused',until:S.pausedUntil,why:S.pauseWhy};
+  const t=onDay(today);const lastWee=[...t].reverse().find(isWee);const lastWake=[...t].reverse().find(e=>e.type==='wake');
+  const qEnd=S.quietOn!==false?today+(S.quietEnd??6.5)*HR:null;
+  let anchor=[lastWee,lastWake].filter(Boolean).sort((a,b)=>b.ts-a.ts)[0];
+  // a pause that just ended restarts the count from when it ended
+  if(S.pausedUntil&&S.pausedUntil<=now&&S.pausedUntil>sod(now)&&(!anchor||anchor.ts<S.pausedUntil))anchor={type:'resume',ts:S.pausedUntil};
+  // lenient start: no wake-up logged, so start the day from the end of quiet hours
+  if(!anchor&&qEnd&&now>qEnd)anchor={type:'start',ts:qEnd};
+  if(!anchor)return null;
+  let due,why;const nm=S.child.name||'your child';
+  if(anchor.type==='wake'){const w=L.wake.ok?L.wake.v:15;due=anchor.ts+w*MIN;why=['sunrise',L.wake.ok?`${nm} usually wees ${w} min after waking`:`Woke at ${fmt(anchor.ts)}. Offer soon after waking`]}
+  else if(anchor.type==='start'){due=anchor.ts+30*MIN;why=['sunrise',`Started at ${fmt(anchor.ts)}. Log the wake-up for better timing`]}
+  else if(anchor.type==='resume'){due=anchor.ts+Math.min(gap,30)*MIN;why=['clock',`Back from a pause. A try soon is a good idea`]}
+  else{due=anchor.ts+gap*MIN;why=['clock',src==='learned'?`Learned: ${nm} usually goes every ${gap} min${L.gap.am&&L.gap.pm?(new Date(now).getHours()<12?' in the morning':' in the afternoon'):''}`:S.mode==='fixed'?`Every ${gap} min, as you set it`:`${it.t} timing: every ${gap} min`]}
+  const drink=[...t].reverse().find(e=>e.type==='drink'&&e.ts>anchor.ts);
+  if(drink){const lagM=L.drink.ok?L.drink.v:35;if(drink.ts+lagM*MIN<due){due=drink.ts+lagM*MIN;why=['cup',L.drink.ok?`Drink at ${fmt(drink.ts)}. ${nm} usually wees ${lagM} min after a drink`:`Drink at ${fmt(drink.ts)}. Wee often follows in 30–40 min`]}}
+  // lenient: if a try was missed or not logged, don't sit on "overdue". Roll on to the next one.
+  const GRACE=15*MIN;let missed=0,total=Math.max(due-anchor.ts,MIN);
+  if(now>due+GRACE){missed=Math.ceil((now-due-GRACE)/(gap*MIN));due+=missed*gap*MIN;total=gap*MIN;
+    const quietFor=now-anchor.ts>3*HR;
+    why=['replay',quietFor?`Nothing logged for a while, that's okay. Next try around ${fmt(due)}`:`Missed one or didn't log it? No problem. Next try around ${fmt(due)}`]}
+  if(qEnd!=null&&due>=today+(S.quietStart??S.bedtime)*HR&&S.quietOn!==false)return{state:'quiet-soon',until:quietEndTs(true)};
+  return{state:'run',due,gap,why,anchor,total,src,L,missed};
+}
+// quiet hours: no timer, no reminders. Defaults to bedtime until 6:30 am.
+function quietNow(t=Date.now()){if(S.quietOn===false)return false;const d=new Date(t),h=d.getHours()+d.getMinutes()/60,a=S.quietStart??S.bedtime,b=S.quietEnd??6.5;return a>b?(h>=a||h<b):(h>=a&&h<b)}
+function quietEndTs(tomorrow){const now=Date.now(),b=(S.quietEnd??6.5)*HR;let t=sod(now)+b;if(tomorrow||t<=now)t+=DAY;return t}
+const hm=h=>fmt(sod(Date.now())+h*HR);
+
+/* ================= shell ================= */
+function render(){
+  const night=S.tab==='today'&&S.night;
+  $('phone').classList.toggle('night',night);
+  const tabs=[['today','home','Today'],['prog','route','Program'],['coach','chat','Coach'],['kidz','star','Kid zone'],['progress','chart','Progress']];
+  $('tabs').innerHTML=tabs.map(([k,ic,l])=>`<button data-a="tab" data-v="${k}" id="tab-${k}" class="${S.tab===k?'on':''}">${I(ic)}${l}</button>`).join('');
+  const sc=$('screen');const y=sc.scrollTop;
+  sc.innerHTML=S.onboarded?({today:night?Night:Today,prog:Program,coach:Coach,kidz:KidZone,progress:Progress})[S.tab]():'';
+  if(render.keep)sc.scrollTop=y;render.keep=false;
+  const au=$('auth').querySelector('.auth'),ay=au?au.scrollTop:0,am=render.auMode;$('auth').innerHTML=S.account?'':Auth();render.auMode=AU.mode;const au2=$('auth').querySelector('.auth');if(au2&&am===AU.mode)au2.scrollTop=ay;
+  const ob=$('ob').querySelector('.body'),oy=ob?ob.scrollTop:0,ostep=render.obStep;
+  $('ob').innerHTML=S.onboarded||!S.account?'':Onboarding();render.obStep=OB;
+  const ob2=$('ob').querySelector('.body');if(ob2&&ostep===OB)ob2.scrollTop=oy;
+  if($('settings').classList.contains('show'))$('setbody').innerHTML=Settings();
+  tick();
+}
+function greet(){const h=new Date().getHours();return h<12?'Good morning':h<17?'Good afternoon':'Good evening'}
+const Header=(title,eyebrow,right='')=>`<div class="hd"><div><div class="eyebrow">${eyebrow}</div><h1>${title}</h1></div>${right}</div>`;
+const KidChip=(id='')=>`<button class="kidchip" data-a="settings" ${id?`id="${id}"`:''} aria-label="Settings"><span class="av">${esc(S.child.name[0]||'?')}</span>${esc(S.child.name)}${I('chevR')}</button>`;
+const DayNight=()=>`<div class="seg" style="margin-bottom:14px"><button data-a="night" data-v="0" class="${!S.night?'on':''}">${I('sun')}Daytime</button><button data-a="night" data-v="1" class="${S.night?'on':''}">${I('moon')}Night</button></div>`;
+const ord=d=>({1:'1st',2:'2nd',3:'3rd'}[d]||d+'th');
+
+/* ================= Daily rhythm: morning start, log through the day, evening check-in ================= */
+function Rhythm(){
+  const now=Date.now(),today=sod(now),h=new Date().getHours();
+  const woke=onDay(today,e=>e.type==='wake').length>0,n=onDay(today,isPotty).length,ci=!!S.checkins[today];
+  const yday=today-DAY,missed=!S.checkins[yday]&&onDay(yday,isPotty).length>0&&h<16;
+  const cell=(cls,ic,tone,t,s,a)=>`<button class="rh ${cls}" ${a?`data-a="${a}"`:''}><span class="top"><span class="ic ${tone}">${I(ic)}</span><span class="ck">${I('check')}</span></span><b>${t}</b><small>${s}</small></button>`;
+  const phase=ci?3:h>=17?2:woke?1:0;
+  return `${missed?`<button class="checkin hot" data-a="checkin" data-v="y" style="margin:0 0 12px"><span class="ic" style="width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#fff;color:var(--brand)">${I('moon')}</span><div class="tx"><b>Finish yesterday's check-in</b><small>20 seconds. It sets up today's plan.</small></div>${I('chevR')}</button>`:''}
+  <div class="rhythm" id="rhythm">
+    ${cell((woke?'done':'')+(phase===0?' now':''),'sunrise','t-sun','Morning','Log the wake-up, read today\'s plan',woke?'':'quickwake')}
+    ${cell((n>=4?'done':'')+(phase===1?' now':''),'drop','t-ok','Through the day',n?`${n} logged so far`:'Offer when the timer says, log it',n>=4?'':'log')}
+    ${cell((ci?'done':'')+(phase===2?' now':''),'moon','t-water','Evening',ci?'Checked in. Tomorrow is set':'20-second check-in',ci?'':'checkin')}
+  </div>`;
+}
+
+function ciStreak(){let n=0,d=sod(Date.now());if(!S.checkins[d])d-=DAY;while(S.checkins[d]){n++;d-=DAY}return n}
+
+/* ================= Today ================= */
+function PlanCard(){
+  const today=sod(Date.now()),it=item(),ci=S.checkins[today];
+  const stepKey=S.method+S.pIdx+'-'+today;const done=S.steps[stepKey]||[];
+  const late=new Date().getHours()>=16;
+  const dayLbl=it.len>1?`${it.d} · day ${S.pDay} of ${it.len}`:it.d;
+  return `<section class="card plan" id="plancard">
+    <div class="head"><div><span class="badge">${I(M().ic)}${M().name}</span><h3>${ci?'Tomorrow: ':''}${it.t}</h3><div class="sub">${dayLbl}</div></div><span class="sub num">${ci?'':done.length+'/'+it.steps.length}</span></div>
+    ${ci?`<p class="expect" style="margin-top:10px">${it.expect}</p>`:`<p class="expect" style="margin-top:8px">${it.expect}</p>`+it.steps.map((s,j)=>`<button class="step ${done.includes(j)?'done':''}" data-a="step" data-k="${stepKey}" data-v="${j}"><span class="box">${I('check')}</span><span>${s}</span></button>`).join('')}
+    ${ci?`<div class="checkin"><span class="ic t-ok" style="width:34px;height:34px;border-radius:50%;display:grid;place-items:center">${I('check')}</span><div class="tx"><b>Today's check-in done</b><small>${esc(ci)}</small></div></div>`:
+    `<button class="checkin ${late?'hot':''}" data-a="checkin"><span class="ic ${late?'t-ok':'t-try'}" style="width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:${late?'#fff':''}">${I('moon')}</span><div class="tx"><b>Evening check-in</b><small>${late?'Ready when you are. Takes 20 seconds.':'Opens tonight. See how today went and plan tomorrow.'}</small></div>${I('chevR')}</button>`}
+  </section>`;
+}
+function Today(){
+  const today=sod(Date.now()),st=dayStats(today),L=learned();
+  const lp=lastPoo();const pooDays=lp?Math.floor((today-sod(lp.ts))/DAY):null;
+  const C=2*Math.PI*96;const todays=onDay(today).reverse();const nm=esc(S.child.name);
+  const learnN=Math.min(L.gap.n,NEED.gap);
+  return Header(nm+"'s day",greet(),`<div style="display:flex;gap:8px"><button class="iconbtn" id="sharebtn" data-a="handoff" aria-label="Share update">${I('share')}</button>${KidChip('kidchip')}</div>`)+DayNight()+Rhythm()+`
+  <section class="card next" id="nextcard">
+    <div class="top"><span class="lbl">NEXT POTTY TRY</span><span style="display:flex;gap:6px"><button class="badge grey" id="pausebtn" data-a="pause">${I('pause')}Pause</button><button class="badge grey" data-a="timerset">${S.mode==='smart'?(L.gap.ok?'Learned timing':'Smart timing'):'Every '+S.interval+' min'}${I('chevD')}</button></span></div>
+    <div class="ring" id="ring"><svg width="216" height="216"><circle cx="108" cy="108" r="96" fill="none" stroke="var(--sunk)" stroke-width="12"/><circle id="arc" cx="108" cy="108" r="96" fill="none" stroke="var(--brand)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C}" style="transition:stroke-dashoffset .6s"/></svg>
+      <div class="c"><div class="n num" id="tn">–</div><div class="u" id="tu"></div></div></div>
+    <div class="why" id="why"></div>
+    ${S.mode==='smart'&&!L.gap.ok?`<div class="learn">${I('spark')}<div class="tx"><b>Learning ${nm}'s rhythm</b>Log every wee and accident. After ${NEED.gap} timed gaps the timer switches to ${nm}'s own pattern.<div class="dotsrow">${[...Array(NEED.gap)].map((_,i)=>`<i class="${i<learnN?'on':''}"></i>`).join('')}</div></div></div>`:''}
+    <button class="primary" data-a="log" id="logbtn">${I('plus')}Log potty</button>
+    <div class="quick" id="quickrow">
+      <button class="q" data-a="quick" data-v="drink"><span class="ic t-water">${I('cup')}</span>Drink</button>
+      <button class="q" data-a="quick" data-v="meal"><span class="ic t-meal">${I('meal')}</span>Meal</button>
+      <button class="q" data-a="quick" data-v="wake"><span class="ic t-sun">${I('sunrise')}</span>Woke up</button>
+      <button class="q" data-a="sit"><span class="ic t-ok">${I('hour')}</span>Sit timer</button>
+    </div>
+  </section>
+  <div class="stats">
+    <div><b class="num" style="color:var(--brand)">${st.s}</b><small>On potty</small></div>
+    <div><b class="num" style="color:var(--acc)">${st.a}</b><small>Accidents</small></div>
+    <div><b class="num">${st.told}</b><small>Told you</small></div>
+    <div><b class="num">${st.rate==null?'–':st.rate+'%'}</b><small>Success</small></div>
+  </div>
+  ${pooDays!=null&&pooDays>=2?`<div class="alert" style="margin-top:12px"><div class="ic">${I('poo')}</div><div><b>No poo for ${pooDays} days</b><p>Holding in poo is common when training. Offer water and fruit${L.poo.ok?`, and a sit around ${fmt(sod(Date.now())+L.poo.v*HR)} when ${nm} usually goes`:', and a sit 20 minutes after meals'}.</p><button class="more" data-a="article" data-v="0">What helps</button></div></div>`:''}
+  <div class="sec"><h2>Today's plan</h2><button class="link" data-a="tab" data-v="prog">Program</button></div>
+  ${PlanCard()}
+  <div class="sec"><h2>Timeline</h2><span class="sub">${todays.length} logged</span></div>
+  <section class="card tl">${todays.length?Timeline(todays,true):`<div class="empty">Nothing logged yet today.<br>Tap “Woke up” to start the timer.</div>`}</section>`;
+}
+function evMeta(e){
+  if(e.type==='potty'){
+    const w={wee:'Wee',poo:'Poo',both:'Wee and poo'}[e.what]||'';const isP=e.what==='poo'||e.what==='both';
+    if(e.outcome==='success')return{ic:isP?'poo':'drop',tone:isP?'t-poo':'t-ok',t:w+' on the potty',s:e.by==='child'?'Told you first':'You offered'};
+    if(e.outcome==='accident')return{ic:e.what==='poo'?'poo':'drop',tone:'t-acc',t:w+' accident',s:'No worries, logged'};
+    return{ic:'hour',tone:'t-try',t:'Sat, nothing came',s:'Still counts as practice'};
+  }
+  return({drink:{ic:'cup',tone:'t-water',t:'Drink'},meal:{ic:'meal',tone:'t-meal',t:'Meal'},wake:{ic:'sunrise',tone:'t-sun',t:'Woke up'},
+    night:{ic:'moon',tone:e.outcome==='dry'?'t-ok':'t-acc',t:e.outcome==='dry'?'Dry night':'Wet night'}})[e.type];
+}
+function Timeline(list,del){
+  return list.map((e,i)=>{const m=evMeta(e);
+    const next=list.slice(i+1).find(isWee);const g=isWee(e)&&next&&sod(next.ts)===sod(e.ts)?`<div class="gap">${dur(e.ts-next.ts)} since the last wee</div>`:'';
+    return `<div class="ev"><div class="ic ${m.tone}">${I(m.ic)}</div><div class="tx"><b>${m.t}</b>${m.s?`<small>${m.s}</small>`:''}</div><div class="tm num">${fmt(e.ts)}</div>${del?`<button class="del" data-a="del" data-v="${e.id}" aria-label="Delete">${I('x')}</button>`:''}</div>${g}`}).join('');
+}
+
+/* ================= Night ================= */
+function Night(){
+  const today=sod(Date.now());const nights=evs().filter(e=>e.type==='night');
+  const lastN=nights.find(e=>sod(e.ts)===today);
+  const strip=[...Array(14)].map((_,i)=>{const d=today-(13-i)*DAY;const n=nights.find(e=>sod(e.ts)===d);return n?(n.outcome==='dry'?'d':'w'):''});
+  const dry7=dryNights7();let streak=0;for(const n of [...nights].reverse()){if(n.outcome==='dry')streak++;else break}
+  const lastDrink=[...onDay(today,e=>e.type==='drink')].pop();const bed=today+S.bedtime*HR;
+  const gapBed=lastDrink?(bed-lastDrink.ts)/MIN:null;
+  return Header('Nights',greet(),KidChip())+DayNight()+`
+  <section class="card">
+    <span class="lbl">LAST NIGHT</span>
+    ${lastN?`<div style="display:flex;align-items:center;gap:14px;margin-top:12px"><div class="${lastN.outcome==='dry'?'t-ok':'t-acc'}" style="width:48px;height:48px;border-radius:16px;display:grid;place-items:center">${I(lastN.outcome==='dry'?'moon':'drop')}</div><div style="flex:1"><b style="font-size:18px;font-weight:600">${lastN.outcome==='dry'?'Woke up dry':'Wet night'}</b><div class="sub">${lastN.outcome==='dry'?streak+' dry in a row':'Totally normal at this stage'}</div></div><button class="chip" data-a="del" data-v="${lastN.id}">Change</button></div>`:
+    `<div class="opts" style="grid-template-columns:1fr 1fr;margin-top:12px"><button class="opt" data-a="nightlog" data-v="dry">${I('moon')}Woke up dry</button><button class="opt" data-a="nightlog" data-v="wet">${I('drop')}Wet night</button></div>`}
+  </section>
+  <section class="card">
+    <div style="display:flex;justify-content:space-between"><span class="lbl">LAST 14 NIGHTS</span><span class="sub num">${dry7} of 7 dry this week</span></div>
+    <div class="nstrip">${strip.map(c=>`<i class="${c}"></i>`).join('')}</div>
+    <div class="heatlbl"><span>2 weeks ago</span><span>Last night</span></div>
+  </section>
+  <div class="sec"><h2>Tonight</h2><span class="sub">Bedtime ${fmt(bed)}</span></div>
+  <section class="card tl">
+    <div class="ev"><div class="ic t-water">${I('cup')}</div><div class="tx"><b>${lastDrink?'Last drink '+fmt(lastDrink.ts):'No drinks logged today'}</b><small>${gapBed==null?'Aim for the last drink an hour before bed':gapBed>=60?dur(gapBed*MIN)+' before bed. Good.':gapBed>0?'Only '+dur(gapBed*MIN)+' before bed. Try a little earlier.':'Logged after bedtime'}</small></div></div>
+    <div class="ev"><div class="ic t-ok">${I('drop')}</div><div class="tx"><b>Double wee</b><small>One before bath, one right before sleep</small></div></div>
+    <div class="ev"><div class="ic t-sun">${I('bed')}</div><div class="tx"><b>Bed mat and spare sheets ready</b><small>Makes a 2 am change take two minutes</small></div></div>
+  </section>
+  <div class="tipbox">${I('bulb')}<div>${dry7>=4?`<b>${dry7} dry mornings this week.</b> That's a good sign ${esc(S.child.name)} is ready to go nappy-free at night.`:`<b>Night dryness is mostly physical.</b> It depends on a hormone that develops on its own schedule, so there is nothing to push. Log mornings and wait for 4 or more dry a week.`}</div></div>`;
+}
+
+/* ================= Program ================= */
+function Program(){
+  const m=M(),it=item(),items=m.items;const r=RULES[it.rule];
+  const pct=Math.round(100*(S.pIdx+(S.pDay-1)/it.len)/items.length);
+  return Header(esc(S.child.name)+"'s program",m.name,KidChip())+`
+  <section class="phero" id="phero">
+    <span class="lbl">NOW · STEP ${S.pIdx+1} OF ${items.length}</span>
+    <h2>${it.t}</h2><p>${it.expect}</p>
+    <div class="row"><span class="pill">${I('cal')}${it.len>1?`Day ${S.pDay} of ${it.len}`:it.d}</span>${it.iv?`<span class="pill">${I('clock')}Offer every ${it.iv} min</span>`:`<span class="pill">${I('clock')}Routine sits</span>`}</div>
+    <div class="meter"><i style="width:${pct}%"></i></div>
+  </section>
+  <div class="sec" style="margin-top:6px"><h2>How each day works</h2><span class="sub num">${ciStreak()}-day check-in streak</span></div>
+  <section class="card tl" style="padding:4px 18px">
+    <div class="ev"><div class="ic t-sun">${I('sunrise')}</div><div class="tx"><b>Morning · 1 minute</b><small>Log the wake-up so the timer starts. Read today's steps on the Today tab.</small></div></div>
+    <div class="ev"><div class="ic t-ok">${I('drop')}</div><div class="tx"><b>Through the day · a few taps</b><small>When the reminder comes, offer the potty. Log what happened: a wee, a poo, an accident or nothing. Log drinks and naps too.</small></div></div>
+    <div class="ev"><div class="ic t-water">${I('moon')}</div><div class="tx"><b>Evening · 20 seconds</b><small>Check in: add anything you missed, say how it felt, and pick tomorrow's step. That's how the program moves forward.</small></div></div>
+  </section>
+  <section class="card" style="padding:14px 18px">
+    <div style="display:flex;gap:12px;align-items:flex-start"><span class="t-ok" style="width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none">${I('route')}</span><div><b style="font-weight:600;font-size:14px">What moves you on</b><div class="sub">${r.t}. Each evening's check-in looks at the day and suggests staying, moving on, or stepping back. You always decide.</div></div></div>
+  </section>
+  <div class="sec"><h2>All steps</h2><button class="link" data-a="method">Change method</button></div>
+  <section class="card" style="padding:4px 18px">${items.map((s,i)=>`<button class="pitem ${i<S.pIdx?'done':i===S.pIdx?'cur':''}" data-a="pitem" data-v="${i}"><span class="n">${i<S.pIdx?I('check'):i+1}</span><span class="tx"><b>${s.t}</b><small>${s.d}${s.iv?' · every '+s.iv+' min':''}</small></span>${i===S.pIdx?'<span class="badge">Now</span>':`<span class="chev">${I('chevR')}</span>`}</button>`).join('')}</section>
+  <div class="sec"><h2>What you'll need</h2><button class="link" data-a="settings" data-v="shop">Shop UpAiry</button></div>
+  ${PantsPlanner()}
+  ${stepProducts().map(ProductCard).join('')}`;
+}
+
+/* ================= UpAiry products (from upairy.com) ================= */
+const SHOP='https://upairy.com/products/';
+const CDN='https://cdn.shopify.com/s/files/1/0684/6149/4493/files/';
+const PRODUCTS={
+ pants5:{t:'Potty Training Underwear, 5-pack',p:'$35',img:'weoiugrhwoeriu.png',h:'5-pack-potty-training-underwear',why:'Feels wet so they notice, but holds the mess.'},
+ pants10:{t:'Potty Training Underwear, 10-pack',p:'$68',img:'3feba55b-3700-48f1-8f6f-5e8729de743f.png',h:'10-pack-potty-training-underwear',why:'Enough pairs for intensive days without washing every few hours.'},
+ daykit:{t:'Daytime Potty Training Kit',p:'$69',img:'boybundle.png',h:'daytime-potty-training-kit',why:'Everything for the first week of daytime training.'},
+ nightkit:{t:'Nighttime Potty Training Kit',p:'$59',img:'Frame_985.png',h:'nighttime-kit-v1',why:'For going nappy-free at night.'},
+ bedmat:{t:'Waterproof Bed Mat + Mesh Wash Bag',p:'$43.99',img:'Frame992.png',h:'mesh-wash-bag-waterproof-bed-mat-protection-pack',why:'Makes a 2 am change take two minutes.'},
+ wetbag:{t:'Waterproof Wet Bags',p:'$25',img:'3_bags.png',h:'wet-laundry-bag',why:'Wet pants go in, the nappy bag stays dry.'},
+ soap:{t:'Kids Safe Flower Soap',p:'$29',img:'MainPDP.png',h:'flower-hand-soap',why:'Makes handwashing after the potty part of the fun.'},
+};
+const DESIGNS=[['Trucks','Trucks_Product_Picture_8ef10baf-1385-474b-abbb-859610063db7.png','trucks'],['Planes','Frame_10596_1_de358d8e-88c2-42c6-b36d-46f72831397d.png','planes'],['Safari','Safari_Product_Picture_41410476-3a82-4261-8caa-3d2b702876d5.png','giraffe'],['Puppies','puppies_iteration_2_1_1_f5e5acb7-274d-4fa7-abb2-86b0583025a3.png','puppies'],['Unicorn','Unicorns_Product_Picture_1_1_0652a7a9-da83-42b7-90de-fe0ed3c5d5f5.png','unicorn'],['Whale','Whale_Product_Picture_87958897-fab5-4407-98cf-ec829ffbc6da.png','whale'],['Bears','Bears_Product_Picture_1_1_be1eeff5-bae4-458d-859e-027e31027ab5.png','koala'],['Ladybug','Ladybug_Product_Picture_ed4d1f9a-00d9-4a0d-8894-05e38f97aa31.png','ladybug'],['Space','Space_Product_Picture_e7a328af-6d74-49f5-8d0a-4528845d59c9.png','aliens']];
+const PAIRS={threeday:10,barebottom:8,gentle:6,night:4};
+function stepProducts(){
+  const it=item(),t=it.t.toLowerCase();
+  if(S.method==='night')return S.pIdx>=2?['bedmat','nightkit']:['nightkit'];
+  if(t.includes('out and about'))return['wetbag'];
+  if(t.includes('independence'))return['soap'];
+  if(S.method==='threeday'&&S.pIdx<=3)return['pants10','daykit'];
+  return['pants5','daykit'];
+}
+const ProductCard=k=>{const p=PRODUCTS[k];return `<a class="prod" href="${SHOP+p.h}" target="_blank" rel="noopener"><img src="${CDN+p.img}" alt="" loading="lazy"><span class="tx"><b>${p.t}</b><small>${p.why}</small><span class="pr">${p.p} <span>· upairy.com</span></span></span><span class="chev">${I('chevR')}</span></a>`};
+function PantsPlanner(){
+  const need=PAIRS[S.method]||8,have=S.pants??0;
+  const today=sod(Date.now());const acc=[1,2,3].map(d=>dayStats(today-d*DAY).a);const avg=Math.round(acc.reduce((a,b)=>a+b,0)/3);
+  const enough=have>=need;
+  return `<section class="card planner" id="planner"><div style="display:flex;align-items:center;gap:14px"><div style="flex:1"><span class="lbl">TRAINING PANTS ON HAND</span><div class="sub" style="margin-top:2px">${M().name}: about ${need} pairs recommended</div></div>
+    <div class="stepper"><button data-a="pants" data-v="-1" aria-label="Fewer">−</button><b class="num">${have}</b><button data-a="pants" data-v="1" aria-label="More">+</button></div></div>
+    <div class="meter" style="margin-top:12px"><i style="width:${Math.min(100,have/need*100)}%;background:${enough?'var(--brand)':'var(--sun)'}"></i></div>
+    <div class="sub" style="margin-top:8px">${have===0?'Add how many pairs you have to plan your washing.':enough?`Enough pairs.${avg?` At about ${avg} accident${avg>1?'s':''} a day, a wash every ${Math.max(1,Math.floor(have/Math.max(avg,1)))} day${Math.floor(have/Math.max(avg,1))>1?'s':''} keeps you covered.`:''}`:`${need-have} more pair${need-have>1?'s':''} would mean less washing during the busy first days.`}</div></section>`;
+}
+
+/* ================= Settings (opens from the child's name) ================= */
+function memberInfo(){const d=Math.max(0,Math.floor((Date.now()-(S.memberSince||S.start))/DAY));return{d,trial:d<7,left:7-d}}
+function Settings(){
+  const nm=esc(S.child.name),m=memberInfo(),it=item();
+  const perks=[[30,'Free 5-pack of training pants','pants5'],[60,'Free waterproof bed mat','bedmat']];
+  const row=(a,ic,tone,t,s,v='')=>`<button class="art" data-a="${a}" ${v?`data-v="${v}"`:''}><span class="th ${tone}">${I(ic)}</span><span><b>${t}</b><small>${s}</small></span><span class="chev">${I('chevR')}</span></button>`;
+  return `<div class="hd" style="margin-top:0"><div><div class="eyebrow">${nm}'s app</div><h1>Settings</h1></div><button class="iconbtn" data-a="setclose" aria-label="Close">${I('x')}</button></div>
+  <section class="card" style="display:flex;gap:14px;align-items:center"><span class="av" style="width:56px;height:56px;font-size:22px">${esc(S.child.name[0]||'?')}</span><div style="flex:1"><b style="font-size:18px;font-weight:600">${nm}</b><div class="sub">${esc(S.child.age)||'Age not set'} · ${M().name} · ${it.t}</div></div><button class="btn-s" data-a="editkid" style="background:var(--sunk);color:var(--ink)">Edit</button></section>
+  ${S.account&&S.account.plan==='free'?`<section class="member" id="membercard"><span class="wordmark" style="font-size:24px;color:#fff">UpAiry Plus</span>
+    <p style="margin:8px 0 14px;opacity:.9;font-size:14px">You're on a free account. Link an UpAiry order to unlock the full program, reminders, the AI coach, songs, and free gear as you go.</p>
+    <button class="ghost" data-a="signout" style="background:#fff;color:var(--brand-ink);margin-top:0">Link my order</button>
+    <a class="ghost" href="https://upairy.com" target="_blank" rel="noopener" style="background:rgba(255,255,255,.16);color:#fff;text-decoration:none">Shop UpAiry</a></section>`:`
+  <section class="member" id="membercard"><div style="display:flex;justify-content:space-between;align-items:center"><span class="wordmark" style="font-size:24px;color:#fff">UpAiry Plus</span><span class="badge" style="background:rgba(255,255,255,.18);color:#fff">${m.trial?`Free trial · ${m.left} day${m.left===1?'':'s'} left`:'Member'}</span></div>
+    <p style="margin:8px 0 14px;opacity:.9;font-size:14px">The full program, smart reminders, the AI coach, songs, and real UpAiry gear as you go.</p>
+    ${perks.map(([d,t])=>{const p=Math.min(100,m.d/d*100);return `<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:13px"><b style="font-weight:600">${t}</b><span class="num">${m.d>=d?'Unlocked':`Day ${m.d} of ${d}`}</span></div><div class="meter" style="background:rgba(255,255,255,.2);margin-top:6px"><i style="width:${p}%;background:#fff"></i></div></div>`}).join('')}
+    <div style="font-size:13px;opacity:.85">Plus 15% off everything at upairy.com while you're a member.</div>
+    <button class="ghost" data-a="managesub" style="background:#fff;color:var(--brand-ink);margin-top:14px">Manage subscription</button></section>`}
+  <section class="card" style="padding:4px 18px"><div class="setrow"><span class="th t-water" style="width:38px;height:38px;border-radius:12px;display:grid;place-items:center">${I('users')}</span><span class="tx"><b>${esc(S.account?S.account.id:'Not signed in')}</b><small>${S.account?(S.account.plan==='plus'?'UpAiry account · order linked':'Free UpAiry account'):''}</small></span><button class="btn-s" data-a="signout" style="background:var(--sunk);color:var(--ink)">Sign out</button></div></section>
+  <div class="sec" id="shopsec"><h2>Shop UpAiry</h2><a class="link" href="https://upairy.com" target="_blank" rel="noopener">upairy.com</a></div>
+  <div class="designs">${DESIGNS.map(([n,img,h])=>`<a href="${SHOP}upairy-potty-training-underwear-${h}" target="_blank" rel="noopener"><img src="${CDN+img}" alt="" loading="lazy"><span>${n}</span></a>`).join('')}</div>
+  ${['pants10','daykit','nightkit','bedmat','wetbag','soap'].map(ProductCard).join('')}
+  <div class="sec"><h2>Training</h2></div>
+  <section class="card" style="padding:4px 18px">
+    ${row('method','route','t-ok','Method',M().name)}
+    ${row('quizsheet','check','t-ok','Readiness check',quizScore()!=null?quizScore()+'% ready · retake any time':'8 quick questions')}
+    ${row('timerset','clock','t-water','Potty timing',S.mode==='smart'?'Smart: program timing, then learned':'Every '+S.interval+' min')}
+    ${row('remset','bell','t-sun','Reminders',S.rem.on?`On · ${S.rem.lead} min heads-up${S.rem.meals?' · after meals':''}${S.rem.bed?' · bedtime':''}`:'Off')}
+  </section>
+  <div class="sec"><h2>Family</h2></div>
+  <section class="card" style="padding:4px 18px">
+    ${row('soon','plus','t-try','Add a child','Each child gets their own program','child')}
+    ${row('soon','users','t-water','Invite a caregiver','Partner or grandparent can log too','care')}
+    ${row('handoff','share','t-ok','Share an update','Text-ready summary for daycare or grandparents')}
+  </section>
+  <div class="sec"><h2>App</h2></div>
+  <section class="card" style="padding:4px 18px">
+    ${row('aiset','chat','t-water','AI coach',COACH_URL?'On':'Coming soon')}
+    ${row('tour','replay','t-sun','Replay the tour','A walkthrough of every part of the app')}
+    ${row('privacy','shield','t-ok','Your data','Stored only on this device')}
+    ${row('reset','trash','t-try','Start over','Clears all data and restarts setup')}
+  </section>
+  <p class="sub" style="text-align:center;margin:18px 0 0">UpAiry Potty · prototype</p>`;
+}
+function openSettings(focus){const el=$('settings');$('setbody').innerHTML=Settings();el.classList.add('show');el.scrollTop=0;if(focus==='shop')setTimeout(()=>{const s=$('shopsec');if(s)el.scrollTop=s.offsetTop-20},50)}
+function closeSettings(){$('settings').classList.remove('show')}
+
+/* ================= Progress (History + Insights) ================= */
+function Progress(){
+  const seg=`<div class="seg" style="margin-bottom:14px"><button data-a="pview" data-v="ins" class="${S.progView==='ins'?'on':''}">${I('chart')}Insights</button><button data-a="pview" data-v="hist" class="${S.progView==='hist'?'on':''}">${I('cal')}History</button></div>`;
+  const html=S.progView==='hist'?History():Insights();
+  return html.replace(/(<\/div><\/div>|<\/button><\/div>)/,'$1'+seg); // seg sits right under the header
+}
+
+/* ================= Coach ================= */
+const SUGG=['Is it normal to have this many accidents?','How do I get them to tell me before they go?','They refuse to sit on the potty','When should we start night training?','Should I use pull-ups at daycare?'];
+function Coach(){
+  const nm=esc(S.child.name);const live=!!COACH_URL;
+  const chat=S.chat.slice(-12);
+  return Header('Coach','Calm help, right when you need it',KidChip())+`
+  <div class="sec" style="margin-top:4px"><h2>Right now</h2><span class="sub">Works offline</span></div>
+  <div class="sitgrid" id="sitgrid">${SITUATIONS.map((s,i)=>`<button class="sitc" data-a="situ" data-v="${i}"><span class="ic ${s.tone}">${I(s.ic)}</span><b>${s.t}</b></button>`).join('')}</div>
+  <div class="sec"><h2>Ask the coach</h2><button class="link" data-a="aiset">What it sees</button></div>
+  ${chat.length?`<div class="chat" id="chat">${chat.map(m=>`<div class="bub ${m.r==='u'?'me':'ai'}">${esc(m.t)}${m.src?`<span class="src">${esc(m.src)}</span>`:''}</div>`).join('')}</div>`:
+  `<div class="card" style="font-size:14px;color:var(--ink-2)">Ask anything about ${nm}'s training. The coach knows ${nm}'s program and recent logs, never their name.${live?'':' Until the AI coach goes live, answers come from the built-in guides.'}</div>`}
+  <div class="askrow" id="askrow"><input class="txt" id="askin" placeholder="e.g. Why so many accidents after lunch?" autocomplete="off"><button class="send" data-a="ask" aria-label="Send">${I('send')}</button></div>
+  <div class="sugg">${SUGG.map(q=>`<button class="chip" data-a="askq" data-v="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+  ${S.chat.length?'<button class="textbtn" data-a="clearchat">Clear conversation</button>':''}
+  <div class="sec"><h2>Guides</h2></div>
+  <section class="card" style="padding:4px 18px">${ARTICLES.map((a,i)=>`<button class="art" data-a="article" data-v="${i}"><span class="th ${a.tone}">${I(a.ic)}</span><span><b>${a.t}</b><small>${a.m} min read</small></span><span class="chev">${I('chevR')}</span></button>`).join('')}</section>
+  <p class="sub" style="text-align:center;margin:16px 10px 0">General guidance, not medical advice. If something worries you, check with your doctor.</p>`;
+}
+function aiContext(){
+  const today=sod(Date.now()),st=dayStats(today),L=learned(),it=item();
+  const days=[...Array(7)].map((_,i)=>dayStats(today-(6-i)*DAY));
+  const lp=lastPoo();
+  return [`Child: age ${S.child.age||'unknown'}. (Name withheld for privacy; call them "your child".)`,
+   `Method: ${M().name}. Current step: ${it.t} (${it.d}), day ${S.pDay} of ${it.len}. Step goal: ${RULES[it.rule].t}.`,
+   `Today so far: ${st.s} on the potty, ${st.a} accidents, ${st.t} sits with nothing, told the parent first ${st.told} times.`,
+   `Last 7 days success rate by day (oldest first): ${days.map(d=>d.rate==null?'no logs':d.rate+'%').join(', ')}.`,
+   `Learned timing: ${L.gap.ok?`usual gap between wees ${L.gap.v} min`:'not enough data yet'}; ${L.drink.ok?`wee about ${L.drink.v} min after drinks`:'drink timing not learned'}.`,
+   `Last poo: ${lp?Math.floor((today-sod(lp.ts))/DAY)+' day(s) ago':'not logged'}. Dry nights this week: ${dryNights7()}.`].join('\n');
+}
+// The AI coach runs on UpAiry's server, which holds the API key and the coach skill.
+// The app sends only the question, recent chat and the anonymous summary from aiContext().
+// Expected reply: { reply: "..." }. Leave empty until the server is live: the app falls back to the built-in guides.
+const COACH_URL='';
+async function askCoach(q){
+  q=q.trim();if(!q)return;
+  S.chat.push({r:'u',t:q});save();render.keep=true;render();scrollChat();
+  if(!COACH_URL){const a=localAnswer(q);S.chat.push({r:'a',t:a.t,src:a.src});save();render.keep=true;render();scrollChat();return}
+  const msg={r:'a',t:'Thinking…',src:'UpAiry coach'};S.chat.push(msg);render.keep=true;render();scrollChat();
+  try{
+    const history=S.chat.slice(0,-2).slice(-12).map(m=>({role:m.r==='u'?'user':'assistant',text:m.t}));
+    const res=await fetch(COACH_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,history,context:aiContext()})});
+    if(!res.ok)throw new Error(res.status);
+    msg.t=(await res.json()).reply||localAnswer(q).t;
+  }catch(e){msg.t="Couldn't reach the coach just now. Here's what the guides say:\n\n"+localAnswer(q).t;msg.src='Built-in guide'}
+  save();render.keep=true;render();scrollChat();
+}
+function localAnswer(q){
+  const s=q.toLowerCase();let best=null,score=0;
+  SITUATIONS.forEach(x=>{const n=x.kw.filter(k=>s.includes(k)).length;if(n>score){score=n;best=x}});
+  if(!best)return{t:`Here's what helps most often:\n• Offer the potty after waking, meals and drinks.\n• Keep reactions to accidents calm and boring.\n• Praise when ${S.child.name||'they'} tell you first.\n\nTap a "Right now" card above for step-by-step help.`,src:'Built-in guide'};
+  return{t:best.steps.map(x=>'• '+x).join('\n')+'\n\nTry saying: '+best.say[0],src:'Built-in guide: '+best.t};
+}
+function scrollChat(){const sc=$('screen'),c=$('chat');if(c)sc.scrollTop=c.offsetTop+c.offsetHeight-sc.clientHeight+180}
+
+/* ================= Kid zone ================= */
+function starsEarned(){let n=0;S.events.forEach(e=>{if(isPotty(e)){if(e.outcome==='success')n+=2;else if(e.outcome==='tried')n+=1}else if(e.type==='night'&&e.outcome==='dry')n+=3});return n}
+const starsNow=()=>Math.max(0,starsEarned()-S.spent);
+function KidZone(){
+  const nm=esc(S.child.name);const stars=starsNow();
+  const wins=S.events.filter(e=>isPotty(e)&&e.outcome==='success').length;const filled=wins%30,page=Math.floor(wins/30)+1;
+  return Header('Kid zone',`For ${nm}`,KidChip())+`
+  <section class="starhero" id="starhero"><div class="big num">${stars}</div><div style="flex:1"><b style="font-weight:600;font-size:16px">stars to spend</b><small>2 for a wee or poo on the potty, 1 for trying, 3 for a dry night</small><button class="primary" data-a="kidmode">${I('smile')}Hand the phone to ${nm}</button></div></section>
+  <section class="card"><div style="display:flex;justify-content:space-between"><span class="lbl">STICKER CHART ${page>1?'· PAGE '+page:''}</span><span class="sub num">${filled}/30</span></div>
+    <div class="stickers">${[...Array(30)].map((_,i)=>`<div class="stk ${i<filled?'on':''} ${i===filled-1&&kidNew?'new':''}">${i<filled?sticker(i+(page-1)*30):''}</div>`).join('')}</div>
+    <div class="sub" style="margin-top:10px">A new sticker for every success on the potty.</div></section>
+  <div class="sec" id="rewardsec"><h2>Rewards</h2><button class="link" data-a="addreward">Add reward</button></div>
+  <section class="card" style="padding:6px 18px">${S.rewards.length?S.rewards.map(r=>{const ok=stars>=r.cost;return `<div class="rw"><span class="t-sun" style="width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none">${I('gift')}</span><div class="tx"><b>${esc(r.t)}</b><small class="num">${Math.min(stars,r.cost)} of ${r.cost} stars</small><div class="meter"><i style="width:${Math.min(100,stars/r.cost*100)}%"></i></div></div><button class="btn-s ${ok?'':'off'}" data-a="redeem" data-v="${r.id}">${ok?'Redeem':'Locked'}</button></div>`}).join(''):'<div class="empty">Add a reward your child is excited about.</div>'}</section>
+  <div class="sec" id="songsec"><h2>Potty songs</h2><span class="sub">${SONGS.length} songs</span></div>
+  <section class="card" style="padding:4px 18px">${SONGS.map((s,i)=>`<div class="song"><button class="play" data-a="song" data-v="${i}" aria-label="Play">${I('music')}</button><button style="flex:1;text-align:left" data-a="song" data-v="${i}"><b>${s.t}</b><small>${s.tag} · ${esc(lyr(s)[0])}</small></button><button class="fav ${S.favs.includes(i)?'on':''}" data-a="fav" data-v="${i}" aria-label="Favourite">${I('heart')}</button></div>`).join('')}</section>`;
+}
+let kidNew=false;
+function SongSheet(i){
+  const s=SONGS[i];
+  return `<div class="sheethd"><span style="width:40px"></span><h2>${s.t}</h2><button data-a="songclose">Done</button></div>
+  <div class="sub" style="text-align:center;margin-top:-10px">${s.tag} · sing it together</div>
+  <div class="lyrics" id="lyrics">${lyr(s).map(l=>`<div>${esc(l)}</div>`).join('')}</div>
+  <button class="primary" data-a="songplay" data-v="${i}" id="songbtn">${I('music')}Play</button>
+  <button class="ghost" data-a="sitsong" data-v="${i}">${I('hour')}Use it for the sit timer</button>`;
+}
+function hiLine(li){document.querySelectorAll('#lyrics div, #sitlyrics div').forEach((d,k)=>d.classList.toggle('on',k===li))}
+let kidHold=null;
+function KidMode(){
+  const nm=esc(S.child.name);
+  $('kid').innerHTML=`<h2>Hi ${nm}!</h2><div class="stars">${I('star').replace('class="i','class="i" style="fill:#F2B705;stroke:#F2B705;width:22px;height:22px')}${starsNow()} stars</div>
+  <div class="kgrid">
+    <button class="kt" style="background:#3E7F33" data-a="kidlog" data-v="wee">${I('drop')}I did a wee</button>
+    <button class="kt" style="background:#8B6447" data-a="kidlog" data-v="poo">${I('poo')}I did a poo</button>
+    <button class="kt" style="background:#3A78C9" data-a="kidlog" data-v="tried">${I('hour')}I sat and tried</button>
+    <button class="kt" style="background:#C9762A" data-a="kidsong">${I('music')}Potty song</button>
+  </div>
+  <button class="kexit" id="kexit"><i></i>Grown-ups: press and hold to exit</button>`;
+  $('kid').classList.add('show');
+  const ex=$('kexit');
+  const start=e=>{e.preventDefault();ex.classList.add('hold');kidHold=setTimeout(()=>{$('kid').classList.remove('show');ex.classList.remove('hold');stopSong();render()},1500)};
+  const end=()=>{clearTimeout(kidHold);ex.classList.remove('hold')};
+  ex.addEventListener('pointerdown',start);['pointerup','pointerleave','pointercancel'].forEach(t=>ex.addEventListener(t,end));
+}
+function starBurst(n,msg){
+  const el=$('celeb');el.innerHTML=`<svg class="star" viewBox="0 0 24 24"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="#FFD55A" stroke="#fff" stroke-width=".8" stroke-linejoin="round"/></svg><h2>+${n} star${n>1?'s':''}!</h2><p>${esc(msg)}</p><span class="hint">Tap anywhere to continue</span>`;
+  el.style.zIndex=48;el.classList.add('show');const cols=['#FFD55A','#FFFFFF','#A8D99B','#FFB27A'];
+  for(let i=0;i<40;i++){const d=document.createElement('i');d.className='cf';d.style.left=Math.random()*100+'%';d.style.background=cols[i%4];d.style.animationDuration=1.8+Math.random()*1.6+'s';d.style.animationDelay=Math.random()*.4+'s';el.appendChild(d)}
+}
+
+/* ================= History ================= */
+function History(){
+  const today=sod(Date.now());const sel=S.histSel||today;
+  const m=S.histMonth?new Date(S.histMonth):new Date(sel);const y=m.getFullYear(),mo=m.getMonth();
+  const first=new Date(y,mo,1),off=(first.getDay()+6)%7,days=new Date(y,mo+1,0).getDate();
+  let cells='';for(let i=0;i<off;i++)cells+='<div></div>';
+  for(let d=1;d<=days;d++){const t=new Date(y,mo,d).getTime();const st=dayStats(t);const fut=t>today;
+    const dots=[...Array(Math.min(st.s,4))].map(()=>'<i style="background:var(--brand)"></i>').join('')+[...Array(Math.min(st.a,2))].map(()=>'<i style="background:var(--acc)"></i>').join('');
+    cells+=`<button class="dcell ${t===sel?'sel':''} ${fut?'out':''}" data-a="hsel" data-v="${t}" ${fut?'disabled':''}>${d}<span class="pct num">${st.rate==null?'':st.rate+'%'}</span><span class="dots">${dots}</span></button>`}
+  const st=dayStats(sel);const list=onDay(sel).reverse().filter(e=>e.type!=='night');const night=onDay(sel,e=>e.type==='night')[0];const ci=S.checkins[sel];
+  return Header('History',dayName(sel,{weekday:'long',day:'numeric',month:'long'}),KidChip())+`
+  <section class="card">
+    <div class="calnav"><button data-a="hmon" data-v="-1" aria-label="Previous month">${I('chevL')}</button><b>${m.toLocaleDateString([], {month:'long',year:'numeric'})}</b><button data-a="hmon" data-v="1" aria-label="Next month">${I('chevR')}</button></div>
+    <div class="week">${['M','T','W','T','F','S','S'].map(x=>`<div class="dw">${x}</div>`).join('')}${cells}</div>
+  </section>
+  <div class="daysum">
+    <div><b class="num" style="color:var(--brand)">${st.s}</b><small>On potty</small></div>
+    <div><b class="num" style="color:var(--acc)">${st.a}</b><small>Accidents</small></div>
+    <div><b class="num">${st.told}</b><small>Told you</small></div>
+  </div>
+  ${night?`<div class="alert" style="background:${night.outcome==='dry'?'var(--brand-soft)':'var(--acc-soft)'}"><div class="ic" style="color:${night.outcome==='dry'?'var(--brand)':'var(--acc)'}">${I('moon')}</div><div><b>${night.outcome==='dry'?'Dry night':'Wet night'}</b><p>Logged that morning</p></div></div>`:''}
+  ${ci?(()=>{const dl=S.days[sel]||{};const md=MOODS.find(m=>m[0]===dl.mood);return `<div class="alert" style="background:var(--sunk)"><div class="ic" style="color:var(--ink-2)">${I(md?md[2]:'route')}</div><div><b>${md?md[1]:'Check-in'}</b><p>${esc(ci)}</p>${dl.tags&&dl.tags.length?`<p style="margin-top:4px">${dl.tags.map(esc).join(' · ')}</p>`:''}${dl.note?`<p style="margin-top:4px;font-style:italic">"${esc(dl.note)}"</p>`:''}</div></div>`})():(sel<sod(Date.now())&&list.length?`<button class="checkin" data-a="checkin" data-v="${sel===sod(Date.now())-DAY?'y':''}" style="margin:0 0 12px" ${sel===sod(Date.now())-DAY?'':'disabled'}><div class="tx"><b>No check-in this day</b><small>${sel===sod(Date.now())-DAY?'Tap to fill it in now':'Check-ins can be filled in for yesterday'}</small></div></button>`:'')}
+  <section class="card tl">${list.length?Timeline(list,sel===today):'<div class="empty">Nothing logged this day.</div>'}</section>`;
+}
+
+/* ================= Insights ================= */
+function Insights(){
+  const today=sod(Date.now()),L=learned(),nm=esc(S.child.name);
+  const days=[...Array(7)].map((_,i)=>{const d=today-(6-i)*DAY;return{d,...dayStats(d)}});
+  const active=days.filter(x=>x.rate!=null);
+  const tot=days.reduce((a,x)=>({s:a.s+x.s,told:a.told+x.told,a:a.a+x.a}),{s:0,told:0,a:0});
+  const rate=tot.s+tot.a?Math.round(100*tot.s/(tot.s+tot.a)):null;
+  const first=active[0]?.rate,last=active[active.length-1]?.rate;
+  const toldPct=tot.s?Math.round(100*tot.told/tot.s):null;
+  const hrs=[...Array(13)].map((_,i)=>S.events.filter(e=>isPotty(e)&&e.outcome==='accident'&&e.ts>today-13*DAY&&new Date(e.ts).getHours()===7+i).length);
+  const hmax=Math.max(1,...hrs);const peak=7+hrs.indexOf(Math.max(...hrs));const hasAcc=hrs.some(Boolean);
+  const ph=h=>(h%12||12)+(h<12?' am':' pm');
+  const conf=(n,need)=>`<div class="conf">${[...Array(need)].map((_,i)=>`<i class="${i<n?'on':''}"></i>`).join('')}</div>`;
+  const row=(ic,tone,t,ok,val,n,need,unit,note)=>`<div class="lrow"><span class="ic ${tone}">${I(ic)}</span><div class="tx"><b>${t}</b>${ok?`<small>${note}</small>`:`<small>Still learning · ${Math.min(n,need)} of ${need} logs</small>${conf(n,need)}`}</div><div class="v num">${ok?val:'–'}${ok?`<small>${unit}</small>`:''}</div></div>`;
+  if(!S.events.some(isPotty))return Header('Insights','Last 7 days',KidChip())+`<section class="card"><div class="empty">${I('spark')}<br><b style="font-weight:600;color:var(--ink)">Nothing to show yet</b><br>Insights fill in as you log. A day of logging is enough to see ${nm}'s first patterns.</div></section>`;
+  return Header('Insights','Last 7 days',KidChip())+`
+  <section class="card" id="learncard">
+    <span class="lbl">WHAT WE'VE LEARNED ABOUT ${nm.toUpperCase()}</span>
+    <div class="sub" style="margin-top:2px">The timer uses these once there's enough data.</div>
+    ${row('clock','t-ok','Time between wees',L.gap.ok,L.gap.v+' min',L.gap.n,NEED.gap,'typical',L.gap.am&&L.gap.pm?`${L.gap.am} min mornings, ${L.gap.pm} min afternoons`:`From ${L.gap.n} gaps`)}
+    ${row('cup','t-water','Wee after a drink',L.drink.ok,L.drink.v+' min',L.drink.n,NEED.drink,'later',`From ${L.drink.n} drinks`)}
+    ${row('sunrise','t-sun','Wee after waking',L.wake.ok,L.wake.v+' min',L.wake.n,NEED.wake,'later',`From ${L.wake.n} wake-ups`)}
+    ${row('poo','t-poo','Usual poo time',L.poo.ok,L.poo.ok?fmt(sod(Date.now())+L.poo.v*HR):'',L.poo.n,NEED.poo,'roughly',`From ${L.poo.n} poos`)}
+  </section>
+  <div class="grid2">
+    <div class="metric"><span class="lbl">Success rate</span><b class="num">${rate??'–'}${rate!=null?'%':''}</b><span class="d ${last>=first?'up':'down'}">${active.length>1?`${first}% → ${last}% this week`:'First day'}</span></div>
+    <div class="metric"><span class="lbl">Told you first</span><b class="num">${toldPct??'–'}${toldPct!=null?'%':''}</b><span class="d" style="color:var(--ink-2)">of successes</span></div>
+    <div class="metric"><span class="lbl">Accidents a day</span><b class="num">${(tot.a/Math.max(1,active.length)).toFixed(1)}</b><span class="d" style="color:var(--ink-2)">average</span></div>
+    <div class="metric"><span class="lbl">Days logged</span><b class="num">${active.length}</b><span class="d" style="color:var(--ink-2)">this week</span></div>
+  </div>
+  <section class="card">
+    <span class="lbl">SUCCESS RATE BY DAY</span>
+    <div class="chart">${days.map((x,i)=>`<div class="c ${i===6?'last':''}"><small class="num" style="color:var(--ink-2);font-weight:600">${x.rate==null?'':x.rate}</small><div class="bar" style="height:${x.rate==null?2:Math.max(4,x.rate)}%"></div><small>${dayName(x.d,{weekday:'narrow'})}</small></div>`).join('')}</div>
+  </section>
+  ${hasAcc?`<section class="card">
+    <span class="lbl">WHEN ACCIDENTS HAPPEN</span><div class="sub" style="margin-top:2px">Last 2 weeks, by hour</div>
+    <div class="heat">${hrs.map(n=>`<i style="background:${n?`rgba(201,118,42,${.15+.85*n/hmax})`:'var(--sunk)'}"></i>`).join('')}</div>
+    <div class="heatlbl"><span>7 am</span><span>1 pm</span><span>7 pm</span></div>
+  </section>
+  <div class="tipbox">${I('bulb')}<div><b>Most accidents happen around ${ph(peak)}.</b> Offer the potty 15 minutes before then, even if the timer hasn't run out.</div></div>`:''}`;
+}
+
+/* ================= Sign in: match the parent to their UpAiry order ================= */
+// QA mode: any input is accepted. In production these call UpAiry's account service
+// (Shopify order lookup by email, or by order number + last name + postcode).
+const SIGNUP_URL='https://upairy.com/account/register';
+let AU={mode:'email',faq:null};
+function Auth(){
+  const back=`<button class="back" data-a="au" data-v="email" style="width:36px;height:36px;display:grid;place-items:center;margin-left:-8px;color:var(--ink-2)" aria-label="Back">${I('chevL')}</button>`;
+  const f=(id,l,ph,type='text',val='')=>`<div class="field"><span class="lbl">${l}</span><input class="txt" id="${id}" type="${type}" placeholder="${ph}" value="${esc(val)}" autocomplete="off"></div>`;
+  let body;
+  if(AU.mode==='found'){
+    body=`<div class="found">${I('check')}</div><h1 style="text-align:center">${AU.plan==='plus'?'Order found':'Account ready'}</h1>
+    <p class="lead" style="text-align:center">${AU.plan==='plus'?`UpAiry Plus is included with your order, linked to <b>${esc(AU.id)}</b>.`:`Signed in as <b>${esc(AU.id)}</b>. You can link an order later in Settings to unlock UpAiry Plus.`}</p>
+    <section class="card" style="padding:4px 18px">${(AU.plan==='plus'?['The full day-by-day program','Smart reminders and the AI coach','Potty songs, kid mode and rewards','Free UpAiry gear as you go']:['Logging, timer and history','Readiness check','Built-in guides']).map(x=>`<div class="setrow"><span class="t-ok" style="width:26px;height:26px;border-radius:50%;display:grid;place-items:center">${I('check')}</span><span class="tx"><b>${x}</b></span></div>`).join('')}</section>
+    <div style="flex:1"></div><button class="primary" data-a="auok">Set up your child</button>`;
+  }else if(AU.mode==='code'){
+    body=`${back}<h1>Email me a code</h1><p class="lead">We'll send a 6-digit code to the email you used to order.</p>
+    ${f('aue','EMAIL','you@example.com','email',AU.email||'')}
+    ${AU.sent?f('auc','6-DIGIT CODE','123456','text'):''}
+    <button class="primary" data-a="${AU.sent?'aufind':'ausend'}">${AU.sent?'Sign in':'Send code'}</button>
+    ${AU.sent?'<button class="textbtn" data-a="ausend">Send a new code</button>':''}`;
+  }else if(AU.mode==='password'){
+    body=`${back}<h1>Sign in</h1><p class="lead">Use the email and password for your UpAiry account.</p>
+    ${f('aue','EMAIL','you@example.com','email',AU.email||'')}${f('aup','PASSWORD','Password','password')}
+    <button class="primary" data-a="aufind">Sign in</button>
+    <button class="textbtn" data-a="au" data-v="code">Forgot password? Email me a code</button>`;
+  }else if(AU.mode==='create'){
+    body=`${back}<h1>Create a free account</h1><p class="lead">Didn't order from UpAiry yet? Make a free account on upairy.com, then come back here.</p>
+    <a class="primary" href="${SIGNUP_URL}" target="_blank" rel="noopener" style="text-decoration:none">Open upairy.com</a>
+    <button class="ghost" data-a="aufree">I've created my account</button>`;
+  }else{
+    const byOrder=AU.mode==='order';
+    body=`<div class="wordmark">UpAiry</div><h1>Find your UpAiry order</h1><p class="lead">Bought UpAiry training pants? Find your order to unlock UpAiry Plus, included with your purchase.</p>
+    <div class="seg" style="margin-bottom:16px"><button data-a="au" data-v="email" class="${!byOrder?'on':''}">Order email</button><button data-a="au" data-v="order" class="${byOrder?'on':''}">Order number</button></div>
+    ${byOrder?f('auo','ORDER NUMBER','e.g. #1234')+f('aul','LAST NAME','As on the order')+f('auz','ZIP / POSTCODE','e.g. 1010'):f('aue','EMAIL USED FOR YOUR ORDER','you@example.com','email',AU.email||'')}
+    <button class="primary" data-a="aufind">Find my order</button>
+    <div class="or">OTHER WAYS IN</div>
+    <section class="card" style="padding:2px 18px;margin-top:8px">
+      ${[['code','Email me a code','No password needed','share'],['password','I have a password','Sign in to your UpAiry account','key'],['create','Create a free account','No order yet? Start free','plus']].map(([m,t,s,ic])=>`<button class="faq" data-a="au" data-v="${m}"><span class="t-ok" style="width:36px;height:36px;border-radius:12px;display:grid;place-items:center">${I(ic)}</span><span class="tx"><b>${t}</b><small>${s}</small></span><span class="chev">${I('chevR')}</span></button>`).join('')}
+    </section>
+    <div class="sec" style="margin-top:18px"><h2 style="font-size:15px">Questions</h2></div>
+    <section class="card" style="padding:2px 18px">
+      ${[['Where do I find my order number?','It\'s in the order confirmation email from UpAiry, and on your packing slip.'],['I bought from a shop or Amazon','Create a free account, then email us your receipt and we\'ll add UpAiry Plus.'],['The email doesn\'t find my order','Try the order number instead, or the email you used at checkout if it\'s different.'],['Is my child\'s data shared?','No. Your child\'s logs stay on this phone. Your account only holds your email and order.']].map(([q,a],i)=>`<button class="faq" data-a="aufaq" data-v="${i}"><span class="tx"><b>${q}</b></span><span class="chev">${I(AU.faq===i?'chevD':'chevR')}</span></button>${AU.faq===i?`<div class="faqa" style="padding-left:0">${a}</div>`:''}`).join('')}
+    </section>`;
+  }
+  return `<div class="auth">${body}</div>`;
+}
+function authRead(){const g=id=>{const e=$(id);return e?e.value.trim():''};return{email:g('aue'),order:g('auo'),last:g('aul'),zip:g('auz')}}
+
+/* ================= Onboarding ================= */
+let OB=0;
+const QUIZ=[
+ {g:'Body',q:'Stays dry for 1–2 hours at a stretch'},
+ {g:'Body',q:'Poos at fairly regular times'},
+ {g:'Body',q:'Can pull pants up and down'},
+ {g:'Understanding',q:'Notices or tells you when wet or dirty'},
+ {g:'Understanding',q:'Follows a simple 2-step instruction'},
+ {g:'Understanding',q:'Hides or goes quiet to wee or poo'},
+ {g:'Interest',q:'Curious about the toilet or your bathroom trips'},
+ {g:'Interest',q:'Wants to do things "by myself"'},
+];
+function quizScore(){const v=Object.values(S.quiz);if(v.length<QUIZ.length)return null;return Math.round(100*v.reduce((a,b)=>a+b,0)/(QUIZ.length*2))}
+const quizRows=()=>QUIZ.map((x,i)=>`<div class="qblock"><span class="lbl">${x.g.toUpperCase()}</span><span class="qq">${x.q}</span><span class="chips">${[[2,'Yes, clearly'],[1,'Sometimes'],[0,'Not yet']].map(([v,l])=>`<button class="chip ${S.quiz[i]===v?'on':''}" data-a="quiz" data-v="${i}" data-x="${v}">${l}</button>`).join('')}</span></div>`).join('');
+function quizVerdict(sc){return sc>=70?'Ready to start':sc>=45?'Getting close':'Not quite yet'}
+const WHERE=[
+  {v:'none',t:'Still in nappies',s:'Hasn\'t really tried the potty yet',ic:'leaf'},
+  {v:'sits',t:'Sits on the potty sometimes',s:'Occasionally, mostly nothing happens',ic:'hour'},
+  {v:'some',t:'Uses the potty sometimes',s:'Some wees in the potty, still in nappies',ic:'drop'},
+  {v:'day',t:'Dry in the day',s:'Ready to work on nights',ic:'moon'},
+];
+function recommend(){
+  if(S.where==='day')return'night';
+  const sc=quizScore()??50;
+  if(sc>=70&&S.home3)return'threeday';
+  if(sc>=45)return'barebottom';
+  return'gentle';
+}
+function Onboarding(){
+  const N=6;const bars=n=>`<div class="bars"><button class="back" data-a="obback" aria-label="Back">${I('chevL')}</button>${[...Array(N)].map((_,i)=>`<i class="${i<=n?'on':''}"></i>`).join('')}</div>`;
+  const nm=esc(S.child.name||'your child');
+  if(OB===0)return `<div class="ob"><div class="body"><div class="wordmark">UpAiry</div><h1 style="margin-top:24px">Potty training, planned around your child.</h1><p class="lead">Answer a few questions and we'll build a day-by-day program. The app learns your child's rhythm as you log.</p>
+    <div class="feat"><span class="ic t-ok">${I('route')}</span><div><b>A program that fits</b><small>3-day intensive, bare bottom at home, or gentle. Chosen for your child and your week.</small></div></div>
+    <div class="feat"><span class="ic t-water">${I('spark')}</span><div><b>Timing that learns</b><small>Starts with the program's timing, then learns how often your child really goes.</small></div></div>
+    <div class="feat"><span class="ic t-sun">${I('moon')}</span><div><b>A 20-second evening check-in</b><small>See how the day went and decide together what tomorrow looks like.</small></div></div></div>
+    <button class="primary" data-a="ob">Build my program</button></div>`;
+  if(OB===1)return `<div class="ob">${bars(0)}<div class="body"><h1>Who are we training?</h1><p class="lead">You can add more children later.</p>
+    <div class="field"><span class="lbl">NAME</span><input class="txt" id="obn" value="${esc(S.child.name)}" placeholder="e.g. Otto" autocomplete="off"></div>
+    <div class="field"><span class="lbl">AGE</span><div class="chips">${['Under 2','2 to 2½','2½ to 3','3+'].map(a=>`<button class="chip ${S.child.age===a?'on':''}" data-a="age" data-v="${a}">${a}</button>`).join('')}</div></div>
+    <div class="field"><span class="lbl">WORDS THEY USE FOR WEE AND POO</span><input class="txt" id="obw" value="${esc(S.child.words)}" placeholder='e.g. "wee wee" and "poo"' autocomplete="off"><div class="sub" style="margin:6px 2px 0">Shared with grandparents and daycare so everyone says the same thing.</div></div></div>
+    <button class="primary" data-a="ob">Continue</button></div>`;
+  if(OB===2)return `<div class="ob">${bars(1)}<div class="body"><h1>Where is ${nm} now?</h1><p class="lead">This sets where the program starts.</p>
+    ${WHERE.map(w=>`<button class="ocard ${S.where===w.v?'on':''}" data-a="where" data-v="${w.v}"><span class="ic t-try">${I(w.ic)}</span><span class="tx"><b>${w.t}</b><small>${w.s}</small></span><span class="radio"></span></button>`).join('')}</div>
+    <button class="primary" data-a="ob" ${S.where?'':'disabled style="opacity:.4"'}>Continue</button></div>`;
+  if(OB===3){if(S.where==='day'){OB=4;return Onboarding()}
+    return `<div class="ob">${bars(2)}<div class="body"><h1>Is ${nm} ready?</h1><p class="lead">8 quick questions. Answer based on what you've noticed lately.</p>
+    ${quizRows()}
+    <div class="field" style="margin-top:22px"><span class="lbl">CAN YOU SPEND 3 FULL DAYS AT HOME SOON?</span><div class="chips">${[[1,'Yes, e.g. a long weekend'],[0,'Not really']].map(([v,l])=>`<button class="chip ${S.home3===v?'on':''}" data-a="home3" data-v="${v}">${l}</button>`).join('')}</div></div></div>
+    <button class="primary" data-a="ob">Continue</button></div>`}
+  if(OB===4){const rec=recommend();if(!S.method)S.method=rec;
+    const keys=S.where==='day'?['night']:['threeday','barebottom','gentle'];
+    return `<div class="ob">${bars(3)}<div class="body"><h1>Choose a method</h1><p class="lead">${S.where==='day'?`${nm} is dry in the day, so we'll focus on nights.`:`Readiness ${quizScore()??'–'}%: ${quizVerdict(quizScore()??50).toLowerCase()}. We suggest <b>${METHODS[rec].name.toLowerCase()}</b>. You can switch any time.`}</p>
+    ${keys.map(k=>{const m=METHODS[k];return `<button class="ocard ${S.method===k?'on':''}" data-a="pick" data-v="${k}"><span class="ic ${m.tone}">${I(m.ic)}</span><span class="tx"><b>${m.name}${k===rec?'<span class="badge">Suggested</span>':''}</b><small>${m.blurb}</small><span class="meta"><span class="badge grey">${I('clock')}${m.pace}</span><span class="badge grey">${I('home')}${m.need}</span></span></span><span class="radio"></span></button>`}).join('')}</div>
+    <button class="primary" data-a="ob">Continue</button></div>`}
+  if(OB===5){const m=METHODS[S.method];const startIdx=startIndex();
+    return `<div class="ob">${bars(4)}<div class="body"><h1>${nm}'s program</h1><p class="lead">${m.name} · ${m.pace}. Each evening's check-in decides if you stay on a step, move on, or step back.</p>
+    <section class="card" style="padding:4px 18px;box-shadow:none;border:1px solid var(--line)">${m.items.map((s,i)=>`<div class="pitem ${i<startIdx?'done':i===startIdx?'cur':''}"><span class="n">${i<startIdx?I('check'):i+1}</span><span class="tx"><b>${s.t}</b><small>${s.d}${s.iv?' · every '+s.iv+' min':''}${i<startIdx?' · skipped, already there':''}</small></span>${i===startIdx?'<span class="badge">Start</span>':''}</div>`).join('')}</section></div>
+    <button class="primary" data-a="ob">Looks good</button></div>`}
+  return `<div class="ob">${bars(5)}<div class="body"><h1>How do you want to start?</h1><p class="lead">The timer learns from your logs, so a fresh start begins with program timing and gets more personal each day.</p>
+    <button class="ocard ${S.startMode!=='sample'?'on':''}" data-a="smode" data-v="fresh"><span class="ic t-ok">${I('spark')}</span><span class="tx"><b>Start fresh with ${nm}<span class="badge">For real use</span></b><small>Empty log. Begin today.</small></span><span class="radio"></span></button>
+    <button class="ocard ${S.startMode==='sample'?'on':''}" data-a="smode" data-v="sample"><span class="ic t-water">${I('chart')}</span><span class="tx"><b>Explore with a sample week</b><small>Fills in 7 days of example logs so you can see learned timing, insights and history.</small></span><span class="radio"></span></button></div>
+    <button class="primary" data-a="ob">Start</button></div>`;
+}
+function startIndex(){const m=S.method;if(m==='night')return 0;if(S.where==='some'&&METHODS[m].items[0].iv==null)return 1;return 0}
+
+/* ================= tour ================= */
+const TOUR=[
+ {tab:'today',el:'rhythm',t:'Your day in three steps',b:'Morning: log the wake-up. Through the day: offer the potty when the timer says and log what happens. Evening: a 20-second check-in that plans tomorrow. We remind you at each one.'},
+ {tab:'today',el:'nextcard',t:'When to offer the potty',b:"The countdown starts with your program's timing. As you log, it learns how often your child really goes and adjusts."},
+ {tab:'today',el:'logbtn',t:'Log every wee and accident',b:"Three taps: what happened, wee or poo, and whether they told you first. Telling you first is the best sign it's clicking."},
+ {tab:'today',el:'quickrow',t:'Drinks and wake-ups move the timer',b:'Log a drink and the next try comes forward. The sit timer is a 3-minute countdown with a potty song to sing along to.'},
+ {tab:'today',el:'plancard',t:"Today's plan and evening check-in",b:'Each day has a few steps. In the evening, a quick check-in suggests whether to stay on this step or move on. You decide.'},
+ {tab:'today',el:'sharebtn',round:1,t:'Hand over in one tap',b:'Send grandparents or daycare the last wee, next try, and the words your child uses.'},
+ {tab:'prog',el:'phero',t:'Your program',b:'Built from your answers: where you are, how often to offer, and what to expect. Tap any step to see it or jump back.'},
+ {tab:'prog',el:'planner',t:'Plan your pants',b:"Tell us how many training pants you have. We'll say if it's enough for this step, how often to wash, and which UpAiry gear helps next."},
+ {tab:'coach',el:'sitgrid',t:'Help for the tricky moments',b:'Refusing to sit, accidents, holding poo, outings. Each card has steps and the exact words to say, and works offline.'},
+ {tab:'coach',el:'askrow',t:'Ask the coach anything',b:"The UpAiry coach knows your program and recent logs, never your child's name."},
+ {tab:'kidz',el:'starhero',t:'Stars and kid mode',b:'Every success earns stars. Hand over the phone and your child logs it themselves with big buttons.'},
+ {tab:'kidz',el:'rewardsec',t:'Rewards you choose',b:'Set what stars can be spent on, like a park trip or picking the bedtime story.'},
+ {tab:'kidz',el:'songsec',t:'20 potty songs',b:'Sing-along songs for sitting, handwashing, bedtime and more. The sit timer plays one automatically.'},
+ {tab:'progress',el:'learncard',t:'What the app has learned',b:'How long between wees, how soon after a drink, when poos usually come. Plus success rate, accident times and a full history.'},
+ {tab:'settings',el:'membercard',t:'Settings and UpAiry Plus',b:"Tap your child's name at the top of any screen. Your membership, free UpAiry gear as you go, the shop, reminders and your data live here."},
+ {tab:'today',el:'tabs',banner:1,t:'Reminders before the likely window',b:"Like the one at the top: a nudge a few minutes before your child is likely to need to go. You're all set."},
+];
+let T=-1;
+function tourShow(i){
+  T=i;const s=TOUR[i];if(!s){tourEnd();return}
+  $('banner').classList.remove('show');
+  if(s.tab==='settings'){if(!$('settings').classList.contains('show'))openSettings()}
+  else{closeSettings();if(S.tab!==s.tab||S.night){S.tab=s.tab;S.night=false;render()}}
+  const el=$(s.el);if(!el){tourShow(i+1);return}
+  const sc=s.tab==='settings'?$('settings'):$('screen');
+  if(s.el!=='tabs')sc.scrollTop=Math.max(0,el.offsetTop-(s.tab==='settings'?90:110));
+  setTimeout(()=>{
+    const ph=$('phone').getBoundingClientRect(),r=el.getBoundingClientRect(),pad=6;
+    const spot=$('spot');spot.style.left=r.left-ph.left-pad+'px';spot.style.top=r.top-ph.top-pad+'px';spot.style.width=r.width+pad*2+'px';spot.style.height=r.height+pad*2+'px';
+    spot.style.borderRadius=s.round?'50%':'22px';
+    const tip=$('tip');tip.innerHTML=`<span class="lbl">${i+1} OF ${TOUR.length}</span><b>${s.t}</b><p>${s.b}</p><div class="row"><button class="sk" data-a="tourskip">Skip tour</button><button class="nx" data-a="tournext">${i===TOUR.length-1?'Start using it':'Next'}</button></div>`;
+    $('tour').classList.add('show');
+    const below=r.bottom-ph.top+pad+12;const th=tip.offsetHeight;
+    tip.style.top=(below+th<ph.height-20?below:Math.max(60,r.top-ph.top-pad-12-th))+'px';
+    if(s.banner)showBanner(true);
+  },s.tab==='settings'?320:30);
+}
+function tourEnd(){$('tour').classList.remove('show');T=-1;S.toured=true;closeSettings();if(S.tab!=='today'){S.tab='today';render()}save();$('banner').classList.remove('show')}
+
+/* ================= reminder banner ================= */
+function showBanner(demo,title,body,action){
+  const p=predict();const nm=esc(S.child.name);
+  const bn=$('banner');if(action)bn.dataset.a=action;else delete bn.dataset.a;
+  $('banner').innerHTML=`<div class="app">U</div><div class="tx"><b>${title?esc(title):nm+' may need to go soon'}</b><span>${body?esc(body):p?`Good time to offer the potty, around ${fmt(p.due)}.`:'Good time to offer the potty.'}</span></div><span class="when">now</span>`;
+  $('banner').classList.add('show');clearTimeout(showBanner.h);if(!demo)showBanner.h=setTimeout(()=>$('banner').classList.remove('show'),6000);
+}
+
+function quiet(){return quietNow()}
+function RemSheet(){
+  const sw=(k,t,s)=>`<button class="setrow" data-a="remtog" data-v="${k}"><span class="tx"><b>${t}</b><small>${s}</small></span><span class="sw ${S.rem[k]?'on':''}"></span></button>`;
+  const perm=window.Notification?Notification.permission:'unsupported';
+  return `<div class="sheethd"><span style="width:40px"></span><h2>Reminders</h2><button data-a="close">Done</button></div>
+  <section class="card" style="padding:4px 18px">${sw('on','Potty reminders','Before the likely window, from the timer')}
+  ${S.rem.on?`<div class="setrow"><span class="tx"><b>Heads-up</b><small>How early to remind you</small></span><span class="chips">${[5,10].map(m=>`<button class="chip ${S.rem.lead===m?'on':''}" data-a="remlead" data-v="${m}">${m} min</button>`).join('')}</span></div>`:''}
+  ${sw('meals','After meals','A nudge 20 minutes after a logged meal')}
+  ${sw('bed','Bedtime wee',`Reminder before bed at ${fmt(sod(Date.now())+S.bedtime*HR)}`)}</section>
+  <div class="sec" style="margin-top:6px"><h2 style="font-size:15px">Daily routine</h2></div>
+  <section class="card" style="padding:4px 18px">
+  <button class="setrow" data-a="remtog" data-v="morning"><span class="tx"><b>Morning plan</b><small>Today's step and a nudge to log the wake-up</small></span><span class="sw ${S.rem.morning!==false?'on':''}"></span></button>
+  <button class="setrow" data-a="remtog" data-v="evening"><span class="tx"><b>Evening check-in</b><small>At 6:30 pm, if you haven't checked in yet</small></span><span class="sw ${S.rem.evening!==false?'on':''}"></span></button></section>
+  <button class="privacy" data-a="timerset" style="width:100%;text-align:left">${I('moon')}<div><b>Quiet hours ${S.quietOn===false?'off':hm(S.quietStart??S.bedtime)+' – '+hm(S.quietEnd??6.5)}</b>No timer or reminders overnight. Tap to change.</div></button>
+  ${perm==='granted'?`<p class="sub" style="text-align:center">Phone notifications are on.</p>`:perm==='unsupported'?'':`<button class="primary" data-a="notifperm">${I('bell')}Allow notifications on this device</button>`}
+  <button class="ghost" data-a="previewnotif">${I('bolt')}Preview a reminder</button>`;
+}
+function AiSheet(){
+  return `<div class="sheethd"><span style="width:40px"></span><h2>AI coach</h2><button data-a="close">Done</button></div>
+  <div class="privacy">${I('shield')}<div><b>What the coach sees</b>Age range, program step, and summary numbers like today's wins and the usual gap. Never your child's name, photos or notes. Your conversation is saved on this device only.</div></div>
+  <section class="card" style="padding:4px 18px">
+    <div class="setrow"><span class="tx"><b>Built by UpAiry</b><small>Trained on UpAiry's potty training method and guides. Nothing to set up.</small></span></div>
+    <div class="setrow"><span class="tx"><b>Status</b><small>${COACH_URL?'Live':'Coming soon. For now, answers come from the built-in guides.'}</small></span></div>
+  </section>
+  <p class="sub" style="text-align:center">General guidance, not medical advice.</p>`;
+}
+function PrivacySheet(){
+  const n=S.events.length;
+  return `<div class="sheethd"><span style="width:40px"></span><h2>Your data</h2><button data-a="close">Done</button></div>
+  <div class="privacy">${I('shield')}<div><b>Stays on this device</b>No account, no ads, no tracking. ${esc(S.child.name)}'s logs, program and conversations are stored only on this phone.</div></div>
+  <section class="card" style="padding:4px 18px">
+    <div class="setrow"><span class="tx"><b>${n} logs stored</b><small>Since ${dayName(Math.min(...S.events.map(e=>e.ts),Date.now()),{day:'numeric',month:'short'})}</small></span></div>
+    <button class="setrow" data-a="export"><span class="tx"><b>Export my data</b><small>Download everything as a file</small></span>${I('download')}</button>
+    <button class="setrow" data-a="reset"><span class="tx"><b style="color:var(--acc)">Delete everything</b><small>Removes all data from this device</small></span>${I('trash')}</button>
+  </section>`;
+}
+
+/* ================= timer ================= */
+function tick(){
+  $('clock').textContent=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}).replace(/\s?[AP]M/i,'');
+  if(S.onboarded&&S.rem.on&&T<0){const now=Date.now();
+    const meal=[...onDay(sod(now),e=>e.type==='meal')].pop();
+    if(S.rem.meals&&meal&&now-meal.ts>20*MIN&&now-meal.ts<35*MIN&&S.notifMeal!==meal.id){S.notifMeal=meal.id;save();showBanner(false,'Time for an after-meal sit','A sit about 20 minutes after eating often catches a wee or poo.')}
+    const bt=sod(now)+S.bedtime*HR;if(S.rem.bed&&now>bt-15*MIN&&now<bt&&S.notifBed!==sod(now)){S.notifBed=sod(now);save();showBanner(false,'Bedtime wee soon','One wee before bath and one right before sleep.')}
+    const h=new Date(now).getHours()+new Date(now).getMinutes()/60,today=sod(now);
+    if(S.rem.morning!==false&&h>=7&&h<10&&!onDay(today,e=>e.type==='wake').length&&S.notifMorn!==today){S.notifMorn=today;save();showBanner(false,`Good morning! Today: ${item().t}`,'Tap to log the wake-up and start the timer.','quickwake')}
+    if(S.rem.evening!==false&&h>=18.5&&h<S.bedtime+1.5&&!S.checkins[today]&&onDay(today,isPotty).length&&S.notifEve!==today){S.notifEve=today;save();showBanner(false,'How did today go?','20-second check-in. It sets up tomorrow\'s plan.','checkin')}}
+  const n=$('tn');if(!n)return;const p=timerState();const C=2*Math.PI*96;const arc=$('arc'),ring=$('ring');
+  ring.classList.remove('due','idle');
+  const pb=$('pausebtn');if(pb)pb.innerHTML=p&&p.state==='paused'?I('sunrise')+'Resume':I('pause')+'Pause';
+  if(p&&p.state!=='run'){ring.classList.add('idle');arc.style.strokeDashoffset=C;arc.style.stroke='var(--brand)';
+    if(p.state==='paused'){n.textContent='Paused';$('tu').textContent=`until ${fmt(p.until)}`;$('why').innerHTML=I('pause')+`<span>${esc(p.why||'Paused')}. No reminders. Logging anything restarts the timer.</span>`}
+    else if(p.state==='quiet-soon'){n.textContent='Nearly bedtime';$('tu').textContent='A last wee before bed';$('why').innerHTML=I('moon')+`<span>Quiet hours start at ${hm(S.quietStart??S.bedtime)}. No more timed tries today.</span>`}
+    else{n.textContent='Quiet hours';$('tu').textContent=`Timer starts again at ${fmt(p.until)}`;$('why').innerHTML=I('moon')+`<span>No reminders overnight. You can still log anything.</span>`}
+    return}
+  if(!p){ring.classList.add('idle');n.textContent=item().iv?'Log a wake-up to start':'Routine sits today';$('tu').textContent=item().iv?'':'After waking, meals and before bath';$('why').innerHTML=I('info')+(item().iv?`${esc(item().t)}: offer every ${item().iv} min`:'No timer needed at this step');arc.style.strokeDashoffset=C;return}
+  const rem=p.due-Date.now();
+  $('why').innerHTML=I(p.why[0])+'<span>'+esc(p.why[1])+'</span>';
+  if(rem<=0){ring.classList.add('due');n.textContent='Offer now';$('tu').textContent=Math.round(-rem/MIN)?`due ${Math.round(-rem/MIN)} min ago`:'right on time';arc.style.stroke='var(--acc)';arc.style.strokeDashoffset=0;return}
+  arc.style.stroke='var(--brand)';
+  n.textContent=Math.ceil(rem/MIN);$('tu').textContent=`min · around ${fmt(p.due)}`;
+  arc.style.strokeDashoffset=C*(1-rem/p.total);
+  // lenient reminders: after two unanswered tries in a row, stop nudging until the next log
+  if(S.rem.on&&rem<S.rem.lead*MIN&&S.notifFor!==p.due&&T<0&&!quiet()&&(p.missed||0)<2){S.notifFor=p.due;save();showBanner();
+    try{if(window.Notification&&Notification.permission==='granted'&&document.hidden)new Notification(`${S.child.name} may need to go soon`,{body:`Good time to offer the potty, around ${fmt(p.due)}.`})}catch(e){}}
+}
+setInterval(tick,5000);
+
+/* ================= sheets ================= */
+let L={};
+function openSheet(html){const sh=$('sheet'),was=$('scrim').classList.contains('show'),y=sh.scrollTop;sh.innerHTML='<div class="grab"></div>'+html;if(was&&openSheet.keep)sh.scrollTop=y;else sh.scrollTop=0;openSheet.keep=false;$('scrim').classList.add('show')}
+function closeSheet(){$('scrim').classList.remove('show')}
+$('scrim').addEventListener('click',e=>{if(e.target.id==='scrim')closeSheet()});
+function LogSheet(){
+  const o=(v,l,ic,cls='')=>`<button class="opt ${L.outcome===v?'on '+cls:''}" data-a="L" data-k="outcome" data-v="${v}">${I(ic)}${l}</button>`;
+  const w=(v,l,ic)=>`<button class="opt ${L.what===v?'on':''}" data-a="L" data-k="what" data-v="${v}">${I(ic)}${l}</button>`;
+  const ch=(k,v,l)=>`<button class="chip ${L[k]==v?'on':''}" data-a="L" data-k="${k}" data-v="${v}">${l}</button>`;
+  return `<div class="sheethd"><button data-a="close">Cancel</button><h2>Log potty</h2><button data-a="save" style="color:var(--brand)">Save</button></div>
+  <div class="field"><span class="lbl">WHAT HAPPENED</span><div class="opts" style="grid-template-columns:repeat(3,1fr)">${o('success','On the potty','check')}${o('accident','Accident','drop','acc')}${o('tried','Sat, nothing','hour')}</div></div>
+  ${L.outcome!=='tried'?`<div class="field"><span class="lbl">WHAT</span><div class="opts" style="grid-template-columns:repeat(3,1fr)">${w('wee','Wee','drop')}${w('poo','Poo','poo')}${w('both','Both','plus')}</div></div>`:''}
+  ${L.outcome==='success'?`<div class="field"><span class="lbl">WHO STARTED IT</span><div class="chips">${ch('by','child','They told me')}${ch('by','prompt','I offered')}</div></div>`:''}
+  <div class="field"><span class="lbl">WHEN</span><div class="chips">${ch('ago',0,'Now')}${ch('ago',5,'5 min ago')}${ch('ago',15,'15 min ago')}${ch('ago',30,'30 min ago')}</div></div>
+  <button class="primary" data-a="save" style="margin-top:6px">Save</button>`;
+}
+function TimerSheet(){
+  const Lr=learned();const nm=esc(S.child.name);
+  return `<div class="sheethd"><span style="width:40px"></span><h2>Potty timing</h2><button data-a="close">Done</button></div>
+  <div class="field"><div class="opts" style="grid-template-columns:1fr 1fr"><button class="opt ${S.mode==='smart'?'on':''}" data-a="mode" data-v="smart">${I('spark')}Smart</button><button class="opt ${S.mode==='fixed'?'on':''}" data-a="mode" data-v="fixed">${I('clock')}Fixed</button></div>
+  <p class="sub" style="margin:12px 2px 0">${S.mode==='smart'?(Lr.gap.ok?`Using ${nm}'s learned gap of ${Lr.gap.v} min, brought forward after drinks and waking up.`:`Using the program's timing (every ${item().iv||60} min) while we learn ${nm}'s rhythm. ${Math.min(Lr.gap.n,NEED.gap)} of ${NEED.gap} gaps logged so far.`):'Same gap every time, whatever the logs say.'}</p></div>
+  ${S.mode==='fixed'?`<div class="field"><span class="lbl">EVERY</span><div class="chips">${[15,20,30,45,60,90].map(m=>`<button class="chip ${S.interval===m?'on':''}" data-a="int" data-v="${m}">${m} min</button>`).join('')}</div></div>`:''}
+  <section class="card" style="padding:4px 18px">
+    <button class="setrow" data-a="qtog"><span class="tx"><b>Quiet hours</b><small>No timer or reminders overnight</small></span><span class="sw ${S.quietOn!==false?'on':''}"></span></button>
+    ${S.quietOn!==false?`<div class="setrow" style="display:block"><b style="font-size:14px;font-weight:600">From</b><div class="chips" style="margin-top:8px">${[18.5,19,19.5,20,20.5].map(h=>`<button class="chip ${(S.quietStart??S.bedtime)===h?'on':''}" data-a="qstart" data-v="${h}">${hm(h)}</button>`).join('')}</div></div>
+    <div class="setrow" style="display:block"><b style="font-size:14px;font-weight:600">Until</b><div class="chips" style="margin-top:8px">${[6,6.5,7,7.5,8].map(h=>`<button class="chip ${(S.quietEnd??6.5)===h?'on':''}" data-a="qend" data-v="${h}">${hm(h)}</button>`).join('')}</div></div>`:''}
+  </section>
+  <div class="privacy">${I('heart')}<div><b>Missed a log? That's fine.</b>If a try goes by without a log, the timer moves on to the next one instead of nagging. After two missed tries it stops reminding until you log again.</div></div>
+  <button class="ghost" data-a="previewnotif">${I('bolt')}Preview a reminder</button>`;
+}
+let CI={day:0,step:1,mood:null,tags:[],note:''};
+const MOODS=[['great','Great day','smile'],['mixed','Mixed','heart'],['tough','Tough day','bolt']];
+const TAGS=['Told me before going','Poo on the potty','Dry nap','Refused to sit','Busy day out','Unwell or tired'];
+function CheckinSheet(){
+  const day=CI.day,isToday=day===sod(Date.now()),st=dayStats(day),nm=esc(S.child.name);
+  const dots=`<div class="cistep">${[1,2,3].map(i=>`<i class="${i<=CI.step?'on':''}"></i>`).join('')}</div>`;
+  const title=isToday?'How did today go?':'How did yesterday go?';
+  if(CI.step===1)return `<div class="sheethd"><span style="width:40px"></span><h2>${title}</h2><button data-a="close">Later</button></div>${dots}
+  <div class="daysum" style="margin-bottom:12px"><div><b class="num" style="color:var(--brand)">${st.s}</b><small>On potty</small></div><div><b class="num" style="color:var(--acc)">${st.a}</b><small>Accidents</small></div><div><b class="num">${st.told}</b><small>Told you</small></div></div>
+  <section class="card"><b style="font-weight:600;font-size:14px">Anything you didn't log?</b><div class="sub">Add it now so ${nm}'s timing and progress stay accurate.</div>
+  <div class="addrow"><button class="chip" data-a="ciadd" data-v="success">+ On the potty</button><button class="chip" data-a="ciadd" data-v="accident">+ Accident</button><button class="chip" data-a="ciadd" data-v="poo">+ Poo on the potty</button></div>
+  ${CI.added?`<div class="sub" style="margin-top:10px;color:var(--brand)">Added ${CI.added} missed log${CI.added>1?'s':''}.</div>`:''}</section>
+  <button class="primary" data-a="cistep" data-v="2">Looks right</button>`;
+  if(CI.step===2)return `<div class="sheethd"><button data-a="cistep" data-v="1">Back</button><h2>${title}</h2><button data-a="close">Later</button></div>${dots}
+  <div class="field"><span class="lbl">HOW DID IT FEEL?</span><div class="mood">${MOODS.map(([k,l,ic])=>`<button class="opt ${CI.mood===k?'on':''}" data-a="cimood" data-v="${k}">${I(ic)}${l}</button>`).join('')}</div></div>
+  <div class="field"><span class="lbl">ANY OF THESE?</span><div class="chips">${TAGS.map(t=>`<button class="chip ${CI.tags.includes(t)?'on':''}" data-a="citag" data-v="${esc(t)}">${t}</button>`).join('')}</div></div>
+  <div class="field"><span class="lbl">NOTE FOR LATER (OPTIONAL)</span><textarea class="txt" id="cinote" placeholder="e.g. Grandma's house, lots of juice">${esc(CI.note)}</textarea></div>
+  <button class="primary" data-a="cistep" data-v="3">Next</button>`;
+  return Decision();
+}
+function Decision(){
+  const today=CI.day,st=dayStats(today),it=item(),items=M().items,nm=esc(S.child.name);
+  const ok=RULES[it.rule].ok(st);const moreDays=S.pDay<it.len;const nextIt=items[S.pIdx+1];
+  let rec,why;
+  if(it.rule==='done'){rec='stay';why='This is the last step. Keep going until it feels normal.'}
+  else if(st.s+st.a===0&&!['always','night4','night5'].includes(it.rule)){rec='stay';why='Nothing was logged today, so there\'s nothing to judge. Repeat this step tomorrow.'}
+  else if(moreDays){rec='next';why=`Day ${S.pDay} of ${it.len} on this step. ${ok?'Today met the goal.':'Today was below the goal, which is normal early on.'}`}
+  else if(ok){rec='next';why=`${RULES[it.rule].t}: met today.`}
+  else{rec='stay';why=`The goal for this step is: ${RULES[it.rule].t.toLowerCase()}. Not there yet, so one more day usually helps.`}
+  const nextLbl=moreDays?`Continue: ${it.t}, day ${S.pDay+1}`:nextIt?`Move on to ${nextIt.t}`:'Keep going';
+  const stayLbl=`Repeat ${it.t.replace(/^Day \d: /,'').toLowerCase()} tomorrow`;
+  const back=S.pIdx>0?items[S.pIdx-1]:null;
+  if(CI.mood==='tough'&&rec==='next'&&!moreDays){rec='stay';why=`You said it was a tough day, so one more day on this step is a good idea even though the numbers look okay.`}
+  return `<div class="sheethd"><button data-a="cistep" data-v="2">Back</button><h2>Plan for tomorrow</h2><button data-a="close">Later</button></div><div class="cistep">${[1,2,3].map(()=>'<i class="on"></i>').join('')}</div>
+  <div class="daysum" style="margin-bottom:0"><div><b class="num" style="color:var(--brand)">${st.s}</b><small>On potty</small></div><div><b class="num" style="color:var(--acc)">${st.a}</b><small>Accidents</small></div><div><b class="num">${st.rate==null?'–':st.rate+'%'}</b><small>Success</small></div></div>
+  <div class="rec"><span class="lbl">${I('route')}THE PROGRAM SUGGESTS</span><b>${rec==='next'?nextLbl:stayLbl}</b><p>${why}</p></div>
+  <button class="primary" data-a="ci" data-v="${rec}">${rec==='next'?nextLbl:stayLbl}</button>
+  <button class="ghost" data-a="ci" data-v="${rec==='next'?'stay':'next'}">${rec==='next'?stayLbl:nextLbl}</button>
+  ${back?`<button class="textbtn" data-a="ci" data-v="back">Hard day? Go back to ${back.t}</button>`:''}
+  <p class="sub" style="text-align:center;margin:14px 0 0">${nm}'s progress is never lost. You can change step any time in Program.</p>`;
+}
+function handoffText(){
+  const today=sod(Date.now()),st=dayStats(today),p=predict();
+  const lw=[...onDay(today,isWee)].pop();const lp=lastPoo();
+  return `${S.child.name}: potty update, ${dayName(Date.now(),{weekday:'short'})} ${fmt(Date.now())}
+
+Last wee: ${lw?fmt(lw.ts)+(lw.outcome==='success'?' on the potty':' (accident)'):'none yet today'}
+Next try: ${p?'around '+fmt(p.due):'soon after waking'}, then about every ${p?p.gap:item().iv||60} min
+Today: ${st.s} on the potty, ${st.a} accident${st.a===1?'':'s'}
+Last poo: ${lp?dayName(lp.ts,{weekday:'long'})+' '+fmt(lp.ts):'not logged'}
+
+Program: ${M().name}, ${item().t}
+Words: ${S.child.words||'wee and poo'}
+Offer after meals and drinks, and before going out. After accidents, keep it calm: "wee goes in the potty".`;
+}
+
+/* ================= sit timer + celebrate ================= */
+let sitH=null;
+function startSit(si){
+  const el=$('sit');let left=180;const C=2*Math.PI*96;
+  if(si==null)si=S.sitSong??(S.favs.length?S.favs[Math.floor(Math.random()*S.favs.length)]:Math.floor(Math.random()*SONGS.length));
+  let sing=S.sitMusic!==false,line=0;
+  const startMusic=()=>{if(sing)playSong(si,true,li=>{line=li;hiLine(li)});else stopSong()};
+  const draw=()=>{const s=SONGS[si];el.innerHTML=`<svg class="sand" viewBox="0 0 216 216"><circle cx="108" cy="108" r="96" fill="none" stroke="#EFE7D2" stroke-width="14"/><circle cx="108" cy="108" r="96" fill="none" stroke="var(--brand)" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-left/180)}" transform="rotate(-90 108 108)" style="transition:stroke-dashoffset 1s linear"/><text x="108" y="126" text-anchor="middle" style="font-family:Poppins,sans-serif;font-weight:600;font-size:52px;letter-spacing:-2px" fill="#16181B">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</text></svg>
+    <div class="big">Potty time!</div>
+    ${sing?`<div class="lyrics" id="sitlyrics">${lyr(s).map((l,k)=>`<div class="${k===line?'on':''}">${esc(l)}</div>`).join('')}</div><button class="songpick" data-a="sitnext">${I('music')}${s.t} · next song</button>`:`<p>Sit with ${esc(S.child.name)} and read a book.</p>`}
+    <button class="songpick" data-a="sitmute" style="margin-left:10px">${sing?'Music off':'Music on'}</button>
+    <div style="display:flex;gap:10px;width:100%;margin-top:24px"><button class="ghost" style="margin:0;background:#EFE7D2" data-a="sitstop" data-v="tried">Nothing came</button><button class="primary" style="margin:0" data-a="sitstop" data-v="success">They went!</button></div>`};
+  startSit.next=()=>{si=(si+1)%SONGS.length;line=0;startMusic();draw()};
+  startSit.mute=()=>{sing=!sing;S.sitMusic=sing;save();line=0;startMusic();draw()};
+  draw();el.classList.add('show');startMusic();clearInterval(sitH);sitH=setInterval(()=>{left--;if(left<=0){clearInterval(sitH);left=0}draw()},1000);
+}
+function celebrate(){
+  const el=$('celeb');
+  el.innerHTML=`<svg class="star" viewBox="0 0 24 24"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="#FFD55A" stroke="#fff" stroke-width=".8" stroke-linejoin="round"/></svg><h2>${esc(S.child.name)} did it!</h2><p>Big high five</p><span class="hint">Tap anywhere to close</span>`;
+  el.classList.add('show');const cols=['#FFD55A','#FFFFFF','#A8D99B','#FFB27A'];
+  for(let i=0;i<50;i++){const d=document.createElement('i');d.className='cf';d.style.left=Math.random()*100+'%';d.style.background=cols[i%4];d.style.animationDuration=1.8+Math.random()*1.6+'s';d.style.animationDelay=Math.random()*.5+'s';el.appendChild(d)}
+}
+$('celeb').addEventListener('click',()=>$('celeb').classList.remove('show'));
+
+/* ================= toast ================= */
+let lastAdded=null;
+function toast(title,sub,undo){const t=$('toast');t.innerHTML=`<div class="tx">${title}${sub?`<small>${sub}</small>`:''}</div>${undo?'<button data-a="undo">Undo</button>':''}`;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),3800)}
+function add(e){S.events.push(e);lastAdded=e.id;if((e.type==='potty'||e.type==='wake')&&S.pausedUntil>Date.now())S.pausedUntil=0}
+function PauseSheet(){
+  const qs=sod(Date.now())+(S.quietStart??S.bedtime)*HR;
+  const o=(min,label,sub)=>`<button class="setrow" data-a="pauseset" data-v="${min}" data-x="${label}"><span class="tx"><b>${label}</b><small>${sub}</small></span>${I('chevR')}</button>`;
+  return `<div class="sheethd"><span style="width:40px"></span><h2>Pause the timer</h2><button data-a="close">Cancel</button></div>
+  <p class="sub" style="margin:-6px 2px 14px">No reminders while paused. Logging a wee, poo or wake-up restarts it straight away.</p>
+  <section class="card" style="padding:4px 18px">
+    ${o(120,'Nap time','Up to 2 hours, or until you log the wake-up')}
+    ${o(60,'Out for an hour','Remember a wee before you leave')}
+    ${o(120,'Out for 2 hours','Pack spare pants and a wet bag')}
+    ${o(Math.max(30,Math.round((qs-Date.now())/MIN)),'Rest of today',`Until quiet hours at ${hm(S.quietStart??S.bedtime)}`)}
+  </section>`;
+}
+function learnedNote(before){const after=learned();if(!before.gap.ok&&after.gap.ok)return`Learned ${S.child.name}'s rhythm: about every ${after.gap.v} min`;if(!before.drink.ok&&after.drink.ok)return`Learned: wee about ${after.drink.v} min after drinks`;return null}
+
+/* ================= actions ================= */
+document.addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,v=b.dataset.v;
+  switch(a){
+  case 'tab':S.tab=v;$('screen').scrollTop=0;break;
+  case 'night':S.night=v==='1';break;
+  case 'log':L={outcome:'success',what:'wee',by:'prompt',ago:0};openSheet(LogSheet());return;
+  case 'L':L[b.dataset.k]=b.dataset.k==='ago'?+v:v;if(L.outcome==='tried')L.what=null;else if(!L.what)L.what='wee';openSheet.keep=true;openSheet(LogSheet());return;
+  case 'save':{const before=learned();const e={id:uid(),ts:Date.now()-L.ago*MIN,type:'potty',outcome:L.outcome,what:L.what,by:L.outcome==='success'?L.by:null};add(e);closeSheet();save();render.keep=true;render();
+    const p=predict();const m=evMeta(e);const ln=learnedNote(before);toast(ln||m.t,p?'Next try around '+fmt(p.due):'',true);if(e.outcome==='success')setTimeout(celebrate,250);return}
+  case 'quick':{const before=learned();add({id:uid(),ts:Date.now(),type:v});save();render.keep=true;render();const p=predict();const ln=learnedNote(before);
+    toast(ln||{drink:'Drink logged',meal:'Meal logged',wake:'Wake-up logged'}[v],p?'Next try around '+fmt(p.due):'',true);return}
+  case 'undo':S.events=S.events.filter(e=>e.id!==lastAdded);$('toast').classList.remove('show');render.keep=true;break;
+  case 'del':S.events=S.events.filter(e=>e.id!==v);render.keep=true;break;
+  case 'sit':startSit();return;
+  case 'sitnext':startSit.next();return;
+  case 'sitmute':startSit.mute();return;
+  case 'sitstop':clearInterval(sitH);stopSong();$('sit').classList.remove('show');add({id:uid(),ts:Date.now(),type:'potty',outcome:v,what:v==='success'?'wee':null,by:'prompt'});save();render.keep=true;render();
+    if(v==='success')celebrate();else toast('Logged: sat, nothing came','Practice still counts',true);return;
+  case 'step':{const k=b.dataset.k,j=+v,l=S.steps[k]||[];S.steps[k]=l.includes(j)?l.filter(x=>x!==j):[...l,j];render.keep=true;break}
+  case 'checkin':{$('banner').classList.remove('show');const d=sod(Date.now())-(v==='y'?DAY:0);const prev=S.days[d]||{};CI={day:d,step:1,mood:prev.mood||null,tags:prev.tags||[],note:prev.note||'',added:0};openSheet(CheckinSheet());return}
+  case 'cistep':{const n=$('cinote');if(n)CI.note=n.value;CI.step=+v;openSheet(CheckinSheet());return}
+  case 'ciadd':{const isToday=CI.day===sod(Date.now());const ts=isToday?Date.now()-MIN:CI.day+17.5*HR;
+    add({id:uid(),ts,type:'potty',outcome:v==='accident'?'accident':'success',what:v==='poo'?'poo':'wee',by:'prompt',late:true});CI.added=(CI.added||0)+1;save();openSheet.keep=true;openSheet(CheckinSheet());render.keep=true;render();return}
+  case 'cimood':{const n=$('cinote');if(n)CI.note=n.value;CI.mood=v;openSheet.keep=true;openSheet(CheckinSheet());return}
+  case 'citag':{const n=$('cinote');if(n)CI.note=n.value;CI.tags=CI.tags.includes(v)?CI.tags.filter(x=>x!==v):[...CI.tags,v];openSheet.keep=true;openSheet(CheckinSheet());return}
+  case 'quickwake':$('banner').classList.remove('show');add({id:uid(),ts:Date.now(),type:'wake'});save();render.keep=true;render();toast('Good morning!',`Today: ${item().t}. The timer has started.`,true);return;
+  case 'ci':{const items=M().items,it=item();let msg;
+    if(v==='next'){if(S.pDay<it.len){S.pDay++;msg=`Tomorrow: ${it.t}, day ${S.pDay}`}else if(S.pIdx<items.length-1){S.pIdx++;S.pDay=1;msg=`Moved on to ${item().t}`}else msg='Kept going'}
+    else if(v==='stay'){msg=`Repeating ${it.t} tomorrow`}
+    else{S.pIdx=Math.max(0,S.pIdx-1);S.pDay=1;msg=`Went back to ${item().t}`}
+    S.checkins[CI.day]=msg;S.days[CI.day]={mood:CI.mood,tags:CI.tags,note:CI.note,decision:msg};
+    closeSheet();const sk=ciStreak();toast(`${CI.day===sod(Date.now())?'Day logged':'Yesterday logged'}${sk>1?` · ${sk}-day streak`:''}`,msg);render.keep=true;break}
+  case 'pitem':{const i=+v,s=M().items[i];if(i===S.pIdx){S.tab='today';break}
+    openSheet(`<div class="sheethd"><span style="width:40px"></span><h2>${s.t}</h2><button data-a="close">Done</button></div><div class="sub" style="margin:-8px 0 14px;text-align:center">${s.d}${s.iv?' · offer every '+s.iv+' min':''}</div>
+    <section class="card" style="padding:4px 18px">${s.steps.map(x=>`<div class="step" style="margin:0"><span class="box" style="border-color:var(--line)"></span><span>${x}</span></div>`).join('')}</section>
+    <div class="tipbox">${I('info')}<div>${s.expect}<br><span style="opacity:.8">${RULES[s.rule].t}.</span></div></div>
+    <button class="ghost" data-a="jump" data-v="${i}">${i<S.pIdx?'Go back to this step':'Skip ahead to this step'}</button>`);return}
+  case 'jump':S.pIdx=+v;S.pDay=1;closeSheet();toast('Now on: '+item().t,'You can move again any time');break;
+  case 'method':openSheet(`<div class="sheethd"><span style="width:40px"></span><h2>Change method</h2><button data-a="close">Cancel</button></div><p class="sub" style="margin:-6px 2px 14px">Your logs and learned timing stay. The program restarts at the matching step.</p>${Object.entries(METHODS).map(([k,m])=>`<button class="ocard ${S.method===k?'on':''}" data-a="setmethod" data-v="${k}"><span class="ic ${m.tone}">${I(m.ic)}</span><span class="tx"><b>${m.name}</b><small>${m.blurb}</small></span><span class="radio"></span></button>`).join('')}`);return;
+  case 'setmethod':if(S.method!==v){S.method=v;S.pIdx=startIndex();S.pDay=1;if(v==='night')S.night=true;toast('Switched to '+METHODS[v].name)}closeSheet();break;
+  case 'pause':if(S.pausedUntil>Date.now()){S.pausedUntil=Date.now();toast('Timer resumed','A try soon is a good idea');render.keep=true;break}openSheet(PauseSheet());return;
+  case 'pauseset':S.pausedUntil=Date.now()+(+v)*MIN;S.pauseWhy=b.dataset.x;closeSheet();toast('Timer paused',`${b.dataset.x}. Resumes at ${fmt(S.pausedUntil)} or when you log.`);render.keep=true;break;
+  case 'qtog':S.quietOn=S.quietOn===false;save();openSheet.keep=true;openSheet(TimerSheet());render.keep=true;render();return;
+  case 'qstart':S.quietStart=+v;save();openSheet.keep=true;openSheet(TimerSheet());render.keep=true;render();return;
+  case 'qend':S.quietEnd=+v;save();openSheet.keep=true;openSheet(TimerSheet());render.keep=true;render();return;
+  case 'timerset':openSheet(TimerSheet());return;
+  case 'mode':S.mode=v;save();openSheet.keep=true;openSheet(TimerSheet());render.keep=true;render();return;
+  case 'int':S.interval=+v;save();openSheet.keep=true;openSheet(TimerSheet());render.keep=true;render();return;
+  case 'previewnotif':closeSheet();setTimeout(()=>showBanner(),300);return;
+  case 'close':closeSheet();return;
+  case 'handoff':openSheet(`<div class="sheethd"><span style="width:40px"></span><h2>Share an update</h2><button data-a="close">Done</button></div><p class="sub" style="margin:-6px 2px 14px">For your partner, grandparents or daycare at drop-off.</p><div class="pre">${esc(handoffText())}</div><button class="primary" data-a="copy">${I('copy')}Copy update</button>`);return;
+  case 'copy':navigator.clipboard?.writeText(handoffText()).then(()=>toast('Copied','Paste it into a text or WhatsApp')).catch(()=>toast('Copy not available here'));closeSheet();return;
+  case 'article':{const x=ARTICLES[+v];openSheet(`<div class="sheethd"><span style="width:40px"></span><h2>${x.t}</h2><button data-a="close">Done</button></div>${x.body.split('\n\n').map(p=>`<p style="margin:0 0 14px;font-size:15px;line-height:1.6">${esc(p)}</p>`).join('')}`);return}
+  case 'nightlog':add({id:uid(),ts:Math.min(Date.now(),sod(Date.now())+6.6*HR),type:'night',outcome:v});if(v==='dry'){save();render();celebrate();return}break;
+  case 'hsel':S.histSel=+v;render.keep=true;break;
+  case 'hmon':{const m=S.histMonth?new Date(S.histMonth):new Date(S.histSel);m.setDate(1);m.setMonth(m.getMonth()+(+v));S.histMonth=m.getTime();render.keep=true;break}
+  case 'kids':openSheet(`<div class="sheethd"><span style="width:40px"></span><h2>Children</h2><button data-a="close">Done</button></div><section class="card" style="padding:4px 18px"><div class="art"><span class="av" style="width:46px;height:46px;font-size:17px">${esc(S.child.name[0])}</span><span><b>${esc(S.child.name)}</b><small>${esc(S.child.age)} · ${M().name}</small></span><span class="chev" style="color:var(--brand)">${I('check')}</span></div><button class="art"><span class="th t-try">${I('plus')}</span><span><b>Add a child</b><small>Each child gets their own program</small></span></button><button class="art"><span class="th t-water">${I('users')}</span><span><b>Invite a caregiver</b><small>Partner or grandparent can log too</small></span></button></section>`);return;
+  case 'tour':closeSettings();closeSheet();S.tab='today';S.night=false;render();setTimeout(()=>tourShow(0),60);return;
+  case 'tournext':tourShow(T+1);return;
+  case 'tourskip':tourEnd();return;
+  case 'reset':closeSettings();closeSheet();try{localStorage.removeItem(KEY)}catch(e){}S=fresh();OB=0;break;
+  /* sign in */
+  case 'au':{const r=authRead();if(r.email)AU.email=r.email;AU.mode=v;AU.sent=false;break}
+  case 'aufaq':AU.faq=AU.faq===+v?null:+v;break;
+  case 'ausend':{const r=authRead();AU.email=r.email||AU.email||'';AU.sent=true;render();toast('Code sent',AU.email?'Check '+AU.email:'Check your inbox');return}
+  case 'aufind':{const r=authRead();AU.id=r.email||(r.order?'Order '+(r.order.startsWith('#')?r.order:'#'+r.order):'')||AU.email||'your order';AU.plan='plus';AU.mode='found';break}
+  case 'aufree':{const r=authRead();AU.id=r.email||AU.email||'your new account';AU.plan='free';AU.mode='found';break}
+  case 'auok':S.account={id:AU.id,plan:AU.plan,since:Date.now()};S.memberSince=S.memberSince||Date.now();AU={mode:'email',faq:null};break;
+  case 'signout':closeSettings();S.account=null;AU={mode:'email',faq:null};toast('Signed out');break;
+  /* settings + shop */
+  case 'settings':closeSheet();openSettings(v);return;
+  case 'setclose':closeSettings();render.keep=true;break;
+  case 'pants':S.pants=Math.max(0,Math.min(40,(S.pants??0)+(+v)));render.keep=true;break;
+  case 'managesub':toast('Opens your App Store subscription','Change plan, pause or cancel');return;
+  case 'soon':toast(v==='child'?'Multiple children: coming soon':'Caregiver sharing: coming soon','On the roadmap');return;
+  case 'editkid':openSheet(`<div class="sheethd"><button data-a="close">Cancel</button><h2>Edit ${esc(S.child.name)}</h2><button data-a="savekid" style="color:var(--brand)">Save</button></div>
+    <div class="field"><span class="lbl">NAME</span><input class="txt" id="ekn" value="${esc(S.child.name)}" autocomplete="off"></div>
+    <div class="field"><span class="lbl">AGE</span><div class="chips">${['Under 2','2 to 2½','2½ to 3','3+'].map(a=>`<button class="chip ${S.child.age===a?'on':''}" data-a="ekage" data-v="${a}">${a}</button>`).join('')}</div></div>
+    <div class="field"><span class="lbl">WORDS THEY USE FOR WEE AND POO</span><input class="txt" id="ekw" value="${esc(S.child.words)}" autocomplete="off"></div>`);return;
+  case 'ekage':S.child.age=v;document.querySelectorAll('[data-a=ekage]').forEach(c=>c.classList.toggle('on',c.dataset.v===v));save();return;
+  case 'savekid':{const n=$('ekn').value.trim();if(n)S.child.name=n;S.child.words=$('ekw').value.trim();closeSheet();toast('Saved');break}
+  /* progress, coach */
+  case 'pview':S.progView=v;break;
+  case 'situ':{const s=SITUATIONS[+v];openSheet(`<div class="sheethd"><span style="width:40px"></span><h2>${s.t}</h2><button data-a="close">Done</button></div>
+    <span class="lbl" style="display:block;margin:0 2px 6px">WHAT TO DO</span><ol class="ol">${s.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
+    <span class="lbl" style="display:block;margin:0 2px 8px">WHAT TO SAY</span>${s.say.map(x=>`<div class="say">${esc(x)}</div>`).join('')}
+    <button class="ghost" data-a="askq" data-v="${esc('Help: '+s.t.toLowerCase()+'. What should I try next?')}">${I('chat')}Ask the coach about this</button>`);return}
+  case 'aiset':openSheet(AiSheet());return;
+  case 'ask':{const q=$('askin').value;closeSheet();askCoach(q);return}
+  case 'askq':closeSheet();S.tab='coach';render();askCoach(v);return;
+  case 'clearchat':S.chat=[];break;
+  /* kid zone */
+  case 'kidmode':KidMode();return;
+  case 'kidlog':{add({id:uid(),ts:Date.now(),type:'potty',outcome:v==='tried'?'tried':'success',what:v==='tried'?null:v,by:'child'});kidNew=v!=='tried';save();
+    const n=v==='tried'?1:2;starBurst(n,v==='tried'?'Great trying!':`${S.child.name} did it!`);KidMode();return}
+  case 'kidsong':{const i=S.favs.length?S.favs[Math.floor(Math.random()*S.favs.length)]:Math.floor(Math.random()*SONGS.length);startSit(i);return}
+  case 'addreward':openSheet(`<div class="sheethd"><button data-a="close">Cancel</button><h2>New reward</h2><button data-a="saverew" style="color:var(--brand)">Save</button></div>
+    <div class="field"><span class="lbl">REWARD</span><input class="txt" id="rwt" placeholder="e.g. Pick the bedtime story" autocomplete="off"></div>
+    <div class="field"><span class="lbl">STARS NEEDED</span><div class="chips">${[5,10,15,20,30,50].map(n=>`<button class="chip ${n===10?'on':''}" data-a="rwc" data-v="${n}">${n}</button>`).join('')}</div></div>
+    <div class="sub">Small, frequent rewards work better than one big prize. Time together counts as much as treats.</div>`);rwCost=10;return;
+  case 'rwc':rwCost=+v;document.querySelectorAll('[data-a=rwc]').forEach(c=>c.classList.toggle('on',c.dataset.v===v));return;
+  case 'saverew':{const t=$('rwt').value.trim();if(!t){$('rwt').focus();return}S.rewards.push({id:uid(),t,cost:rwCost});closeSheet();break}
+  case 'redeem':{const r=S.rewards.find(x=>x.id===v);if(!r||starsNow()<r.cost){toast('Not enough stars yet',`${r?r.cost-starsNow():0} more to go`);return}S.spent+=r.cost;save();render();starBurst(r.cost,`Reward unlocked: ${r.t}`);$('celeb').querySelector('h2').textContent='Reward time!';return}
+  case 'song':openSheet(SongSheet(+v));return;
+  case 'songplay':{const i=+v;const btn=$('songbtn');if(songIdx===i){stopSong();hiLine(-1);btn.innerHTML=I('music')+'Play';return}
+    playSong(i,false,li=>{hiLine(li);if(li<0&&$('songbtn'))$('songbtn').innerHTML=I('music')+'Play'});btn.innerHTML=I('pause')+'Stop';return}
+  case 'songclose':stopSong();closeSheet();return;
+  case 'sitsong':S.sitSong=+v;stopSong();closeSheet();toast(SONGS[+v].t+' set for the sit timer');save();return;
+  case 'fav':{const i=+v;S.favs=S.favs.includes(i)?S.favs.filter(x=>x!==i):[...S.favs,i];render.keep=true;break}
+  /* settings */
+  case 'quizsheet':quizOpen=true;openSheet(QuizSheet());return;
+  case 'remset':openSheet(RemSheet());return;
+  case 'remtog':S.rem[v]=!S.rem[v];save();openSheet.keep=true;openSheet(RemSheet());render.keep=true;render();return;
+  case 'remlead':S.rem.lead=+v;save();openSheet.keep=true;openSheet(RemSheet());return;
+  case 'notifperm':Notification.requestPermission().then(()=>openSheet(RemSheet()));return;
+  case 'privacy':openSheet(PrivacySheet());return;
+  case 'export':{const blob=new Blob([JSON.stringify({exported:new Date().toISOString(),child:S.child,method:S.method,events:S.events,checkins:S.checkins},null,2)],{type:'application/json'});
+    const a2=document.createElement('a');a2.href=URL.createObjectURL(blob);a2.download='upairy-potty-data.json';a2.click();toast('Exported','Saved as upairy-potty-data.json');return}
+  /* onboarding */
+  case 'obback':OB=Math.max(0,OB-1);if(OB===3&&S.where==='day')OB=2;break;
+  case 'age':S.child.age=v;readObInputs();break;
+  case 'where':S.where=v;S.method=null;break;
+  case 'quiz':S.quiz[v]=+b.dataset.x;if(quizOpen){save();openSheet.keep=true;openSheet(QuizSheet());return}S.method=null;break;
+  case 'home3':S.home3=+v;S.method=null;break;
+  case 'pick':S.method=v;break;
+  case 'smode':S.startMode=v;break;
+  case 'ob':
+    if(OB===1){readObInputs();if(!S.child.name){$('obn').focus();$('obn').style.borderColor='var(--acc)';return}}
+    if(OB===2&&!S.where)return;
+    if(OB===4&&!S.method)S.method=recommend();
+    if(OB===6){S.pIdx=startIndex();S.pDay=1;S.start=sod(Date.now());S.night=S.method==='night';
+      if(S.startMode==='sample')sampleWeek();
+      S.onboarded=true;S.tab='today';save();render();setTimeout(()=>tourShow(0),350);return}
+    OB++;break;
+  }
+  save();render();
+});
+let rwCost=10,quizOpen=false;
+function QuizSheet(){const sc=quizScore();
+  return `<div class="sheethd"><span style="width:40px"></span><h2>Readiness check</h2><button data-a="close">Done</button></div>
+  ${sc!=null?`<div class="tipbox">${I('check')}<div><b>${sc}% · ${quizVerdict(sc)}</b><br>${sc>=70?'Most readiness signs are there.':sc>=45?'Some signs are there. A relaxed start or a few more weeks of getting ready both work.':'Give it a few weeks of potty-in-the-routine, then check again.'}</div></div>`:''}
+  ${quizRows()}`}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='askin'){askCoach(e.target.value)}});
+$('scrim').addEventListener('transitionend',()=>{if(!$('scrim').classList.contains('show')){quizOpen=false;if(songIdx!=null&&!$('sit').classList.contains('show')){stopSong()}}});
+function readObInputs(){const n=$('obn'),w=$('obw');if(n)S.child.name=n.value.trim();if(w)S.child.words=w.value.trim()}
+render();
+</script>
+</body>
+</html>

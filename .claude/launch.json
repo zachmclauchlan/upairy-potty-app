@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "upairy-web",
+      "runtimeExecutable": "D:/upairy-potty-app/.tools/node-v24.22.3-win-x64/node.exe",
+      "runtimeArgs": ["D:/upairy-potty-app/app/node_modules/expo/bin/cli", "start", "D:/upairy-potty-app/app", "--web", "--port", "8081"],
+      "port": 8081
+    }
+  ]
+}

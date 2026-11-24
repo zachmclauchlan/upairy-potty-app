@@ -1,0 +1,14 @@
+# Portable Node and other downloaded tools (re-download, don't commit)
+.tools/
+
+# Installed packages and build output
+node_modules/
+.expo/
+dist/
+web-build/
+
+# Local-only settings and secrets
+.claude/settings.local.json
+.env
+.env*.local
+*.log
