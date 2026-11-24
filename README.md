@@ -27,10 +27,10 @@ Store name, subtitle, keywords and description: see [STORE_LISTING.md](STORE_LIS
 | Where | Link | Notes |
 |---|---|---|
 | **Web (any browser)** | https://upairy-potty.expo.app | Everything except notifications. Data stays in that browser. |
-| **Android phone** | [Latest test build (APK)](https://expo.dev/artifacts/eas/Nv3qnsBj60mCOpJeDf90km4ybbawVfUz42IqMVDC300.apk) | Download on the phone and allow "install from unknown sources". Full app with reminders. |
+| **Android phone** | [Latest test build](https://expo.dev/accounts/upairy/projects/upairy-potty-app/builds/e77a7a8c-10dd-4bf9-87db-660fec14043c) | Download on the phone and allow "install from unknown sources". Full app with reminders. |
 | **iPhone** | Coming via TestFlight | Waiting on Apple developer approval. |
 
-**Sign-in:** enter your email and type the 6-digit code you are emailed. Choose **Explore with a sample week** during setup to see the app full of example data. (The web and Android test builds above are older and still accept any email, until the next build.)
+**Sign-in:** enter your email and type the 6-digit code you are emailed. Choose **Explore with a sample week** during setup to see the app full of example data.
 
 ## Contents
 1. The daily loop · 2. Getting started · 3. Programs · 4. Smart timer · 5. Logging · 6. Notifications · 7. Night training · 8. Coach and AI · 9. Kid zone · 10. Progress · 11. Settings and UpAiry · 12. Privacy · 13. Built vs. to do · 14. Technical overview · 15. Running it yourself
