@@ -27,7 +27,7 @@ Store name, subtitle, keywords and description: see [STORE_LISTING.md](STORE_LIS
 | Where | Link | Notes |
 |---|---|---|
 | **Web (any browser)** | https://upairy-potty.expo.app | Everything except notifications. Data stays in that browser. |
-| **Android phone** | [Latest test build](https://expo.dev/accounts/upairy/projects/upairy-potty-app/builds/657242c0-bc80-4850-ad46-cb73f183cb6a) | Download on the phone and allow "install from unknown sources". Full app with reminders. |
+| **Android phone** | [Latest test build](https://expo.dev/accounts/upairy/projects/upairy-potty-app/builds/9dbf573c-1b8b-4c2b-ae06-976d07563cfc) | Download on the phone and allow "install from unknown sources". Full app with reminders. |
 | **iPhone** | Coming via TestFlight | Waiting on Apple developer approval. |
 
 **Sign-in:** the email and order number from an upairy.com order (no password, no emailed code). Choose **Explore with a sample week** during setup to see the app full of example data.
