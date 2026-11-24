@@ -11,13 +11,14 @@ import { isEarlyCheckin, applyDecision, ciStreak, dayStats, decision, handoffTex
 import { addEvent, logPotty } from '@/lib/actions';
 import { previewReminder, permission, reschedule } from '@/lib/notifications';
 import { on, emit } from '@/lib/bus';
+import { COACH_NAME } from '@/lib/coach';
 
 type Open = { k: string; arg?: any } | null;
 
 export default function Sheets() {
   const [open, setOpen] = useState<Open>(null);
   useEffect(() => {
-    const keys = ['log', 'checkin', 'timer', 'pause', 'reminders', 'handoff', 'article', 'situation', 'song', 'quiz', 'method', 'editkid', 'addreward', 'step', 'aiinfo'];
+    const keys = ['log', 'checkin', 'timer', 'pause', 'reminders', 'handoff', 'article', 'situation', 'song', 'quiz', 'method', 'editkid', 'addreward', 'step', 'aiinfo', 'guides'];
     const offs = keys.map(k => on(k, arg => {
       // a day that's already checked in (e.g. tapping an old reminder) shouldn't move the program again
       if (k === 'checkin' && S.checkins[arg ?? sod(Date.now())]) { toast('Already checked in', S.checkins[arg ?? sod(Date.now())]); return; }
@@ -46,7 +47,14 @@ export default function Sheets() {
     <EditKidSheet open={k === 'editkid'} close={close} />
     <AddRewardSheet open={k === 'addreward'} close={close} />
     {k === 'step' ? <StepSheet i={open!.arg} close={close} /> : null}
-    <Sheet open={k === 'aiinfo'} onClose={close} title="AI coach"><Tip icon="shield" tone="water"><T w="s" size={14} color={C.waterInk}>What the coach sees</T><T size={13} color={C.waterInk}>Age range, program step, and summary numbers like today's wins and the usual gap. Never your child's name, photos or notes. Your conversation stays in the app (and in your backup if it's on). It isn't kept on our servers.</T></Tip><Card pad={4} style={{ paddingHorizontal: 18 }}><Row first title="Built by UpAiry" sub="Trained on UpAiry's potty training method and guides. Nothing to set up." /><Row title="Status" sub="Live. Up to 20 questions a day. If it can't be reached, the built-in guides answer instead." /></Card><Sub style={{ textAlign: 'center' }}>General guidance, not medical advice.</Sub></Sheet>
+    <Sheet open={k === 'guides'} onClose={close} title="Guides">
+      <Sub style={{ marginBottom: 10 }}>Step-by-step help that works offline.</Sub>
+      <Label style={{ marginBottom: 8 }}>Right now</Label>
+      <Card pad={4} style={{ paddingHorizontal: 18 }}>{SITUATIONS.map((x, i) => <Row key={x.k} first={i === 0} icon={x.ic} title={x.t} onPress={() => { close(); setTimeout(() => emit('situation', i), 350); }} />)}</Card>
+      <Label style={{ marginBottom: 8, marginTop: 6 }}>Read</Label>
+      <Card pad={4} style={{ paddingHorizontal: 18 }}>{ARTICLES.map((a, i) => <Row key={a.t} first={i === 0} icon={a.ic} title={a.t} sub={`${a.m} min read`} onPress={() => { close(); setTimeout(() => emit('article', i), 350); }} />)}</Card>
+    </Sheet>
+    <Sheet open={k === 'aiinfo'} onClose={close} title={`About ${COACH_NAME}`}><Sub style={{ marginBottom: 12, fontSize: 14 }}>{`${COACH_NAME} is Potty Up's AI potty training coach, built by UpAiry on guidance from children's health services, continence specialists and real parents.`}</Sub><Tip icon="shield" tone="water"><T w="s" size={14} color={C.waterInk}>{`What ${COACH_NAME} sees`}</T><T size={13} color={C.waterInk}>Age range, program step, and summary numbers like today's wins and the usual gap. Never your child's name, photos or notes. Your conversation stays in the app (and in your backup if it's on). It isn't kept on our servers.</T></Tip><Card pad={4} style={{ paddingHorizontal: 18 }}><Row first title="Built by UpAiry" sub="Follows UpAiry's potty training approach. Nothing to set up." /><Row title="Daily limit" sub="Up to 20 questions a day. If Lara can't be reached, the built-in guides answer instead." /></Card><Sub style={{ textAlign: 'center' }}>General guidance, not medical advice.</Sub></Sheet>
   </>;
 }
 

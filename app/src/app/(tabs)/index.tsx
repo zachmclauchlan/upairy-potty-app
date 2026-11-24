@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { Screen, Header, Card, T, Sub, Btn, Badge, IconBox, SectionHead, Tip, toast } from '@/components/ui';
@@ -10,7 +10,8 @@ import { C, shadow } from '@/lib/theme';
 import { S, useApp, update, sod, DAY, addDays } from '@/lib/store';
 import { dayStats, fmt, greet, hm, isPotty, item, lastPoo, learned, M, NEED, onDay, timerState } from '@/lib/logic';
 import { logQuick } from '@/lib/actions';
-import { emit } from '@/lib/bus';
+import { emit, on } from '@/lib/bus';
+import { tourRef } from '@/lib/tour';
 
 function useNow(ms = 5000) { const [n, setN] = useState(Date.now()); useEffect(() => { const t = setInterval(() => setN(Date.now()), ms); return () => clearInterval(t); }, [ms]); return n; }
 
@@ -35,7 +36,7 @@ function Rhythm() {
       <View style={{ flex: 1 }}><T w="s" size={14} color={C.brandInk}>Finish yesterday's check-in</T><T size={12} color={C.ink2}>20 seconds. It sets up today's plan.</T></View>
       <Icon name="chevR" size={18} color={C.brandInk} />
     </Pressable> : null}
-    <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+    <View ref={tourRef('day')} collapsable={false} style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
       {cell(woke, phase === 0, 'sunrise', 'sun', 'Morning', "Log the wake-up, read today's plan", woke ? undefined : () => { logQuick('wake'); toast('Good morning!', `Today: ${item().t}. The timer has started.`); })}
       {cell(n >= 4, phase === 1, 'drop', 'ok', 'Through the day', n ? `${n} logged so far` : 'Offer when the timer says, log it', () => emit('log'))}
       {cell(ci, phase === 2, 'moon', 'water', 'Evening', ci ? 'Checked in. Tomorrow is set' : '20-second check-in', ci ? undefined : () => emit('checkin', today))}
@@ -116,16 +117,19 @@ export default function Today() {
   const todays = onDay(today).reverse();
   const learnN = Math.min(L.gap.n, NEED.gap);
   const [night, setNight] = useState(S.method === 'night');
+  const scroll = useRef<any>(null);
+  // the guided tour starts from the top of Today, in day view
+  useEffect(() => on('tour-start', () => { setNight(false); scroll.current?.scrollTo?.({ y: 0, animated: false }); }), []);
   return (
-    <Screen>
+    <Screen scrollRef={scroll}>
       <Header title={`${nm}'s day`} eyebrow={greet()} right={<View style={{ flexDirection: 'row', gap: 8 }}>
         <Pressable onPress={() => emit('handoff')} accessibilityLabel="Share an update" style={[{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }, shadow]}><Icon name="share" size={19} color={C.ink} /></Pressable>
-        <KidChip />
+        <KidChip tour="kid" />
       </View>} />
       <DayNightSwitch night={night} set={setNight} />
       {night ? <Night /> : <>
         <Rhythm />
-        <Card style={{ paddingTop: 18 }}>
+        <View ref={tourRef('timer')} collapsable={false}><Card style={{ paddingTop: 18 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
             <T w="s" size={12} color={C.ink2} style={{ letterSpacing: 0.3 }}>NEXT POTTY TRY</T>
             <View style={{ flexDirection: 'row', gap: 6 }}>
@@ -149,7 +153,7 @@ export default function Today() {
                 <IconBox name={ic} tone={tone} size={34} round iconSize={17} /><T w="s" size={12}>{l}</T>
               </Pressable>)}
           </View>
-        </Card>
+        </Card></View>
         <View style={[{ flexDirection: 'row', backgroundColor: C.surface, borderRadius: 22, paddingVertical: 14 }, shadow]}>
           {([[st.s, 'On potty', C.brand], [st.a, 'Accidents', C.acc], [st.told, 'Told you', C.ink], [st.rate == null ? '–' : st.rate + '%', 'Success', C.ink]] as const).map(([v, l, c], i) =>
             <View key={l} style={{ flex: 1, alignItems: 'center', borderLeftWidth: i ? 1 : 0, borderLeftColor: C.line }}><T w="s" size={22} color={c}>{String(v)}</T><T w="m" size={11} color={C.ink2}>{l}</T></View>)}

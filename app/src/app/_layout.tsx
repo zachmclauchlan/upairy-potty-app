@@ -48,6 +48,7 @@ export default function Root() {
     // phone (and in the backup), so it's all there when they sign in again with an active subscription.
     const toSignIn = (why?: string) => { cancelAll(); signOut(); update(s => { s.account = null; }); if (why) toast(why, 'Sign in again once your subscription is active'); };
     const check = () => {
+      if (__DEV__ && Platform.OS === 'web' && (globalThis as any).localStorage?.getItem('potty-dev-preview')) return; // local design preview only
       if (!S.account) return;
       ensureSession().then(async st => {
         if (st === 'signed-out') return toSignIn();
