@@ -10,7 +10,7 @@ import { S, useApp, update, resetAll } from '@/lib/store';
 import { item, M, memberDays, quizScore } from '@/lib/logic';
 import { emit } from '@/lib/bus';
 import Logo from '@/components/Logo';
-import { deleteAccount, signOut as serverSignOut } from '@/lib/backend';
+import { deleteAccount, refreshPlan, signOut as serverSignOut } from '@/lib/backend';
 
 function confirm(title: string, msg: string, ok: () => void) {
   if (Platform.OS === 'web') { if (globalThis.confirm?.(`${title}\n\n${msg}`)) ok(); return; }
@@ -23,7 +23,7 @@ export default function Settings() {
   const { focus } = useLocalSearchParams<{ focus?: string }>();
   const scroll = useRef<any>(null); const shopY = useRef(0);
   useEffect(() => { if (focus === 'shop') setTimeout(() => scroll.current?.scrollTo({ y: shopY.current - 20, animated: true }), 350); }, [focus]);
-  const d = memberDays(), trial = d < 7, free = S.account?.plan === 'free';
+  const d = memberDays(), free = S.account?.plan === 'free';
   const close = () => router.back();
   const open = (k: string) => { close(); setTimeout(() => emit(k), 350); };
   const signOut = () => { close(); serverSignOut(); update(s => { s.account = null; }); toast('Signed out'); };
@@ -41,11 +41,11 @@ export default function Settings() {
       <View style={{ borderRadius: 22, padding: 18, backgroundColor: C.brand, marginBottom: 12 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}><Logo width={96} color="white" /><T w="s" size={20} color="#fff" style={{ lineHeight: 24 }}>Plus</T></View>
-          {!free ? <Badge tone="white" label={S.account?.plusUntil ? `Until ${new Date(S.account.plusUntil).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}` : trial ? `Free trial · ${7 - d} day${7 - d === 1 ? '' : 's'} left` : 'Member'} /> : null}
+          {!free ? <Badge tone="white" label="Member" /> : null}
         </View>
         {free ? <>
-          <T size={14} color="rgba(255,255,255,.9)" style={{ marginTop: 8, marginBottom: 14 }}>You're on a free account. Link an UpAiry order to unlock the full program, reminders, the AI coach, songs, and free gear as you go.</T>
-          <Btn kind="white" title="Link my order" onPress={() => open('linkorder')} />
+          <T size={14} color="rgba(255,255,255,.9)" style={{ marginTop: 8, marginBottom: 14 }}>UpAiry Plus comes with an UpAiry membership: the full program, smart reminders, the AI coach, songs, and member perks. Already a member? Make sure you signed in with the email you used at checkout.</T>
+          <Btn kind="white" title="Check my membership" onPress={async () => { const p = await refreshPlan(true).catch(() => null); toast(p?.plan === 'plus' ? 'UpAiry Plus is active' : 'No membership found on ' + (S.account?.id ?? 'this email'), p?.plan === 'plus' ? 'Welcome, member' : 'Use the email from your upairy.com checkout'); }} />
         </> : <>
           <T size={14} color="rgba(255,255,255,.9)" style={{ marginTop: 8, marginBottom: 14 }}>The full program, smart reminders, the AI coach, songs, and real UpAiry gear as you go.</T>
           {([[30, 'Free 5-pack of training pants'], [60, 'Free waterproof bed mat']] as const).map(([n, t]) => <View key={t} style={{ marginBottom: 12 }}>
@@ -53,11 +53,11 @@ export default function Settings() {
             <Meter pct={d / n * 100} color="#fff" track="rgba(255,255,255,.2)" style={{ marginTop: 6 }} />
           </View>)}
           <T size={13} color="rgba(255,255,255,.85)">Plus 15% off everything at upairy.com while you're a member.</T>
-          <Btn kind="white" title="Manage subscription" style={{ marginTop: 14 }} onPress={() => toast('Opens your App Store subscription', 'Change plan, pause or cancel')} />
+          <T size={13} color="rgba(255,255,255,.85)" style={{ marginTop: 10 }}>Manage or cancel your membership from your account on upairy.com.</T>
         </>}
       </View>
       <Card pad={4} style={{ paddingHorizontal: 18 }}>
-        <Row first icon="users" tone="water" title={S.account?.id ?? 'Not signed in'} sub={free ? 'Free UpAiry account' : S.account?.order ? `UpAiry Plus · order ${S.account.order}` : 'UpAiry Plus'} right={<Pressable onPress={signOut} style={{ paddingVertical: 7, paddingHorizontal: 12, borderRadius: 10, backgroundColor: C.sunk }}><T w="s" size={13}>Sign out</T></Pressable>} />
+        <Row first icon="users" tone="water" title={S.account?.id ?? 'Not signed in'} sub={free ? 'Free UpAiry account' : 'UpAiry Plus member'} right={<Pressable onPress={signOut} style={{ paddingVertical: 7, paddingHorizontal: 12, borderRadius: 10, backgroundColor: C.sunk }}><T w="s" size={13}>Sign out</T></Pressable>} />
       </Card>
       <View onLayout={e => { shopY.current = e.nativeEvent.layout.y; }}><SectionHead title="Shop UpAiry" right="upairy.com" onRight={() => openShop('https://upairy.com')} /></View>
       <Designs />

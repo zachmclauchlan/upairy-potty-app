@@ -37,22 +37,30 @@ export async function verifyCode(email: string, code: string) {
   return data.session.user.email ?? email;
 }
 
-/** Look for an UpAiry order under the parent's email (or a given order number) and switch on Plus. */
-export async function linkOrder(order?: string): Promise<{ linked: boolean; order?: string; plan?: string; plus_until?: string; reason?: string; error?: string }> {
-  const { data, error } = await supabase.functions.invoke('link-order', { body: order ? { order } : {} });
+export type Membership = { plan: 'plus' | 'free'; member: boolean; gift?: boolean; order?: string | null; next_billing?: string | null; cancelling?: boolean; error?: string };
+
+/** Ask the server whether this parent has an active UpAiry membership (a Loop subscription on their email). */
+export async function checkMembership(): Promise<Membership> {
+  const { data, error } = await supabase.functions.invoke('membership', { body: {} });
   if (error) {
     const body = await (error as any).context?.json?.().catch(() => null);
-    return { linked: false, error: body?.error ?? 'lookup_failed' };
+    return { plan: S.account?.plan ?? 'free', member: false, error: body?.error ?? 'lookup_failed' };
   }
   return data;
 }
 
-/** Read the parent's plan from the server and copy it into the app. */
-export async function refreshPlan(): Promise<Plan | null> {
+const RECHECK_MS = 6 * 3600 * 1000; // ask Loop again at most every 6 hours, so cancellations take effect
+/** Read the parent's plan from the server and copy it into the app. Rechecks the membership when stale. */
+export async function refreshPlan(force = false): Promise<Plan | null> {
   const { data: sess } = await supabase.auth.getSession();
   if (!sess.session) return null;
-  const { data } = await supabase.from('profiles').select('plan, plus_until, order_name, email').eq('id', sess.session.user.id).maybeSingle();
+  const read = () => supabase.from('profiles').select('plan, plus_until, order_name, email, plan_checked_at').eq('id', sess.session!.user.id).maybeSingle();
+  let { data } = await read();
   if (!data) return null;
+  if (force || !data.plan_checked_at || Date.now() - new Date(data.plan_checked_at).getTime() > RECHECK_MS) {
+    await checkMembership().catch(() => null);
+    data = (await read()).data ?? data;
+  }
   const active = data.plan === 'plus' && (!data.plus_until || new Date(data.plus_until).getTime() > Date.now());
   const plan: Plan = { plan: active ? 'plus' : 'free', plusUntil: data.plus_until, order: data.order_name };
   if (S.account) { S.account = { ...S.account, id: data.email ?? S.account.id, plan: plan.plan, plusUntil: plan.plusUntil, order: plan.order }; commit(); }
