@@ -11,14 +11,14 @@ import { isEarlyCheckin, applyDecision, ciStreak, dayStats, decision, handoffTex
 import { addEvent, logPotty } from '@/lib/actions';
 import { previewReminder, permission } from '@/lib/notifications';
 import { on, emit } from '@/lib/bus';
-import { COACH_URL } from '@/lib/coach';
+import { linkOrder, refreshPlan } from '@/lib/backend';
 
 type Open = { k: string; arg?: any } | null;
 
 export default function Sheets() {
   const [open, setOpen] = useState<Open>(null);
   useEffect(() => {
-    const keys = ['log', 'checkin', 'timer', 'pause', 'reminders', 'handoff', 'article', 'situation', 'song', 'quiz', 'method', 'editkid', 'addreward', 'step', 'aiinfo'];
+    const keys = ['log', 'checkin', 'timer', 'pause', 'reminders', 'handoff', 'article', 'situation', 'song', 'quiz', 'method', 'editkid', 'addreward', 'step', 'aiinfo', 'linkorder'];
     const offs = keys.map(k => on(k, arg => {
       if (k === 'checkin' && isEarlyCheckin(arg ?? sod(Date.now()))) {
         confirmAsk('Check in early?', `The day isn't over yet, so tomorrow's plan would be based on part of today. Check-in opens at 4 pm.\n\nOnly check in now if you've finished logging for today.`, 'Check in now', () => setOpen({ k, arg }), 'Wait');
@@ -45,7 +45,8 @@ export default function Sheets() {
     <EditKidSheet open={k === 'editkid'} close={close} />
     <AddRewardSheet open={k === 'addreward'} close={close} />
     {k === 'step' ? <StepSheet i={open!.arg} close={close} /> : null}
-    <Sheet open={k === 'aiinfo'} onClose={close} title="AI coach"><Tip icon="shield" tone="water"><T w="s" size={14} color={C.waterInk}>What the coach sees</T><T size={13} color={C.waterInk}>Age range, program step, and summary numbers like today's wins and the usual gap. Never your child's name, photos or notes. Your conversation is saved on this phone only.</T></Tip><Card pad={4} style={{ paddingHorizontal: 18 }}><Row first title="Built by UpAiry" sub="Trained on UpAiry's potty training method and guides. Nothing to set up." /><Row title="Status" sub={COACH_URL ? 'Live' : 'Coming soon. For now, answers come from the built-in guides.'} /></Card><Sub style={{ textAlign: 'center' }}>General guidance, not medical advice.</Sub></Sheet>
+    {k === 'linkorder' ? <LinkOrderSheet close={close} /> : null}
+    <Sheet open={k === 'aiinfo'} onClose={close} title="AI coach"><Tip icon="shield" tone="water"><T w="s" size={14} color={C.waterInk}>What the coach sees</T><T size={13} color={C.waterInk}>Age range, program step, and summary numbers like today's wins and the usual gap. Never your child's name, photos or notes. Your conversation is saved on this phone only.</T></Tip><Card pad={4} style={{ paddingHorizontal: 18 }}><Row first title="Built by UpAiry" sub="Trained on UpAiry's potty training method and guides. Nothing to set up." /><Row title="Status" sub="Live. Up to 20 questions a day. If it can't be reached, the built-in guides answer instead." /></Card><Sub style={{ textAlign: 'center' }}>General guidance, not medical advice.</Sub></Sheet>
   </>;
 }
 
@@ -299,3 +300,26 @@ function StepSheet({ i, close }: { i: number; close: () => void }) {
   );
 }
 export const _F = F;
+
+/* ---------- link an UpAiry order after sign-in ---------- */
+function LinkOrderSheet({ close }: { close: () => void }) {
+  const [order, setOrder] = useState(''); const [busy, setBusy] = useState(false); const [msg, setMsg] = useState('');
+  const go = async () => {
+    setBusy(true); setMsg('');
+    const r = await linkOrder(order.trim() || undefined).catch(() => ({ linked: false, error: 'offline' } as any));
+    setBusy(false);
+    if (r.linked) { await refreshPlan(); close(); toast('Order ' + r.order + ' linked', 'UpAiry Plus is on'); return; }
+    setMsg(r.error === 'not_configured' ? 'Order linking is being set up. Your order will link automatically soon.'
+      : r.error ? 'Could not check right now. Check your connection and try again.'
+      : order ? "We couldn't find that order under your sign-in email. Check the number, or sign in with the email you ordered with."
+      : "No orders found under your sign-in email. Enter your order number to try that instead.");
+  };
+  return (
+    <Sheet open onClose={close} title="Link my order">
+      <Sub style={{ marginBottom: 14 }}>We look for UpAiry orders placed with {S.account?.id ?? 'your email'}. Leave the box empty to search by email, or enter an order number.</Sub>
+      <Input label="Order number (optional)" value={order} onChangeText={setOrder} placeholder="e.g. 1234" autoCapitalize="none" />
+      {msg ? <Tip icon="info" tone="sun">{msg}</Tip> : null}
+      <Btn title={busy ? 'Checking…' : 'Find my order'} onPress={go} disabled={busy} />
+    </Sheet>
+  );
+}

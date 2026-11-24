@@ -14,7 +14,8 @@ import Overlays from '@/components/Overlays';
 import Intro from '@/components/Intro';
 import { ToastHost } from '@/components/ui';
 import { C } from '@/lib/theme';
-import { useApp, S } from '@/lib/store';
+import { useApp, S, update } from '@/lib/store';
+import { isSignedIn, refreshPlan } from '@/lib/backend';
 import { initNotifications, handleResponse, reschedule, Notifications } from '@/lib/notifications';
 import { on } from '@/lib/bus';
 
@@ -38,6 +39,11 @@ export default function Root() {
   useNotifications();
   const [replay, setReplay] = useState(false);
   useEffect(() => on('intro', () => setReplay(true)), []);
+  // On launch: a saved account without a real sign-in (e.g. from the test version) goes back to
+  // sign-in; a real one gets its plan refreshed from the server.
+  useEffect(() => {
+    isSignedIn().then(ok => { if (!ok && S.account) update(s => { s.account = null; }); else if (ok) refreshPlan().catch(() => {}); }).catch(() => {});
+  }, []);
   // rebuild reminders whenever logs or settings change
   useEffect(() => { const t = setTimeout(() => reschedule(), 600); return () => clearTimeout(t); }, [st.events.length, st.pausedUntil, st.mode, st.interval, st.quietOn, st.quietStart, st.quietEnd, JSON.stringify(st.rem), st.pIdx, Object.keys(st.checkins).length, st.onboarded]);
   // let sheets switch tabs

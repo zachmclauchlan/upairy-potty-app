@@ -9,20 +9,21 @@ import { ARTICLES, SITUATIONS, SUGG, toneOf } from '@/lib/content';
 import { aiContext, localAnswer } from '@/lib/logic';
 import { emit, on } from '@/lib/bus';
 
-import { COACH_URL } from '@/lib/coach';
+import { askCoachServer } from '@/lib/backend';
 
+// The AI coach runs on UpAiry's server (Supabase function "coach"), which holds the Claude key
+// and the UpAiry coach skill. The app sends only the question, recent chat and an anonymous summary.
 async function ask(q: string) {
   q = q.trim(); if (!q) return;
   update(s => { s.chat.push({ r: 'u', t: q }); });
-  if (!COACH_URL) { const a = localAnswer(q); update(s => { s.chat.push({ r: 'a', t: a.t, src: a.src }); }); return; }
   update(s => { s.chat.push({ r: 'a', t: 'Thinking…', src: 'UpAiry coach' }); });
   const msg = S.chat[S.chat.length - 1];
-  try {
-    const history = S.chat.slice(0, -2).slice(-12).map(m => ({ role: m.r === 'u' ? 'user' : 'assistant', text: m.t }));
-    const res = await fetch(COACH_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: q, history, context: aiContext() }) });
-    if (!res.ok) throw new Error(String(res.status));
-    msg.t = (await res.json()).reply || localAnswer(q).t;
-  } catch { msg.t = "Couldn't reach the coach just now. Here's what the guides say:\n\n" + localAnswer(q).t; msg.src = 'Built-in guide'; }
+  const history = S.chat.slice(0, -2).slice(-12).map(m => ({ role: m.r === 'u' ? 'user' as const : 'assistant' as const, text: m.t }));
+  const res = await askCoachServer(q, history, aiContext()).catch(() => ({ error: 'offline' } as { reply?: string; remaining?: number; error?: string }));
+  const guide = localAnswer(q);
+  if (res.reply) { msg.t = res.reply; msg.src = `UpAiry coach${res.remaining != null && res.remaining <= 5 ? ` · ${res.remaining} questions left today` : ''}`; }
+  else if (res.error === 'daily_limit') { msg.t = "That's today's questions used up. The coach resets tomorrow. Meanwhile, here's what the guides say:\n\n" + guide.t; msg.src = guide.src; }
+  else { msg.t = "Couldn't reach the coach just now. Here's what the guides say:\n\n" + guide.t; msg.src = guide.src; }
   update(() => {});
 }
 
@@ -48,7 +49,7 @@ export default function Coach() {
           <T size={14} color={m.r === 'u' ? '#fff' : C.ink} style={{ lineHeight: 21 }}>{m.t}</T>
           {m.src ? <T size={11} color={C.ink3} style={{ marginTop: 6 }}>{m.src}</T> : null}
         </View>))}</View>
-        : <Card><Sub style={{ fontSize: 14 }}>Ask anything about {S.child.name}'s training. The coach knows {S.child.name}'s program and recent logs, never their name.{COACH_URL ? '' : ' Until the AI coach goes live, answers come from the built-in guides.'}</Sub></Card>}
+        : <Card><Sub style={{ fontSize: 14 }}>Ask anything about {S.child.name}'s training. The coach knows {S.child.name}'s program and recent logs, never their name.</Sub></Card>}
       <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
         <TextInput value={q} onChangeText={setQ} onSubmitEditing={() => send(q)} returnKeyType="send" placeholder="e.g. Why so many accidents after lunch?" placeholderTextColor={C.ink3} style={{ flex: 1, borderRadius: 14, borderWidth: 1.5, borderColor: C.line, backgroundColor: C.surface, paddingHorizontal: 14, paddingVertical: 12, fontFamily: F.r, fontSize: 15, color: C.ink }} />
         <Pressable onPress={() => send(q)} accessibilityLabel="Send" style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: C.brand, alignItems: 'center', justifyContent: 'center' }}><Icon name="send" color="#fff" /></Pressable>

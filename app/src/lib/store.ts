@@ -14,7 +14,7 @@ export interface DayLog { mood: Mood | null; tags: string[]; note: string; decis
 export interface Reward { id: string; t: string; cost: number }
 export interface State {
   v: 1;
-  account: { id: string; plan: 'plus' | 'free'; since: number } | null;
+  account: { id: string; plan: 'plus' | 'free'; since: number; plusUntil?: string | null; order?: string | null } | null;
   onboarded: boolean; toured: boolean;
   child: { name: string; age: string; words: string };
   where: Where | null; home3: boolean | null; quiz: Record<number, number>;
