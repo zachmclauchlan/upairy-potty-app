@@ -238,7 +238,7 @@ A text-ready handover for grandparents or daycare, sent through the phone's shar
 ---
 
 ## 12. Privacy and data
-- **The child's data stays on the phone.** No account is needed for child data, and there are no ads or tracking.
+- **The child's data lives on the phone**, and is **backed up to the parent's account** (Settings → Back up to my account, on by default). Signing in on a new phone restores it. Only that account can read its backup (row-level security), it's deleted with the account, and backup can be turned off (which deletes the server copy). No ads or tracking.
 - The UpAiry account holds only the parent's email and whether they have Potty Up.
 - The AI coach receives an anonymous summary only (section 8).
 - Export everything (share as a file) or delete everything from Settings.

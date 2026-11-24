@@ -4,12 +4,12 @@
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { T, Sub, Btn, Card, Input, Row, Tip } from './ui';
+import { T, Sub, Btn, Card, Input, Row, Tip, toast } from './ui';
 import Icon from './Icon';
 import Logo from './Logo';
 import { C } from '@/lib/theme';
-import { update } from '@/lib/store';
 import { signInWithOrder, checkMembership, type Membership } from '@/lib/backend';
+import { afterSignIn, fetchBackup } from '@/lib/backup';
 
 const FAQ = [
   ['Where do I find my order number?', 'In your order confirmation email from UpAiry. It starts with # (for example #1314664). You can type it with or without the #.'],
@@ -24,6 +24,7 @@ export default function Auth() {
   const [email, setEmail] = useState(''); const [order, setOrder] = useState('');
   const [busy, setBusy] = useState(false); const [err, setErr] = useState(''); const [faq, setFaq] = useState<number | null>(null);
   const [m, setM] = useState<Membership | null>(null);
+  const [saved, setSaved] = useState<number | null>(null);
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const validOrder = order.replace(/\D/g, '').length >= 3;
 
@@ -32,10 +33,17 @@ export default function Auth() {
     try {
       await signInWithOrder(email, order);
       setM(await checkMembership().catch(() => ({ plan: 'free', member: false } as Membership)));
+      const b = await fetchBackup().catch(() => null);
+      setSaved(b && (b.data as any)?.onboarded ? b.at : null);
       setDone(true);
     } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
-  const finish = () => update(s => { s.account = { id: email.trim().toLowerCase(), plan: m?.plan ?? 'free', since: Date.now(), order: order.trim(), plusUntil: null }; s.memberSince = Date.now(); });
+  const finish = async () => {
+    setBusy(true);
+    const id = email.trim().toLowerCase();
+    const restored = await afterSignIn(id, { id, plan: m?.plan ?? 'free', since: Date.now(), order: order.trim(), plusUntil: null }).catch(() => null);
+    if (restored) toast('Your data is back', 'Restored from ' + new Date(restored).toLocaleDateString());
+  };
 
   let body;
   if (done) {
@@ -51,7 +59,8 @@ export default function Auth() {
           .map((x, i) => <Row key={x} first={i === 0} title={x} icon="check" />)}
       </Card>
       <View style={{ flex: 1, minHeight: 30 }} />
-      <Btn title="Set up your child" onPress={finish} />
+      {saved ? <Tip icon="check" tone="ok">{`We found your saved data from ${new Date(saved).toLocaleDateString()}. It will be restored to this phone.`}</Tip> : null}
+      <Btn title={busy ? 'Loading…' : saved ? 'Continue' : 'Set up your child'} onPress={finish} disabled={busy} />
     </>;
   } else {
     body = <>

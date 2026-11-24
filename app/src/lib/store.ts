@@ -26,6 +26,8 @@ export interface State {
   events: Ev[]; steps: Record<string, number[]>; checkins: Record<number, string>; days: Record<number, DayLog>;
   chat: { r: 'u' | 'a'; t: string; src?: string }[]; favs: number[]; spent: number; rewards: Reward[];
   pants: number; sitSong: number | null; sitMusic: boolean;
+  /** Cloud backup to the parent's account. owner = the email this data belongs to. */
+  backup: { on: boolean; at: number; owner: string | null };
 }
 
 export const MIN = 6e4, HR = 36e5, DAY = 864e5;
@@ -43,6 +45,7 @@ export function fresh(): State {
     events: [], steps: {}, checkins: {}, days: {}, chat: [], favs: [], spent: 0,
     rewards: [{ id: 'r1', t: 'Pick the bedtime story', cost: 6 }, { id: 'r2', t: 'Ice cream after dinner', cost: 15 }, { id: 'r3', t: 'Trip to the park', cost: 25 }],
     pants: 0, sitSong: null, sitMusic: true,
+    backup: { on: true, at: 0, owner: null },
   };
 }
 
@@ -53,7 +56,7 @@ function load(): State {
     try {
       const s = JSON.parse(raw);
       const f = fresh();
-      return { ...f, ...s, rem: { ...f.rem, ...(s.rem || {}) }, child: { ...f.child, ...(s.child || {}) } };
+      return { ...f, ...s, rem: { ...f.rem, ...(s.rem || {}) }, child: { ...f.child, ...(s.child || {}) }, backup: { ...f.backup, ...(s.backup || {}) } };
     } catch { /* corrupted: start fresh */ }
   }
   return fresh();
@@ -62,6 +65,9 @@ function load(): State {
 export let S: State = load();
 let version = 0;
 const listeners = new Set<() => void>();
+const commitHooks = new Set<() => void>();
+/** Run fn after every change (used by cloud backup). */
+export function onCommit(fn: () => void) { commitHooks.add(fn); return () => { commitHooks.delete(fn); }; }
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
 /** Call after changing S: saves (debounced) and re-renders. */
@@ -70,6 +76,7 @@ export function commit() {
   listeners.forEach(l => l());
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(() => writeItem(KEY, JSON.stringify(S)), 150);
+  commitHooks.forEach(h => h());
 }
 export function update(fn: (s: State) => void) { fn(S); commit(); }
 export function resetAll() { removeItem(KEY); S = fresh(); commit(); }

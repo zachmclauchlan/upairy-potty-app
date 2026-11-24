@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Platform, View } from 'react-native';
+import { AppState, Platform, View } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -16,6 +16,7 @@ import { ToastHost } from '@/components/ui';
 import { C } from '@/lib/theme';
 import { useApp, S, update } from '@/lib/store';
 import { isSignedIn, refreshPlan } from '@/lib/backend';
+import { startBackup, backupNow } from '@/lib/backup';
 import { initNotifications, handleResponse, reschedule, Notifications } from '@/lib/notifications';
 import { on } from '@/lib/bus';
 
@@ -43,6 +44,12 @@ export default function Root() {
   // sign-in; a real one gets its plan refreshed from the server.
   useEffect(() => {
     isSignedIn().then(ok => { if (!ok && S.account) update(s => { s.account = null; }); else if (ok) refreshPlan().catch(() => {}); }).catch(() => {});
+  }, []);
+  // cloud backup: upload a while after changes, and straight away when the app goes to the background
+  useEffect(() => {
+    const stop = startBackup();
+    const sub = AppState.addEventListener('change', s => { if (s !== 'active') backupNow().catch(() => {}); });
+    return () => { stop(); sub.remove(); };
   }, []);
   // rebuild reminders whenever logs or settings change
   useEffect(() => { const t = setTimeout(() => reschedule(), 600); return () => clearTimeout(t); }, [st.events.length, st.pausedUntil, st.mode, st.interval, st.quietOn, st.quietStart, st.quietEnd, JSON.stringify(st.rem), st.pIdx, Object.keys(st.checkins).length, st.onboarded]);
