@@ -12,12 +12,12 @@ import Onboarding from '@/components/Onboarding';
 import Sheets from '@/components/Sheets';
 import Overlays from '@/components/Overlays';
 import Intro from '@/components/Intro';
-import { ToastHost, T, Sub, Btn } from '@/components/ui';
+import { ToastHost, T, Sub, Btn, toast } from '@/components/ui';
 import { C } from '@/lib/theme';
 import { useApp, S, update } from '@/lib/store';
-import { ensureSession, refreshPlan } from '@/lib/backend';
+import { ensureSession, refreshPlan, signOut } from '@/lib/backend';
 import { startBackup, backupNow } from '@/lib/backup';
-import { initNotifications, handleResponse, reschedule, Notifications } from '@/lib/notifications';
+import { initNotifications, handleResponse, reschedule, cancelAll, Notifications } from '@/lib/notifications';
 import { on } from '@/lib/bus';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -44,7 +44,18 @@ export default function Root() {
   // back in if needed). Offline keeps the parent in the app; only a sign-in that no longer matches the
   // order sends them to the sign-in screen.
   useEffect(() => {
-    const check = () => { if (!S.account) return; ensureSession().then(st => { if (st === 'signed-out') update(s => { s.account = null; }); else if (st === 'ok') refreshPlan().catch(() => {}); }).catch(() => {}); };
+    // If the Potty Up subscription has ended, back to the sign-in page. Their child's data stays on the
+    // phone (and in the backup), so it's all there when they sign in again with an active subscription.
+    const toSignIn = (why?: string) => { cancelAll(); signOut(); update(s => { s.account = null; }); if (why) toast(why, 'Sign in again once your subscription is active'); };
+    const check = () => {
+      if (!S.account) return;
+      ensureSession().then(async st => {
+        if (st === 'signed-out') return toSignIn();
+        if (st !== 'ok') return;   // offline: keep going with the last known plan
+        const p = await refreshPlan().catch(() => null);
+        if (p && p.plan !== 'plus') toSignIn('Your Potty Up subscription is not active');
+      }).catch(() => {});
+    };
     check();
     const sub = AppState.addEventListener('change', s => { if (s === 'active') check(); });
     return () => sub.remove();

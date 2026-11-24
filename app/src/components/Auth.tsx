@@ -8,14 +8,14 @@ import { T, Sub, Btn, Card, Input, Row, Tip, toast } from './ui';
 import Icon from './Icon';
 import Logo from './Logo';
 import { C } from '@/lib/theme';
-import { signInWithOrder, checkMembership, type Membership } from '@/lib/backend';
+import { signInWithOrder, checkMembership, signOut, type Membership } from '@/lib/backend';
 import { afterSignIn, fetchBackup, otherOwner } from '@/lib/backup';
 import { S } from '@/lib/store';
 
 const FAQ = [
   ['Where do I find my order number?', 'In your order confirmation email from UpAiry. It starts with # (for example #1314664). You can type it with or without the #.'],
   ['Which email do I use?', 'The email you used at checkout on upairy.com. It has to match the order.'],
-  ['I bought Potty Up but it says free', 'Sign in with the email and order number from your Potty Up order. Then tap "Check my purchase" in Settings.'],
+  ["It says there's no active subscription", "Use the email and order number from your Potty Up order on upairy.com. If you just subscribed, give it a minute and try again. If your subscription has ended, restart it from your account on upairy.com."],
   ["Is my child's data shared?", "Never sold or shared for ads. Your child's logs live on this phone and, if backup is on, are saved privately to your account so they move to a new phone. You can turn backup off or delete everything in Settings."],
 ];
 
@@ -34,7 +34,16 @@ export default function Auth() {
     setBusy(true); setErr('');
     try {
       await signInWithOrder(email, order);
-      setM(await checkMembership().catch(() => ({ plan: 'free', member: false } as Membership)));
+      const mem = await checkMembership().catch(() => ({ plan: 'free', member: false, error: 'lookup_failed' } as Membership));
+      // Only people with an active Potty Up subscription (or gifted access) get in.
+      if (mem.plan !== 'plus') {
+        await signOut();
+        setErr(mem.error === 'lookup_failed' || mem.error === 'not_configured'
+          ? "We couldn't check your subscription just now. Please try again in a minute."
+          : `There's no active Potty Up subscription on ${email.trim()}. Use the email and order number from your Potty Up order on upairy.com.`);
+        return;
+      }
+      setM(mem);
       const b = await fetchBackup().catch(() => null);
       setSaved(b && (b.data as any)?.onboarded ? b.at : null);
       setOther(otherOwner(email.trim().toLowerCase()));
@@ -50,15 +59,12 @@ export default function Auth() {
 
   let body;
   if (done) {
-    const plus = m?.plan === 'plus';
     body = <>
       <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginTop: 30 }}><Icon name="check" size={36} color={C.brand} stroke={2.4} /></View>
-      <T w="b" size={28} style={{ textAlign: 'center', marginTop: 20 }}>{plus ? 'Potty Up is unlocked' : "You're signed in"}</T>
-      <Sub style={{ textAlign: 'center', marginTop: 8, marginBottom: 20, fontSize: 15 }}>{plus
-        ? `Linked to ${email.trim()}. Everything is ready to go.`
-        : `Signed in as ${email.trim()}. You're on the free version. If you have Potty Up, it's linked to the email you used to buy it.`}</Sub>
+      <T w="b" size={28} style={{ textAlign: 'center', marginTop: 20 }}>You're in</T>
+      <Sub style={{ textAlign: 'center', marginTop: 8, marginBottom: 20, fontSize: 15 }}>{`Potty Up is linked to ${email.trim()}. Everything is ready to go.`}</Sub>
       <Card pad={4} style={{ paddingHorizontal: 18 }}>
-        {(plus ? ['The full day-by-day program', 'Smart reminders and the AI coach', 'Potty songs, kid mode and rewards', '15% off at upairy.com'] : ['Logging, timer and history', 'Readiness check and built-in guides', 'Your data stays on this phone'])
+        {['The full day-by-day program', 'Smart reminders and the AI coach', 'Potty songs, kid mode and rewards', '15% off at upairy.com']
           .map((x, i) => <Row key={x} first={i === 0} title={x} icon="check" />)}
       </Card>
       <View style={{ flex: 1, minHeight: 30 }} />
