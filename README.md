@@ -25,7 +25,7 @@ A potty training app for parents of toddlers, made by **UpAiry**, the makers of 
 | Where | Link | Notes |
 |---|---|---|
 | **Web (any browser)** | https://upairy-potty.expo.app | Everything except notifications. Data stays in that browser. |
-| **Android phone** | [Latest test build (APK)](https://expo.dev/artifacts/eas/6wPBr54i3JCEUMjpcx1Tqy81rFqJKJN6TUR-UpG6LgQ.apk) | Download on the phone and allow "install from unknown sources". Full app with reminders. |
+| **Android phone** | [Latest test build (APK)](https://expo.dev/artifacts/eas/Nv3qnsBj60mCOpJeDf90km4ybbawVfUz42IqMVDC300.apk) | Download on the phone and allow "install from unknown sources". Full app with reminders. |
 | **iPhone** | Coming via TestFlight | Waiting on Apple developer approval. |
 
 **Sign-in is in test mode:** any email or order number works. Choose **Explore with a sample week** during setup to see the app full of example data.
