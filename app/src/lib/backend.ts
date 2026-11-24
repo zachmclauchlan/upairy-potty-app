@@ -26,14 +26,35 @@ export type Plan = { plan: 'plus' | 'free'; plusUntil: string | null; order: str
 
 /** Sign in with the email and order number from an upairy.com order. No password, no emailed code. */
 export async function signInWithOrder(email: string, order: string) {
+  const fail = (code: string) => Object.assign(new Error(friendly(code)), { code });
   const { data, error } = await supabase.functions.invoke('order-signin', { body: { email: email.trim().toLowerCase(), order: order.trim() } });
   if (error) {
     const body = await (error as any).context?.json?.().catch(() => null);
-    throw new Error(friendly(body?.error ?? (String((error as any).message ?? '').toLowerCase().includes('fetch') ? 'network' : 'failed')));
+    throw fail(body?.error ?? (String((error as any).message ?? '').toLowerCase().includes('fetch') ? 'network' : 'failed'));
   }
-  if (!data?.access_token) throw new Error(friendly('failed'));
+  if (!data?.access_token) throw fail('failed');
   const { error: e2 } = await supabase.auth.setSession({ access_token: data.access_token, refresh_token: data.refresh_token });
-  if (e2) throw new Error(friendly('failed'));
+  if (e2) throw fail('failed');
+  // Remember the sign-in details on this phone only, so the app can quietly sign back in and the
+  // parent never has to type them again (see ensureSession).
+  writeItem(SIGNIN_KEY, JSON.stringify({ email: email.trim().toLowerCase(), order: order.trim() }));
+}
+
+const SIGNIN_KEY = 'potty-up-signin';
+
+/**
+ * Keep the parent signed in, always. Called on launch and whenever the app comes back to the foreground.
+ * - A saved sign-in is refreshed automatically by Supabase.
+ * - If it's gone (expired, revoked, reinstalled storage), quietly sign in again with the saved email and order.
+ * - No internet: stay in the app. Only a definite "that order doesn't match" signs the parent out.
+ */
+export async function ensureSession(): Promise<'ok' | 'offline' | 'signed-out'> {
+  const st = await sessionState();
+  if (st !== 'none') return st;
+  const saved = (() => { try { return JSON.parse(readItem(SIGNIN_KEY) || 'null'); } catch { return null; } })();
+  if (!saved?.email || !saved?.order) return 'signed-out';
+  try { await signInWithOrder(saved.email, saved.order); return 'ok'; }
+  catch (e) { return (e as any).code === 'no_match' ? 'signed-out' : 'offline'; }
 }
 
 export type Membership = { plan: 'plus' | 'free'; member: boolean; gift?: boolean; order?: string | null; next_billing?: string | null; cancelling?: boolean; error?: string };
@@ -78,7 +99,7 @@ export async function sessionState(): Promise<'ok' | 'none' | 'offline'> {
   if (data.session) return 'ok';
   return readItem(`sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`) ? 'offline' : 'none';
 }
-export async function signOut() { await supabase.auth.signOut().catch(() => {}); }
+export async function signOut() { removeItem(SIGNIN_KEY); await supabase.auth.signOut().catch(() => {}); }
 
 /** Permanently delete the UpAiry account on the server. */
 export async function deleteAccount() {

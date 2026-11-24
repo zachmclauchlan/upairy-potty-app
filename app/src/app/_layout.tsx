@@ -15,7 +15,7 @@ import Intro from '@/components/Intro';
 import { ToastHost, T, Sub, Btn } from '@/components/ui';
 import { C } from '@/lib/theme';
 import { useApp, S, update } from '@/lib/store';
-import { sessionState, refreshPlan } from '@/lib/backend';
+import { ensureSession, refreshPlan } from '@/lib/backend';
 import { startBackup, backupNow } from '@/lib/backup';
 import { initNotifications, handleResponse, reschedule, Notifications } from '@/lib/notifications';
 import { on } from '@/lib/bus';
@@ -40,11 +40,14 @@ export default function Root() {
   useNotifications();
   const [replay, setReplay] = useState(false);
   useEffect(() => on('intro', () => setReplay(true)), []);
-  // On launch: a saved account without a real sign-in (e.g. from the test version) goes back to
-  // sign-in; a real one gets its plan refreshed from the server.
+  // Always signed in: on launch and whenever the app comes back, keep the sign-in alive (quietly signing
+  // back in if needed). Offline keeps the parent in the app; only a sign-in that no longer matches the
+  // order sends them to the sign-in screen.
   useEffect(() => {
-    // Offline: keep the parent in the app (logging, timer and reminders all work without internet).
-    sessionState().then(st => { if (st === 'none' && S.account) update(s => { s.account = null; }); else if (st === 'ok') refreshPlan().catch(() => {}); }).catch(() => {});
+    const check = () => { if (!S.account) return; ensureSession().then(st => { if (st === 'signed-out') update(s => { s.account = null; }); else if (st === 'ok') refreshPlan().catch(() => {}); }).catch(() => {}); };
+    check();
+    const sub = AppState.addEventListener('change', s => { if (s === 'active') check(); });
+    return () => sub.remove();
   }, []);
   // cloud backup: upload a while after changes, and straight away when the app goes to the background
   useEffect(() => {
