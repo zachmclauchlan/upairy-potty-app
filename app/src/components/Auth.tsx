@@ -2,9 +2,9 @@
 // The server checks the order belongs to that email (in Loop), then we check for an active Potty Up
 // subscription on the same email. No "buy" button or link here: App Store rules for apps that unlock web purchases.
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Linking, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { T, Sub, Btn, Card, Input, Row, Tip, toast } from './ui';
+import { T, Sub, Btn, Card, Input, Label, Row, Tip, toast } from './ui';
 import Icon from './Icon';
 import Logo from './Logo';
 import { C } from '@/lib/theme';
@@ -12,10 +12,22 @@ import { signInWithOrder, checkMembership, signOut, type Membership } from '@/li
 import { afterSignIn, fetchBackup, otherOwner } from '@/lib/backup';
 import { S } from '@/lib/store';
 
-const FAQ = [
-  ['Where do I find my order number?', 'In your order confirmation email from UpAiry. It starts with # (for example #1314664). You can type it with or without the #.'],
-  ['Which email do I use?', 'The email you used at checkout on upairy.com. It has to match the order.'],
-  ["It says there's no active subscription", "Use the email and order number from your Potty Up order on upairy.com. If you just subscribed, give it a minute and try again. If your subscription has ended, restart it from your account on upairy.com."],
+// "Help me log in": walks a parent to their order number, the way The Faith Made's sign-in help does.
+const SEARCH = 'UpAiry order';
+const INBOXES: [string, string][] = [
+  ['Gmail', `https://mail.google.com/mail/#search/${encodeURIComponent(SEARCH).replace(/%20/g, '+')}+in%3Aanywhere`],
+  ['Outlook', `https://outlook.live.com/mail/0/?search=${encodeURIComponent(SEARCH)}`],
+  ['Yahoo', `https://mail.yahoo.com/d/search/keyword=${encodeURIComponent(SEARCH)}`],
+];
+const CONTACT = 'https://upairy.com/pages/contact';
+const STUCK = [
+  ["It says it can't match my order", "It's nearly always the email, not the number. It has to be the exact email the order confirmation was sent to, which may not be the one you use every day. If you paid with PayPal or Apple Pay, or someone else paid, try that email instead."],
+  ['Nothing turns up when I search', 'Check your spam and promotions folders first, that is where it usually hides. Then try one word at a time: UpAiry, then order. If Potty Up was a gift, the confirmation went to whoever paid.'],
+  ["It says there's no active subscription", "Use the email and order number from your Potty Up order on upairy.com, not an order for pants only. If you just subscribed, give it a minute and try again. If your subscription has ended, restart it from your account on upairy.com."],
+];
+const MORE = [
+  ['Someone else bought it, or I used a different email', "Use the email the order confirmation went to (the person who paid), with that order number. They can sign in on your phone for you. Or contact us from the email you'd like to use and we'll move Potty Up onto it."],
+  ['New here? How to get Potty Up', "Potty Up comes with an UpAiry Potty Up subscription from upairy.com. Once you've ordered, come back here and sign in with the email and order number from your order. That's it."],
   ["Is my child's data shared?", "Never sold or shared for ads. Your child's logs live on this phone and, if backup is on, are saved privately to your account so they move to a new phone. You can turn backup off or delete everything in Settings."],
 ];
 
@@ -23,7 +35,7 @@ export default function Auth() {
   const ins = useSafeAreaInsets();
   const [done, setDone] = useState(false);
   const [email, setEmail] = useState(''); const [order, setOrder] = useState('');
-  const [busy, setBusy] = useState(false); const [err, setErr] = useState(''); const [faq, setFaq] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false); const [err, setErr] = useState(''); const [faq, setFaq] = useState<number | null>(null); const [help, setHelp] = useState(false);
   const [m, setM] = useState<Membership | null>(null);
   const [saved, setSaved] = useState<number | null>(null);
   const [other, setOther] = useState<string | null>(null);
@@ -81,16 +93,64 @@ export default function Auth() {
       <Sub style={{ fontSize: 15, marginBottom: 20 }}>Use the email and order number from your upairy.com order.</Sub>
       <Input label="Email" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboardType="email-address" autoCapitalize="none" autoComplete="email" textContentType="emailAddress" />
       <Input label="Order number" value={order} onChangeText={setOrder} placeholder="#1314664" keyboardType="numbers-and-punctuation" autoCapitalize="none" autoCorrect={false} />
+      <Sub style={{ marginTop: -6, marginBottom: 14 }}>Your order number looks like #1314664. It's in the order email UpAiry sent you. Can't find it? Tap Help me log in below.</Sub>
       {err ? <Tip icon="info" tone="sun">{err}</Tip> : null}
       <Btn title={busy ? 'Checking…' : 'Sign in'} onPress={onSignIn} disabled={busy || !validEmail || !validOrder} />
-      <Sub style={{ textAlign: 'center', marginTop: 12 }}>Your order number is in your order confirmation email.</Sub>
-      <T w="s" size={15} style={{ marginTop: 26, marginBottom: 8, marginLeft: 2 }}>Questions</T>
-      <Card pad={2} style={{ paddingHorizontal: 18 }}>
-        {FAQ.map(([q, a], i) => <View key={q}>
-          <Row first={i === 0} title={q} onPress={() => setFaq(faq === i ? null : i)} right={<Icon name={faq === i ? 'chevD' : 'chevR'} size={18} color={C.ink3} />} />
-          {faq === i ? <Sub style={{ paddingBottom: 14, marginTop: -4 }}>{a}</Sub> : null}
-        </View>)}
-      </Card>
+      <Sub style={{ textAlign: 'center', marginTop: 12 }}>You'll stay signed in on this phone.</Sub>
+
+      {/* Help me log in */}
+      <Pressable onPress={() => { setHelp(!help); setFaq(null); }} accessibilityRole="button" accessibilityState={{ expanded: help }}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 28, padding: 16, borderRadius: 18, backgroundColor: C.brandSoft }}>
+        <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: C.brand, alignItems: 'center', justifyContent: 'center' }}><T w="b" size={20} color="#fff">?</T></View>
+        <View style={{ flex: 1 }}>
+          <T w="b" size={17}>Help me log in</T>
+          <Sub>{help ? 'Tap to hide' : 'Find your order number in a minute'}</Sub>
+        </View>
+        <Icon name={help ? 'chevD' : 'chevR'} size={20} color={C.brand} />
+      </Pressable>
+      {help ? <Card style={{ marginTop: 10 }}>
+        <T size={15} style={{ lineHeight: 22 }}>Your order number is in the confirmation email UpAiry sent when you ordered.</T>
+        <Label style={{ marginTop: 16 }}>SEARCH YOUR EMAIL FOR</Label>
+        <View style={{ marginTop: 6, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 12, backgroundColor: C.sunk }}>
+          <T w="s" size={18} selectable>{SEARCH}</T>
+        </View>
+        {['Search your email for those words, or tap your inbox below and we search it for you.', 'Open the email that says Order #… confirmed.', 'The order number is at the top. It starts with #.', 'Type it in the box above, with the email that order went to, and tap Sign in.']
+          .map((x, i) => <View key={i} style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+            <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center', marginTop: 1 }}><T w="s" size={12} color={C.brand}>{String(i + 1)}</T></View>
+            <T size={14} style={{ flex: 1, lineHeight: 21 }}>{x}</T>
+          </View>)}
+        <Sub style={{ marginTop: 12 }}>The # is optional. Paste the whole line if that's easier, we only read the numbers.</Sub>
+        <Label style={{ marginTop: 18 }}>OPEN YOUR INBOX</Label>
+        <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+          {INBOXES.map(([n, url]) => <Pressable key={n} onPress={() => Linking.openURL(url).catch(() => {})} accessibilityRole="link"
+            style={{ flex: 1, alignItems: 'center', paddingVertical: 11, borderRadius: 12, borderWidth: 1, borderColor: C.line, backgroundColor: C.surface }}>
+            <T w="s" size={14}>{n}</T>
+          </Pressable>)}
+        </View>
+        <Sub style={{ marginTop: 8, fontSize: 12 }}>These open your inbox in the browser. If the search box comes up empty, type the words in yourself.</Sub>
+        <View style={{ marginTop: 10 }}>
+          {STUCK.map(([q, a], i) => <View key={q}>
+            <Row first={i === 0} title={q} onPress={() => setFaq(faq === i ? null : i)} right={<Icon name={faq === i ? 'chevD' : 'chevR'} size={18} color={C.ink3} />} />
+            {faq === i ? <Sub style={{ paddingBottom: 14, marginTop: -4 }}>{a}</Sub> : null}
+          </View>)}
+        </View>
+      </Card> : null}
+
+      <View style={{ gap: 10, marginTop: 12 }}>
+        {MORE.map(([q, a], i) => { const k = 10 + i, on = faq === k; return (
+          <Pressable key={q} onPress={() => setFaq(on ? null : k)} accessibilityRole="button" accessibilityState={{ expanded: on }}
+            style={{ paddingVertical: 16, paddingHorizontal: 18, borderRadius: 16, borderWidth: 1, borderColor: C.line, backgroundColor: C.surface }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <T w="s" size={15} style={{ flex: 1 }}>{q}</T>
+              <Icon name={on ? 'chevD' : 'chevR'} size={18} color={C.ink3} />
+            </View>
+            {on ? <Sub style={{ marginTop: 10, lineHeight: 20 }}>{a}</Sub> : null}
+          </Pressable>); })}
+      </View>
+      <Pressable onPress={() => Linking.openURL(CONTACT).catch(() => {})} accessibilityRole="link" style={{ marginTop: 22, alignItems: 'center' }}>
+        <T w="s" size={14} color={C.brand} style={{ textAlign: 'center' }}>Can't sign in? Contact us and we'll find your order</T>
+        <Sub style={{ marginTop: 4, fontSize: 12 }}>We usually reply within 1–2 business days.</Sub>
+      </Pressable>
     </>;
   }
   return (
