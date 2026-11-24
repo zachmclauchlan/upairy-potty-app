@@ -122,9 +122,9 @@ export async function askCoachServer(question: string, history: { role: 'user' |
 }
 
 function friendly(code: string) {
-  if (code === 'no_match') return "We couldn't find that order on this email. Check both match your order confirmation email.";
+  if (code === 'no_match') return "We couldn't match that to this email. Use the email from your upairy.com order, then its order number, the last name on it, or its postcode.";
   if (code === 'too_many_tries') return 'Too many tries. Please wait an hour, or contact us at upairy.com.';
-  if (code === 'bad_input') return 'Enter your email and your order number (it starts with #).';
+  if (code === 'bad_input') return 'Enter your email, then your order number, last name or postcode.';
   if (code === 'network') return "Can't connect. Check your internet connection.";
   return "We couldn't sign you in just now. Try again in a minute.";
 }

@@ -1,4 +1,4 @@
-// Sign in with the email and order number from an upairy.com order. No password, no emailed code.
+// Sign in with the email from an upairy.com order plus its order number, last name or postcode. No password, no emailed code.
 // The server checks the order belongs to that email (in Loop), then we check for an active Potty Up
 // subscription on the same email. No "buy" button or link here: App Store rules for apps that unlock web purchases.
 import { useState } from 'react';
@@ -21,12 +21,12 @@ const INBOXES: [string, string][] = [
 ];
 const CONTACT = 'https://upairy.com/pages/contact';
 const STUCK = [
-  ["It says it can't match my order", "It's nearly always the email, not the number. It has to be the exact email the order confirmation was sent to, which may not be the one you use every day. If you paid with PayPal or Apple Pay, or someone else paid, try that email instead."],
+  ["It says it can't match my order", "It's nearly always the email. It has to be the exact email the order confirmation was sent to, which may not be the one you use every day. If you paid with PayPal or Apple Pay, or someone else paid, try that email instead. For the second box, the postcode or last name has to be the one on that order."],
   ['Nothing turns up when I search', 'Check your spam and promotions folders first, that is where it usually hides. Then try one word at a time: UpAiry, then order. If Potty Up was a gift, the confirmation went to whoever paid.'],
   ["It says there's no active subscription", "Use the email and order number from your Potty Up order on upairy.com, not an order for pants only. If you just subscribed, give it a minute and try again. If your subscription has ended, restart it from your account on upairy.com."],
 ];
 const MORE = [
-  ['Someone else bought it, or I used a different email', "Use the email the order confirmation went to (the person who paid), with that order number. They can sign in on your phone for you. Or contact us from the email you'd like to use and we'll move Potty Up onto it."],
+  ['Someone else bought it, or I used a different email', "Use the email the order confirmation went to (the person who paid), with that order number, or the last name or postcode on it. They can sign in on your phone for you. Or contact us from the email you'd like to use and we'll move Potty Up onto it."],
   ['New here? How to get Potty Up', "Potty Up comes with an UpAiry Potty Up subscription from upairy.com. Once you've ordered, come back here and sign in with the email and order number from your order. That's it."],
   ["Is my child's data shared?", "Never sold or shared for ads. Your child's logs live on this phone and, if backup is on, are saved privately to your account so they move to a new phone. You can turn backup off or delete everything in Settings."],
 ];
@@ -40,7 +40,7 @@ export default function Auth() {
   const [saved, setSaved] = useState<number | null>(null);
   const [other, setOther] = useState<string | null>(null);
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-  const validOrder = order.replace(/\D/g, '').length >= 3;
+  const validOrder = order.replace(/\D/g, '').length >= 3 || order.replace(/[^\p{L}]/gu, '').length >= 2; // order number, postcode or last name
 
   const onSignIn = async () => {
     setBusy(true); setErr('');
@@ -90,10 +90,10 @@ export default function Auth() {
       <Logo width={96} />
       <T w="b" size={34} color={C.brand} style={{ marginTop: 18 }}>Potty Up</T>
       <T w="b" size={28} style={{ marginTop: 18, marginBottom: 8 }}>Sign in</T>
-      <Sub style={{ fontSize: 15, marginBottom: 20 }}>Use the email and order number from your upairy.com order.</Sub>
-      <Input label="Email" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboardType="email-address" autoCapitalize="none" autoComplete="email" textContentType="emailAddress" />
-      <Input label="Order number" value={order} onChangeText={setOrder} placeholder="#1314664" keyboardType="numbers-and-punctuation" autoCapitalize="none" autoCorrect={false} />
-      <Sub style={{ marginTop: -6, marginBottom: 14 }}>Your order number looks like #1314664. It's in the order email UpAiry sent you. Can't find it? Tap Help me log in below.</Sub>
+      <Sub style={{ fontSize: 15, marginBottom: 20 }}>Use the email from your upairy.com order.</Sub>
+      <Input label="Email used on your order" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboardType="email-address" autoCapitalize="none" autoComplete="email" textContentType="emailAddress" />
+      <Input label="Order number, postcode or last name" value={order} onChangeText={setOrder} placeholder="Order number, postcode or last name" autoCapitalize="words" autoCorrect={false} autoComplete="off" />
+      <Sub style={{ marginTop: -6, marginBottom: 14 }}>Your order number looks like #1314664. Can't find it? Just type the postcode your order went to, or your last name.</Sub>
       {err ? <Tip icon="info" tone="sun">{err}</Tip> : null}
       <Btn title={busy ? 'Checking…' : 'Sign in'} onPress={onSignIn} disabled={busy || !validEmail || !validOrder} />
       <Sub style={{ textAlign: 'center', marginTop: 12 }}>You'll stay signed in on this phone.</Sub>
@@ -104,17 +104,20 @@ export default function Auth() {
         <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: C.brand, alignItems: 'center', justifyContent: 'center' }}><T w="b" size={20} color="#fff">?</T></View>
         <View style={{ flex: 1 }}>
           <T w="b" size={17}>Help me log in</T>
-          <Sub>{help ? 'Tap to hide' : 'Find your order number in a minute'}</Sub>
+          <Sub>{help ? 'Tap to hide' : '2 easy ways, no order number needed'}</Sub>
         </View>
         <Icon name={help ? 'chevD' : 'chevR'} size={20} color={C.brand} />
       </Pressable>
       {help ? <Card style={{ marginTop: 10 }}>
-        <T size={15} style={{ lineHeight: 22 }}>Your order number is in the confirmation email UpAiry sent when you ordered.</T>
+        <T w="s" size={15}>No order number needed</T>
+        <T size={14} style={{ lineHeight: 21, marginTop: 4 }}>Type the email you ordered with, then the postcode your order went to (or your last name), and tap Sign in.</T>
+        <T w="s" size={15} style={{ marginTop: 16 }}>Or use your order number</T>
+        <T size={14} style={{ lineHeight: 21, marginTop: 4 }}>It's in the confirmation email UpAiry sent when you ordered.</T>
         <Label style={{ marginTop: 16 }}>SEARCH YOUR EMAIL FOR</Label>
         <View style={{ marginTop: 6, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 12, backgroundColor: C.sunk }}>
           <T w="s" size={18} selectable>{SEARCH}</T>
         </View>
-        {['Search your email for those words, or tap your inbox below and we search it for you.', 'Open the email that says Order #… confirmed.', 'The order number is at the top. It starts with #.', 'Type it in the box above, with the email that order went to, and tap Sign in.']
+        {['Search your email for those words, or tap your inbox below and we search it for you.', 'Open the email that says Order #… confirmed.', 'The order number is at the top. It starts with #.', 'Type it in the second box above, with the email that order went to, and tap Sign in.']
           .map((x, i) => <View key={i} style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
             <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center', marginTop: 1 }}><T w="s" size={12} color={C.brand}>{String(i + 1)}</T></View>
             <T size={14} style={{ flex: 1, lineHeight: 21 }}>{x}</T>
