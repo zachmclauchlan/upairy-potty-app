@@ -40,12 +40,21 @@
       "expo-sqlite",
       "expo-audio",
       "expo-font",
-      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#F5F4EF"
+        }
+      ],
       "expo-web-browser",
       [
         "expo-notifications",
         {
-          "color": "#3E7F33"
+          "color": "#3E7F33",
+          "icon": "./assets/notification-icon.png"
         }
       ],
       "expo-asset"
