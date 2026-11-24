@@ -45,6 +45,15 @@ for n, s in enumerate(songs):
         out.pop()
     s['url'] = CDN + s['file']
     ts = line_times(out, TIMES[n])
+    # Suno sometimes leaves the end of a song instrumental (Sleepy Wee version A stops singing after
+    # line 8): drop trailing lines that are never sung so the lyric sheet matches what you hear.
+    while ts and ts[-1] is None:
+        ts.pop()
+        while out and out[-1] == '':
+            out.pop()
+        out.pop()
+        while out and out[-1] == '':
+            out.pop()
     print(s['t'], sum(t is not None for t in ts), '/', len(ts), 'lines timed')
     rows.append(' {t:%s,tag:%s,a:%s,ts:[%s],l:[%s]},' % (lit(s['t']), lit(s['tag']), lit(s['url']),
                 ','.join('null' if t is None else str(t) for t in ts), ','.join(lit(l) for l in out)))

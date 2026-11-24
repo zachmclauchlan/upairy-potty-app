@@ -1,4 +1,5 @@
-import { Pressable, View } from 'react-native';
+import { useState } from 'react';
+import { Modal, Pressable, View } from 'react-native';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 import { Screen, Header, Card, T, Sub, Btn, SectionHead, Label, Meter, IconBox, toast } from '@/components/ui';
 import Icon from '@/components/Icon';
@@ -11,6 +12,7 @@ import { isPotty, starsNow, starsEarned } from '@/lib/logic';
 import { emit } from '@/lib/bus';
 import { tourRef } from '@/lib/tour';
 import { confirmAsk } from '@/components/ui';
+import SongMenu from '@/components/SongMenu';
 
 // Stickers: simple shapes drawn in code, so there are no image assets to license.
 function Sticker({ i }: { i: number }) {
@@ -28,6 +30,7 @@ function Sticker({ i }: { i: number }) {
 
 export default function Kid() {
   useApp();
+  const [menu, setMenu] = useState(false);
   const nm = S.child.name, stars = starsNow();
   const wins = Math.max(0, S.events.filter(e => isPotty(e) && e.outcome === 'success').length - (S.stickerBase ?? 0)); const filled = wins % 30, page = Math.floor(wins / 30) + 1;
   const resetStars = () => confirmAsk('Reset stars?', `${nm}'s stars go back to 0 and the sticker chart starts a fresh page. Logs and progress aren't affected.`, 'Reset', () => { update(s => { s.spent = starsEarned(); s.stickerBase = s.events.filter(e => isPotty(e) && e.outcome === 'success').length; }); toast('Stars reset', 'A fresh start for the next reward'); });
@@ -64,30 +67,29 @@ export default function Kid() {
       </Card>
       </View>
       <SectionHead title="Potty songs" right={`${SONGS.length} songs`} />
-      <Card pad={14} style={{ marginBottom: 10 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <IconBox name="hour" tone="ok" />
-          <View style={{ flex: 1 }}>
-            <T w="s" size={14}>Potty time song</T>
-            <T size={12} color={C.ink2}>{S.sitSong != null && SONGS[S.sitSong] ? `${SONGS[S.sitSong].t} plays while ${S.child.name || 'your child'} sits` : 'Surprise me: a favourite (or any song) each sit'}</T>
+      <Pressable onPress={() => setMenu(true)} accessibilityRole="button" accessibilityLabel="Choose the potty time song">
+        <Card pad={14} style={{ marginBottom: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <IconBox name="hour" tone="ok" />
+            <View style={{ flex: 1 }}>
+              <T w="s" size={14}>Potty time song</T>
+              <T size={12} color={C.ink2}>{S.sitSong != null && SONGS[S.sitSong] ? `${SONGS[S.sitSong].t} plays while ${S.child.name || 'your child'} sits` : 'Surprise me: a favourite (or any song) each sit'}</T>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}><T w="s" size={13} color={C.brand}>Change</T><Icon name="chevR" size={16} color={C.brand} /></View>
           </View>
-          {S.sitSong != null ? <Pressable onPress={() => update(st => { st.sitSong = null; })} hitSlop={8}><T w="s" size={13} color={C.brand}>Surprise me</T></Pressable> : null}
-        </View>
-        <Sub style={{ fontSize: 12, marginTop: 8 }}>Tap "Pick" on any song below to make it the potty time song.</Sub>
-      </Card>
+        </Card>
+      </Pressable>
       <Card pad={4} style={{ paddingHorizontal: 18 }}>
         {SONGS.map((s, i) => { const fav = S.favs.includes(i); const picked = S.sitSong === i; return (
           <View key={s.t} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11, borderTopWidth: i ? 1 : 0, borderTopColor: C.line }}>
             <Pressable onPress={() => emit('song', i)} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center' }}><Icon name="music" size={16} color={C.brand} /></Pressable>
-            <Pressable onPress={() => emit('song', i)} style={{ flex: 1 }}><T w="s" size={14}>{s.t}</T><T size={12} color={C.ink2} numberOfLines={1}>{s.tag} · {lyr(i)[0]}</T></Pressable>
-            <Pressable onPress={() => { update(st => { st.sitSong = picked ? null : i; }); if (!picked) toast(`${s.t} is the potty time song`); }} hitSlop={6} accessibilityLabel={picked ? 'Potty time song (tap to unpick)' : 'Pick as potty time song'}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 10, backgroundColor: picked ? C.brand : C.sunk }}>
-              {picked ? <Icon name="check" size={13} color="#fff" stroke={2.4} /> : null}
-              <T w="s" size={12} color={picked ? '#fff' : C.ink2}>{picked ? 'Picked' : 'Pick'}</T>
-            </Pressable>
+            <Pressable onPress={() => emit('song', i)} style={{ flex: 1 }}><T w="s" size={14}>{s.t}{picked ? '  ·  potty song' : ''}</T><T size={12} color={C.ink2} numberOfLines={1}>{s.tag} · {lyr(i)[0]}</T></Pressable>
             <Pressable onPress={() => update(st => { st.favs = fav ? st.favs.filter(x => x !== i) : [...st.favs, i]; })} hitSlop={10}><Icon name="heart" size={20} color={fav ? C.acc : C.ink3} fill={fav ? C.acc : 'none'} /></Pressable>
           </View>); })}
       </Card>
+      <Modal visible={menu} transparent animationType="fade" onRequestClose={() => setMenu(false)}>
+        <SongMenu current={S.sitSong} onPick={i => { if (i != null) toast(`${SONGS[i].t} is the potty time song`); }} onClose={() => setMenu(false)} />
+      </Modal>
     </Screen>
   );
 }

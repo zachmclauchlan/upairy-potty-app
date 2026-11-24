@@ -7,6 +7,7 @@ import { T, Btn, toast } from './ui';
 import Icon from './Icon';
 import { lyr } from './Sheets';
 import { useSong, lineAt } from './SongPlayer';
+import SongMenu from './SongMenu';
 import { C } from '@/lib/theme';
 import { S, update } from '@/lib/store';
 import { SONGS } from '@/lib/content';
@@ -45,10 +46,11 @@ function Celebrate() {
 
 function SitTimer() {
   const ins = useSafeAreaInsets();
-  const [open, setOpen] = useState(false); const [left, setLeft] = useState(180); const [si, setSi] = useState(0); const [line, setLine] = useState(0);
+  const [open, setOpen] = useState(false); const [left, setLeft] = useState(180); const [si, setSi] = useState(0); const [line, setLine] = useState(0); const [menu, setMenu] = useState(false);
+  const randomSong = () => (S.favs.length ? S.favs[Math.floor(Math.random() * S.favs.length)] : Math.floor(Math.random() * SONGS.length));
   useEffect(() => on('sit', (i?: number) => {
-    setSi(i ?? S.sitSong ?? (S.favs.length ? S.favs[Math.floor(Math.random() * S.favs.length)] : Math.floor(Math.random() * SONGS.length)));
-    setLeft(180); setLine(0); setOpen(true);
+    setSi(i ?? S.sitSong ?? randomSong());
+    setLeft(180); setLine(0); setMenu(false); setOpen(true);
   }), []);
   useEffect(() => { if (!open) return; const t = setInterval(() => setLeft(l => Math.max(0, l - 1)), 1000); return () => clearInterval(t); }, [open]);
   const sitSong = SONGS[si]; const sitLines = lyr(si).filter(x => x.trim());
@@ -74,7 +76,7 @@ function SitTimer() {
         <T w="fun" size={44} style={{ marginTop: 14, lineHeight: 50 }}>Potty time!</T>
         {sing ? <>
           <T w="fun" size={22} style={{ textAlign: 'center', minHeight: 60, marginTop: 12, lineHeight: 30 }}>{sitLines[shown] ?? ''}</T>
-          <Pressable onPress={() => { setSi((si + 1) % SONGS.length); setLine(0); }} style={{ flexDirection: 'row', gap: 6, alignItems: 'center', marginTop: 4 }}><Icon name="music" size={16} color={C.ink2} /><T w="s" size={13} color={C.ink2}>{SONGS[si].t} · next song</T></Pressable>
+          <Pressable onPress={() => setMenu(true)} accessibilityLabel="Change the song" style={{ flexDirection: 'row', gap: 6, alignItems: 'center', marginTop: 6, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 20, backgroundColor: '#EFE7D2' }}><Icon name="music" size={16} color={C.ink2} /><T w="s" size={13} color={C.ink2}>{SONGS[si].t}</T><T w="s" size={13} color={C.brand}>· Change</T></Pressable>
         </> : <T size={15} color={C.ink2} style={{ marginTop: 10 }}>Sit with {S.child.name} and read a book.</T>}
         <Pressable onPress={() => update(s => { s.sitMusic = !s.sitMusic; })} style={{ marginTop: 8 }}><T w="s" size={13} color={C.ink2}>{sing ? 'Song off' : 'Song on'}</T></Pressable>
         <View style={{ flexDirection: 'row', gap: 10, alignSelf: 'stretch', marginTop: 26 }}>
@@ -82,6 +84,7 @@ function SitTimer() {
           <Btn title="They went!" style={{ flex: 1 }} onPress={() => done('success')} />
         </View>
       </View>
+      {menu ? <SongMenu current={S.sitSong == null ? null : si} onPick={i => { setSi(i ?? randomSong()); setLine(0); }} onClose={() => setMenu(false)} /> : null}
     </Modal>
   );
 }
