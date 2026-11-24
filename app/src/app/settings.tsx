@@ -9,6 +9,7 @@ import { C, shadow } from '@/lib/theme';
 import { S, useApp, update, resetAll } from '@/lib/store';
 import { item, M, memberDays, quizScore } from '@/lib/logic';
 import { emit } from '@/lib/bus';
+import Logo from '@/components/Logo';
 import { COACH_URL } from '@/lib/coach';
 
 function confirm(title: string, msg: string, ok: () => void) {
@@ -39,7 +40,7 @@ export default function Settings() {
       </Card>
       <View style={{ borderRadius: 22, padding: 18, backgroundColor: C.brand, marginBottom: 12 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <T w="fun" size={24} color="#fff" style={{ lineHeight: 30 }}>UpAiry Plus</T>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}><Logo width={96} color="white" /><T w="s" size={20} color="#fff" style={{ lineHeight: 24 }}>Plus</T></View>
           {!free ? <Badge tone="white" label={trial ? `Free trial · ${7 - d} day${7 - d === 1 ? '' : 's'} left` : 'Member'} /> : null}
         </View>
         {free ? <>
@@ -81,7 +82,7 @@ export default function Settings() {
         <Row icon="shield" title="Your data" sub="Stored only on this phone. No ads, no tracking." onPress={() => Share.share({ message: JSON.stringify({ exported: new Date().toISOString(), child: S.child, method: S.method, events: S.events, checkins: S.checkins, days: S.days }, null, 2) }).catch(() => {})} right={<Icon name="download" size={18} color={C.ink3} />} />
         <Row icon="trash" tone="try" title="Delete everything" sub="Removes all data from this phone" danger onPress={() => confirm('Delete everything?', 'This removes all logs, settings and your sign-in from this phone. It cannot be undone.', () => { close(); resetAll(); })} />
       </Card>
-      <Sub style={{ textAlign: 'center', marginTop: 18 }}>UpAiry Potty · version 1.0.0</Sub>
+      <View style={{ alignItems: 'center', marginTop: 24, gap: 6 }}><Logo width={84} color="black" style={{ opacity: 0.35 }} /><Sub>UpAiry Potty · version 1.0.0</Sub></View>
     </ScrollView>
   );
 }

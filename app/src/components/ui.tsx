@@ -163,7 +163,7 @@ export function ToastHost() {
   useEffect(() => { if (m) setShown(m); Animated.timing(a, { toValue: m ? 1 : 0, duration: 220, useNativeDriver: Platform.OS !== 'web' }).start(); }, [m]);
   if (!shown) return null;
   return (
-    <Animated.View pointerEvents={m ? 'auto' : 'none'} style={{ position: 'absolute', left: 16, right: 16, bottom: ins.bottom + 76, opacity: a, transform: [{ translateY: a.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }], backgroundColor: C.ink, borderRadius: 16, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+    <Animated.View pointerEvents={m ? 'auto' : 'none'} style={{ position: 'absolute', left: 16, right: 16, bottom: Math.max(ins.bottom, 8) + 82, opacity: a, transform: [{ translateY: a.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }], backgroundColor: C.ink, borderRadius: 16, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
       <View style={{ flex: 1 }}>
         <T w="m" size={14} color="#fff">{shown.title}</T>
         {shown.sub ? <T size={12} color="rgba(255,255,255,.65)">{shown.sub}</T> : null}

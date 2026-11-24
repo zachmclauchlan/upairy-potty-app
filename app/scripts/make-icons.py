@@ -50,4 +50,9 @@ u = u.crop(u.getbbox())
 place(Image.new("RGBA", (96, 96), (0, 0, 0, 0)), ink((255, 255, 255, 255), u), 0.6).save(A / "notification-icon.png")
 # Browser favicon: white U on green
 place(Image.new("RGBA", (48, 48), GREEN), ink((255, 255, 255, 255), u), 0.55).save(A / "favicon.png")
+# In-app logo: the wordmark cropped tight on a transparent background, in black, white and brand green
+for name, color in (("logo-black", (22, 24, 27, 255)), ("logo-white", (255, 255, 255, 255)), ("logo-green", GREEN)):
+    m = ink(color)
+    m = m.resize((m.width * 2, m.height * 2), Image.LANCZOS)  # 2x for sharp phone screens
+    m.save(A / "brand" / f"{name}.png")
 print("icons written to", A)

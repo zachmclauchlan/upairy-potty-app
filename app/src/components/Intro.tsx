@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { T, Sub, Btn, IconBox } from './ui';
 import type { IconName } from './Icon';
 import { C, shadow, Tone } from '@/lib/theme';
+import Logo from './Logo';
 import { S, update } from '@/lib/store';
 
 type Line = [IconName, Tone, string, string];
@@ -45,6 +46,7 @@ export default function Intro({ open, onDone }: { open: boolean; onDone: () => v
           <Pressable onPress={finish} hitSlop={12} style={{ marginLeft: 10 }}><T w="s" size={14} color={C.ink2}>Skip</T></Pressable>
         </View>
         <View style={{ flex: 1 }}>
+          {i === 0 ? <Logo width={112} style={{ marginBottom: 18 }} /> : null}
           <T w="b" size={28} style={{ lineHeight: 33, marginBottom: 10 }}>{s.title}</T>
           <Sub style={{ fontSize: 15, lineHeight: 22, marginBottom: 22 }}>{s.lead}</Sub>
           {s.lines?.map(([ic, tone, t, d]) => <View key={t} style={{ flexDirection: 'row', gap: 14, marginBottom: 18 }}><IconBox name={ic} tone={tone} size={42} /><View style={{ flex: 1 }}><T w="s">{t}</T><Sub>{d}</Sub></View></View>)}

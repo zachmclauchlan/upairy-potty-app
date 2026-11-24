@@ -7,6 +7,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { T, Sub, Btn, Card, Input, Label, Row, toast } from './ui';
 import Icon from './Icon';
 import { C, F } from '@/lib/theme';
+import Logo from './Logo';
 import { update } from '@/lib/store';
 
 const SIGNUP_URL = 'https://upairy.com/account/register';
@@ -68,7 +69,7 @@ export default function Auth() {
   } else {
     const byOrder = mode === 'order';
     body = <>
-      <T w="fun" size={34} color={C.brand} style={{ lineHeight: 40 }}>UpAiry</T>
+      <Logo width={132} />
       <T w="b" size={28} style={{ marginTop: 18, marginBottom: 8, lineHeight: 33 }}>Find your UpAiry order</T>
       <Sub style={{ fontSize: 15, lineHeight: 21, marginBottom: 20 }}>Bought UpAiry training pants? Find your order to unlock UpAiry Plus, included with your purchase.</Sub>
       <View style={{ flexDirection: 'row', backgroundColor: C.sunk, borderRadius: 12, padding: 3, marginBottom: 16 }}>

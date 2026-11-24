@@ -8,6 +8,7 @@ import { C } from '@/lib/theme';
 import { S, update, sod } from '@/lib/store';
 import { METHODS, QUIZ, WHERE, toneOf, type MethodKey } from '@/lib/content';
 import { quizScore, quizVerdict, recommend, sampleWeek, startIndex } from '@/lib/logic';
+import Logo from './Logo';
 import { permission } from '@/lib/notifications';
 
 const AGES = ['Under 2', '2 to 2½', '2½ to 3', '3+'];
@@ -77,7 +78,7 @@ export default function Onboarding() {
   if (step === 0) {
     cta = 'Build my program';
     body = <>
-      <T w="fun" size={34} color={C.brand}>UpAiry</T>
+      <Logo width={132} />
       <T w="b" size={28} style={{ lineHeight: 33, marginTop: 20, marginBottom: 8 }}>Potty training, planned around your child.</T>
       <Sub style={{ fontSize: 15, lineHeight: 21, marginBottom: 24 }}>Answer a few questions and we'll build a day-by-day program. The app learns your child's rhythm as you log.</Sub>
       {([['route', 'ok', 'A program that fits', '3-day intensive, bare bottom at home, or gentle. Chosen for your child and your week.'], ['spark', 'water', 'Timing that learns', "Starts with the program's timing, then learns how often your child really goes."], ['moon', 'sun', 'A 20-second evening check-in', 'See how the day went and decide together what tomorrow looks like.']] as const).map(([ic, tone, t, s]) =>
