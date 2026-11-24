@@ -16,6 +16,7 @@ import { METHODS, QUIZ, WHERE, toneOf, type MethodKey } from '@/lib/content';
 import { quizScore, recommend, sampleWeek, startIndex } from '@/lib/logic';
 import Logo from './Logo';
 import { permission } from '@/lib/notifications';
+import { reviewsFor, type Review } from '@/lib/reviews';
 
 export function QuizRows({ quiz, set }: { quiz: Record<number, number>; set: (i: number, v: number) => void }) {
   return <>{QUIZ.map((x, i) => (
@@ -74,12 +75,6 @@ const TEAM: { v: string; t: string }[] = [
   { v: 'partner', t: 'My partner' }, { v: 'grandparents', t: 'Grandparents' }, { v: 'daycare', t: 'Daycare or a nanny' }, { v: 'solo', t: 'Just me' },
 ];
 const LOADING = ['Readiness', 'Personality', 'Choosing a method', 'Building the course'];
-const TIPS = [
-  'Most children are reliably dry in the day somewhere between 2 and 4. Nights often come later, and that is normal.',
-  'Accidents are part of learning, not a step backwards. Calm and boring reactions help most.',
-  'Offering the potty after waking, meals and drinks catches most wees in the first week.',
-  'Praise telling you, even after the wee has happened. That is the skill that grows into telling you before.',
-];
 
 // steps
 type Step = 'age' | 'ageinfo' | 'name' | 'where' | 'signs' | 'harder' | 'score' | 'temper' | 'home3' | 'team' | 'build' | 'summary' | 'method' | 'course' | 'start';
@@ -111,7 +106,7 @@ function Answer({ t, s, ic, on, multi, onPress }: { t: string; s?: string; ic?: 
 }
 
 /** "Building your plan": a ring fills while four steps tick off, with a tip underneath. */
-function Building({ name, onReady }: { name: string; onReady: () => void }) {
+function Building({ name, reviews, onReady }: { name: string; reviews: Review[]; onReady: () => void }) {
   const [pct, setPct] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setPct(p => Math.min(100, p + 1)), 70); // about 7 seconds
@@ -120,7 +115,7 @@ function Building({ name, onReady }: { name: string; onReady: () => void }) {
   const done = pct >= 100;
   useEffect(() => { if (done) onReady(); }, [done]); // eslint-disable-line react-hooks/exhaustive-deps
   const R = 56, Cc = 2 * Math.PI * R;
-  const tip = TIPS[Math.min(TIPS.length - 1, Math.floor(pct / 26))];
+  const rv = reviews[Math.min(reviews.length - 1, Math.floor(pct / 34))]; // three reviews while it builds
   return <>
     <View style={{ alignItems: 'center', marginTop: 8 }}>
       <View style={{ width: 140, height: 140 }}>
@@ -146,12 +141,14 @@ function Building({ name, onReady }: { name: string; onReady: () => void }) {
         {state !== 'later' ? <T w="s" size={12} color={state === 'done' ? C.ink3 : C.brand}>{state === 'done' ? 'Done' : 'Now'}</T> : null}
       </View>;
     })}
-    <Card style={{ marginTop: 16 }}>
-      <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
-        <IconBox name="bulb" tone="sun" size={34} iconSize={16} />
-        <View style={{ flex: 1 }}><Label>GOOD TO KNOW</Label><T size={14} style={{ lineHeight: 21, marginTop: 4 }}>{tip}</T></View>
+    {rv ? <Card style={{ marginTop: 16 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center' }}><T w="b" size={15} color={C.brand}>{rv.n[0]}</T></View>
+        <View style={{ flex: 1 }}><T w="s" size={14}>{`${rv.n}, ${rv.age}`}</T><Sub style={{ fontSize: 12 }}>{`${rv.loc} · ${rv.when}`}</Sub></View>
+        <View style={{ flexDirection: 'row', gap: 1 }}>{[0, 1, 2, 3, 4].map(i => <Icon key={i} name="star" size={12} color={C.brand} fill={C.brand} />)}</View>
       </View>
-    </Card>
+      <T size={14} style={{ lineHeight: 21, marginTop: 10 }}>{`“${rv.t}”`}</T>
+    </Card> : null}
     {done ? null : <Sub style={{ textAlign: 'center', marginTop: 14 }}>This takes a few seconds</Sub>}
   </>;
 }
@@ -311,7 +308,7 @@ export default function Onboarding() {
     </>;
   } else if (step === 'build') {
     cta = built ? 'See my plan' : null;
-    body = <>{top}<Building key="build" name={Nm} onReady={() => setBuilt(true)} /></>;
+    body = <>{top}<Building key="build" name={Nm} reviews={reviewsFor({ age, where, harder, temper, team, method: method ?? rec })} onReady={() => setBuilt(true)} /></>;
   } else if (step === 'summary') {
     const mk = method ?? rec, m = METHODS[mk];
     const named = HARDER.filter(h => harder.includes(h.v));
