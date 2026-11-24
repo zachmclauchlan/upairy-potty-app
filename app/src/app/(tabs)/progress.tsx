@@ -9,14 +9,15 @@ import { S, useApp, sod, addDays, atHour } from '@/lib/store';
 import { MOODS } from '@/lib/content';
 import { dayName, dayStats, fmt, isPotty, learned, NEED, onDay } from '@/lib/logic';
 import { emit } from '@/lib/bus';
+import { tourRef } from '@/lib/tour';
 
 export default function Progress() {
   useApp();
   const [view, setView] = useState<'ins' | 'hist'>('ins');
   return (
-    <Screen>
-      <Header title={view === 'ins' ? 'Insights' : 'History'} eyebrow={view === 'ins' ? 'Last 7 days' : 'Every day, logged'} right={<KidChip />} />
-      <View style={{ flexDirection: 'row', backgroundColor: C.sunk, borderRadius: 12, padding: 3, marginBottom: 14 }}>
+    <Screen tour="progress">
+      <Header title={view === 'ins' ? 'Insights' : 'History'} eyebrow={view === 'ins' ? 'Last 7 days' : 'Every day, logged'} right={<KidChip tour="chip-progress" />} />
+      <View ref={tourRef('progress-toggle')} collapsable={false} style={{ flexDirection: 'row', backgroundColor: C.sunk, borderRadius: 12, padding: 3, marginBottom: 14 }}>
         {([['ins', 'chart', 'Insights'], ['hist', 'cal', 'History']] as const).map(([v, ic, l]) =>
           <Pressable key={v} onPress={() => setView(v)} style={{ flex: 1, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center', paddingVertical: 7, borderRadius: 10, backgroundColor: view === v ? C.surface : 'transparent' }}>
             <Icon name={ic} size={16} color={view === v ? C.ink : C.ink2} /><T w="s" size={13} color={view === v ? C.ink : C.ink2}>{l}</T>

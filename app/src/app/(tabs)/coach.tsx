@@ -11,6 +11,7 @@ import { S, update, useApp } from '@/lib/store';
 import { aiContext, localAnswer } from '@/lib/logic';
 import { emit, on } from '@/lib/bus';
 import { askCoachServer } from '@/lib/backend';
+import { tourRef } from '@/lib/tour';
 import { COACH_NAME, COACH_TAG, STARTERS, greeting } from '@/lib/coach';
 
 const THINKING = 'Thinking…';
@@ -92,11 +93,13 @@ export default function Coach() {
 
       {/* conversation */}
       <ScrollView ref={scroll} style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 20, gap: 12 }} keyboardShouldPersistTaps="handled" onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: false })}>
+        <View ref={tourRef('lara-chat')} collapsable={false} style={{ gap: 12 }}>
         <Bubble r="a" t={greeting()} />
         {empty ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginLeft: 36 }}>
           {STARTERS.map(([label, question]) => <Chip key={label} label={label} onPress={() => send(question)} />)}
           <Chip label="Something else" onPress={() => input.current?.focus()} />
         </View> : null}
+        </View>
         {S.chat.map((m, k) => <Bubble key={k} r={m.r} t={m.t} src={m.src} />)}
         {!empty && !busy ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
           <Chip label="Ask something else" onPress={() => input.current?.focus()} />

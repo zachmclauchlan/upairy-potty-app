@@ -107,7 +107,7 @@ export default function Today() {
   // the guided tour starts from the top of Today, in day view
   useEffect(() => on('tour-start', () => { setNight(false); scroll.current?.scrollTo?.({ y: 0, animated: false }); }), []);
   return (
-    <Screen scrollRef={scroll}>
+    <Screen scrollRef={scroll} tour="index">
       <Header title={`${nm}'s day`} eyebrow={greet()} right={<View style={{ flexDirection: 'row', gap: 8 }}>
         <Pressable onPress={() => emit('handoff')} accessibilityLabel="Share an update" style={[{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }, shadow]}><Icon name="share" size={19} color={C.ink} /></Pressable>
         <KidChip tour="kid" />

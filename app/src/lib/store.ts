@@ -30,6 +30,8 @@ export interface State {
   pants: number; sitSong: number | null; sitMusic: boolean;
   /** Cloud backup to the parent's account. owner = the email this data belongs to. */
   backup: { on: boolean; at: number; owner: string | null };
+  /** sticker chart restarts from this many potty successes (Reset stars) */
+  stickerBase?: number;
   /** true while the demo "sample week" logs are loaded */
   sample?: boolean;
 }

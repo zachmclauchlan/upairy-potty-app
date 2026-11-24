@@ -22,3 +22,10 @@ export function measureTarget(key: string): Promise<Rect | null> {
     });
   });
 }
+
+/* ---------- scrolling a screen so a target is visible ---------- */
+type Scroller = { scrollTo: (y: number) => void; y: () => number };
+const scrollers = new Map<string, Scroller>();
+/** Screens register their scroll view under the tab's name ('index', 'kid', ...). */
+export function registerScroller(name: string, s: Scroller) { scrollers.set(name, s); return () => { if (scrollers.get(name) === s) scrollers.delete(name); }; }
+export function scrollerFor(name: string) { return scrollers.get(name); }

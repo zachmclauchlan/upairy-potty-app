@@ -3,6 +3,7 @@ import { Alert, Animated, KeyboardAvoidingView, Modal, Platform, Pressable, Scro
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon, { IconName } from './Icon';
 import { C, F, R, shadow, TONES, Tone } from '@/lib/theme';
+import { registerScroller } from '@/lib/tour';
 
 /* ---------- text ---------- */
 type W = 'r' | 'm' | 's' | 'b' | 'fun';
@@ -31,11 +32,14 @@ export function SectionHead({ title, right, onRight }: { title: string; right?: 
     </View>
   );
 }
-export function Screen({ children, scrollRef }: { children: ReactNode; scrollRef?: any }) {
+export function Screen({ children, scrollRef, tour }: { children: ReactNode; scrollRef?: any; tour?: string }) {
   const ins = useSafeAreaInsets();
+  const own = useRef<any>(null); const ref = scrollRef ?? own; const y = useRef(0);
+  // lets the guided tour scroll this screen to whatever it's pointing at
+  useEffect(() => tour ? registerScroller(tour, { scrollTo: v => ref.current?.scrollTo?.({ y: Math.max(0, v), animated: true }), y: () => y.current }) : undefined, [tour, ref]);
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
-      <ScrollView ref={scrollRef} contentContainerStyle={{ paddingTop: ins.top + 8, paddingHorizontal: 20, paddingBottom: 120 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView ref={ref} onScroll={e => { y.current = e.nativeEvent.contentOffset.y; }} scrollEventThrottle={32} contentContainerStyle={{ paddingTop: ins.top + 8, paddingHorizontal: 20, paddingBottom: 120 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {children}
       </ScrollView>
     </View>

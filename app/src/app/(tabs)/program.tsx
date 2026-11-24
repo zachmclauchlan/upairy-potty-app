@@ -11,6 +11,7 @@ import { S, useApp, addDays } from '@/lib/store';
 import { M } from '@/lib/logic';
 import { SITUATIONS, toneOf } from '@/lib/content';
 import { emit } from '@/lib/bus';
+import { tourRef } from '@/lib/tour';
 import { COACH_NAME } from '@/lib/coach';
 import { course, courseDay, daysToGo, inPrep, paused, pauseCourse, resumeCourse, stage, stageDay, today, todayLesson } from '@/lib/course';
 
@@ -107,12 +108,12 @@ export default function Program() {
   useApp();
   const m = M();
   return (
-    <Screen>
+    <Screen tour="program">
       <Header title={`${S.child.name}'s course`} eyebrow={m.name} right={<KidChip />} />
-      <Hero />
+      <View ref={tourRef('course-hero')} collapsable={false}><Hero /></View>
       <GateCard />
       {!paused() ? <><SectionHead title={inPrep() ? "Today's prep" : "Today's lesson"} />
-        <LessonCard /></> : null}
+        <View ref={tourRef('course-lesson')} collapsable={false}><LessonCard /></View></> : null}
       <SectionHead title="Your course" right="Change method" onRight={() => emit('method')} />
       <CourseMap />
       <Sub style={{ marginTop: -4, marginBottom: 6 }}>{`Days move on by themselves from Day 1 (${new Date(S.start).toLocaleDateString([], { day: 'numeric', month: 'short' })}). At the end of each stage, the app checks ${S.child.name}'s logs and suggests moving on. You decide.`}</Sub>

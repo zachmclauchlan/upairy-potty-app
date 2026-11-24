@@ -7,8 +7,10 @@ import { lyr } from '@/components/Sheets';
 import { C } from '@/lib/theme';
 import { S, update, useApp } from '@/lib/store';
 import { SONGS, STKC } from '@/lib/content';
-import { isPotty, starsNow } from '@/lib/logic';
+import { isPotty, starsNow, starsEarned } from '@/lib/logic';
 import { emit } from '@/lib/bus';
+import { tourRef } from '@/lib/tour';
+import { confirmAsk } from '@/components/ui';
 
 // Stickers: simple shapes drawn in code, so there are no image assets to license.
 function Sticker({ i }: { i: number }) {
@@ -27,25 +29,28 @@ function Sticker({ i }: { i: number }) {
 export default function Kid() {
   useApp();
   const nm = S.child.name, stars = starsNow();
-  const wins = S.events.filter(e => isPotty(e) && e.outcome === 'success').length; const filled = wins % 30, page = Math.floor(wins / 30) + 1;
+  const wins = Math.max(0, S.events.filter(e => isPotty(e) && e.outcome === 'success').length - (S.stickerBase ?? 0)); const filled = wins % 30, page = Math.floor(wins / 30) + 1;
+  const resetStars = () => confirmAsk('Reset stars?', `${nm}'s stars go back to 0 and the sticker chart starts a fresh page. Logs and progress aren't affected.`, 'Reset', () => { update(s => { s.spent = starsEarned(); s.stickerBase = s.events.filter(e => isPotty(e) && e.outcome === 'success').length; }); toast('Stars reset', 'A fresh start for the next reward'); });
   return (
-    <Screen>
+    <Screen tour="kid">
       <Header title="Kid zone" eyebrow={`For ${nm}`} right={<KidChip />} />
-      <View style={{ borderRadius: 22, padding: 20, backgroundColor: '#FFF3CF', flexDirection: 'row', gap: 16, alignItems: 'center', marginBottom: 12 }}>
+      <View ref={tourRef('kid-stars')} collapsable={false} style={{ borderRadius: 22, padding: 20, backgroundColor: '#FFF3CF', flexDirection: 'row', gap: 16, alignItems: 'center', marginBottom: 12 }}>
         <T w="fun" size={56} color="#3D2E00" style={{ lineHeight: 62 }}>{stars}</T>
         <View style={{ flex: 1 }}>
           <T w="s" size={16} color="#3D2E00">stars to spend</T>
           <T size={13} color="#6B5A2E">2 for a wee or poo on the potty, 1 for trying, 3 for a dry night</T>
           <Btn small icon="smile" title={`Hand the phone to ${nm}`} onPress={() => emit('kidmode')} style={{ marginTop: 12 }} />
+          <Pressable onPress={resetStars} hitSlop={8} style={{ marginTop: 10 }}><T w="s" size={13} color="#6B5A2E">Reset stars</T></Pressable>
         </View>
       </View>
-      <Card>
+      <View ref={tourRef('kid-stickers')} collapsable={false}><Card>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Label>Sticker chart{page > 1 ? ` · page ${page}` : ''}</Label><Sub>{filled}/30</Sub></View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
           {[...Array(30)].map((_, i) => <View key={i} style={{ width: '14.2%', aspectRatio: 1, borderRadius: 14, backgroundColor: i < filled ? '#FFF8E6' : C.sunk, alignItems: 'center', justifyContent: 'center' }}>{i < filled ? <Sticker i={i + (page - 1) * 30} /> : null}</View>)}
         </View>
         <Sub style={{ marginTop: 10 }}>A new sticker for every success on the potty.</Sub>
-      </Card>
+      </Card></View>
+      <View ref={tourRef('kid-rewards')} collapsable={false}>
       <SectionHead title="Rewards" right="Add reward" onRight={() => emit('addreward')} />
       <Card pad={6} style={{ paddingHorizontal: 18 }}>
         {S.rewards.length ? S.rewards.map((r, i) => { const ok = stars >= r.cost; return (
@@ -57,6 +62,7 @@ export default function Kid() {
             </Pressable>
           </View>); }) : <Sub style={{ paddingVertical: 20, textAlign: 'center' }}>Add a reward your child is excited about.</Sub>}
       </Card>
+      </View>
       <SectionHead title="Potty songs" right={`${SONGS.length} songs`} />
       <Card pad={4} style={{ paddingHorizontal: 18 }}>
         {SONGS.map((s, i) => { const fav = S.favs.includes(i); return (
