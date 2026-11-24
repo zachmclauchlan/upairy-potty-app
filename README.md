@@ -4,6 +4,22 @@
 
 A potty training app for parents of toddlers, made by **UpAiry**, the makers of reusable potty training underwear ([upairy.com](https://upairy.com)). This README explains what the app does, how it works, what's finished and what's still to connect.
 
+## TL;DR
+- **Personal program:** 3-day intensive, bare bottom at home, gentle, or nights, chosen from a readiness quiz and moved on by a daily check-in
+- **Smart potty timer:** learns the child's own rhythm from logs, comes sooner after drinks and waking, and forgives missed logs
+- **Reminders with log buttons:** tap "Wee on the potty / Nothing / Accident" right on the notification
+- **Quiet hours and pause:** no reminders overnight, pause for naps and outings
+- **One-tap logging:** wee, poo, accident, tried, plus drinks, meals and wake-ups, and who started it
+- **20-second evening check-in:** add missed logs, say how the day felt, plan tomorrow
+- **Night training:** dry or wet nights, the last drink against bedtime, a 14-night trend
+- **Coach:** 8 offline "right now" guides with the words to say, plus an AI coach (via UpAiry's server, anonymous data only)
+- **Kid zone:** stars, sticker chart, rewards the parent sets, kid mode, a sit timer, 20 original potty songs
+- **Progress:** what the app has learned about the child, success trends, accident times, a full history calendar
+- **Handover:** a one-tap update for grandparents or daycare
+- **UpAiry built in:** order sign-in unlocks UpAiry Plus, perks (free pants at day 30, bed mat at day 60), and a shop matched to each program step
+- **Private:** child data stays on the phone, with no ads or tracking
+- **Platforms:** iPhone and Android (Expo / React Native), plus a web preview
+
 ## Try it
 
 | Where | Link | Notes |
