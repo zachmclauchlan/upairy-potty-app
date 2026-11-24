@@ -1,7 +1,7 @@
 // First-run setup as a short quiz, one question per screen (in the style of Kidology's potty quiz):
 // age → what that means → name → where they are now → readiness signs → what makes it harder →
 // readiness score → temperament → time at home → who's helping → "Building your plan" →
-// the plan summary → method → Day 1 → start fresh or with a sample week.
+// the plan summary → method → Day 1.
 // Answers set the method, the start stage and the readiness score, and go to Lara as context.
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -13,7 +13,7 @@ import { C } from '@/lib/theme';
 import type { Tone } from '@/lib/theme';
 import { S, update, sod, addDays } from '@/lib/store';
 import { METHODS, QUIZ, WHERE, toneOf, type MethodKey } from '@/lib/content';
-import { quizScore, recommend, sampleWeek, startIndex } from '@/lib/logic';
+import { quizScore, recommend, startIndex } from '@/lib/logic';
 import Logo from './Logo';
 import { permission } from '@/lib/notifications';
 import { reviewsFor, type Review } from '@/lib/reviews';
@@ -77,7 +77,7 @@ const TEAM: { v: string; t: string }[] = [
 const LOADING = ['Readiness', 'Personality', 'Choosing a method', 'Building the course'];
 
 // steps
-type Step = 'age' | 'ageinfo' | 'name' | 'where' | 'signs' | 'harder' | 'score' | 'temper' | 'home3' | 'team' | 'build' | 'summary' | 'method' | 'course' | 'start';
+type Step = 'age' | 'ageinfo' | 'name' | 'where' | 'signs' | 'harder' | 'score' | 'temper' | 'home3' | 'team' | 'build' | 'summary' | 'method' | 'course';
 const QUESTIONS: Step[] = ['where', 'signs', 'harder', 'temper', 'home3', 'team']; // numbered "1/6"
 
 /** Default days until Day 1: intensive methods get a day to prepare. */
@@ -161,7 +161,7 @@ export default function Onboarding() {
   const [where, setWhere] = useState(S.where); const [signs, setSigns] = useState<number[]>([]); const [none, setNone] = useState(false);
   const [harder, setHarder] = useState<string[]>([]); const [temper, setTemper] = useState<string | null>(null);
   const [home3, setHome3] = useState<boolean | null>(null); const [team, setTeam] = useState<string[]>([]);
-  const [method, setMethod] = useState<MethodKey | null>(null); const [sample, setSample] = useState(false);
+  const [method, setMethod] = useState<MethodKey | null>(null);
   const [startIn, setStartIn] = useState<number | null>(null); // days from today until Day 1
   const [built, setBuilt] = useState(false);
   const night = where === 'day';
@@ -172,9 +172,10 @@ export default function Onboarding() {
 
   const go = (s: Step) => setHist([...hist, s]);
   const back = () => { if (hist.length > 1) { setHist(hist.slice(0, -1)); setBuilt(false); } };
-  const pickThen = (fn: () => void, s: Step) => { fn(); setTimeout(() => setHist(h => [...h, s]), 220); }; // single answers move on by themselves
+  // The age cards move on by themselves; a double tap must not skip a screen.
+  const pickThen = (fn: () => void, s: Step) => { fn(); setTimeout(() => setHist(h => h[h.length - 1] === s ? h : [...h, s]), 220); };
   const toggle = (list: string[], v: string) => list.includes(v) ? list.filter(x => x !== v) : [...list, v];
-  const after: Partial<Record<Step, Step>> = { age: 'ageinfo', ageinfo: 'name', name: 'where', where: night ? 'temper' : 'signs', signs: 'harder', harder: 'score', score: 'temper', temper: night ? 'team' : 'home3', home3: 'team', team: 'build', build: 'summary', summary: 'method', method: 'course', course: 'start' };
+  const after: Partial<Record<Step, Step>> = { age: 'ageinfo', ageinfo: 'name', name: 'where', where: night ? 'temper' : 'signs', signs: 'harder', harder: 'score', score: 'temper', temper: night ? 'team' : 'home3', home3: 'team', team: 'build', build: 'summary', summary: 'method', method: 'course' };
 
   const finish = async () => {
     update(s => {
@@ -182,9 +183,8 @@ export default function Onboarding() {
       s.where = where; s.quiz = quiz; s.home3 = night ? null : home3; s.method = method ?? rec;
       s.profile = { temperament: temper, harder, team };
       s.pIdx = startIndex(s); s.pDay = 1;
-      const d1 = addDays(sod(Date.now()), sample ? 0 : startIn ?? defaultStart(s.method));
+      const d1 = addDays(sod(Date.now()), startIn ?? defaultStart(s.method));
       s.start = d1; s.stageStart = d1; s.repeats = []; s.coursePause = null; s.gateSnooze = 0; s.courseV = 1;
-      if (sample) sampleWeek(s);
       s.onboarded = true;
     });
     await permission(true).catch(() => false); // ask for notifications once, right after setup
@@ -192,7 +192,7 @@ export default function Onboarding() {
 
   const qn = QUESTIONS.filter(q => !(night && (q === 'signs' || q === 'harder' || q === 'home3')));
   const qi = qn.indexOf(step);
-  const sectionOf: Record<Step, number> = { age: 0, ageinfo: 0, name: 0, where: 1, signs: 1, harder: 1, score: 1, temper: 2, home3: 2, team: 2, build: 3, summary: 3, method: 3, course: 4, start: 4 };
+  const sectionOf: Record<Step, number> = { age: 0, ageinfo: 0, name: 0, where: 1, signs: 1, harder: 1, score: 1, temper: 2, home3: 2, team: 2, build: 3, summary: 3, method: 4, course: 4 };
   const top = (
     <View style={{ marginBottom: 20 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', height: 32 }}>
@@ -250,9 +250,9 @@ export default function Onboarding() {
       <Sub style={{ marginTop: -6 }}>Shared with grandparents and daycare so everyone says the same thing.</Sub>
     </>;
   } else if (step === 'where') {
-    cta = null;
+    ok = !!where;
     body = <>{top}<Head t={`Where is ${nm} now?`} s="Choose what's closest. This sets where the course starts." />
-      {WHERE.map(w => <Answer key={w.v} t={w.t} s={w.s} ic={w.ic} on={where === w.v} onPress={() => pickThen(() => { setWhere(w.v); if (w.v === 'day') setMethod('night'); else if (method === 'night') setMethod(null); }, w.v === 'day' ? 'temper' : 'signs')} />)}
+      {WHERE.map(w => <Answer key={w.v} t={w.t} s={w.s} ic={w.ic} on={where === w.v} onPress={() => { setWhere(w.v); if (w.v === 'day') setMethod('night'); else if (method === 'night') setMethod(null); }} />)}
     </>;
   } else if (step === 'signs') {
     ok = signs.length > 0 || none;
@@ -291,15 +291,15 @@ export default function Onboarding() {
       </Card> : null}
     </>;
   } else if (step === 'temper') {
-    cta = null;
+    ok = !!temper;
     body = <>{top}<Head t={`What's ${nm} like?`} s="Choose the one that sounds most like them." />
-      {TEMPER.map(x => <Answer key={x.v} t={x.t} s={x.s} ic={x.ic} on={temper === x.v} onPress={() => pickThen(() => setTemper(x.v), night ? 'team' : 'home3')} />)}
+      {TEMPER.map(x => <Answer key={x.v} t={x.t} s={x.s} ic={x.ic} on={temper === x.v} onPress={() => setTemper(x.v)} />)}
     </>;
   } else if (step === 'home3') {
-    cta = null;
+    ok = home3 !== null;
     body = <>{top}<Head t="Can you spend 3 full days at home soon?" s="Like a long weekend. It opens up the fastest method, but it's not needed." />
-      <Answer t="Yes, we can" s="e.g. a long weekend or days off" ic="home" on={home3 === true} onPress={() => pickThen(() => setHome3(true), 'team')} />
-      <Answer t="Not really" s="Work, daycare or a busy week" ic="car" on={home3 === false} onPress={() => pickThen(() => setHome3(false), 'team')} />
+      <Answer t="Yes, we can" s="e.g. a long weekend or days off" ic="home" on={home3 === true} onPress={() => setHome3(true)} />
+      <Answer t="Not really" s="Work, daycare or a busy week" ic="car" on={home3 === false} onPress={() => setHome3(false)} />
     </>;
   } else if (step === 'team') {
     ok = team.length > 0;
@@ -341,9 +341,9 @@ export default function Onboarding() {
     body = <>{top}<Head t={night ? "We'll focus on nights" : 'Your method'} s={night ? `${Nm} is dry in the day, so the course works on nights.` : `We suggest ${METHODS[rec].name.toLowerCase()} for ${nm}. You can pick another, and switch any time.`} />
       {keys.map(k => <MethodCard key={k} k={k} rec={k === rec} on={(method ?? rec) === k} onPress={() => setMethod(k)} />)}
     </>;
-  } else if (step === 'course') {
+  } else {
     const mk = method ?? rec; const m = METHODS[mk]; const si = startIndex({ ...draft, method: mk } as any);
-    cta = 'Looks good';
+    cta = 'Start'; action = finish;
     const sIn = startIn ?? defaultStart(mk);
     const dayChip = (k: number) => k === 0 ? 'Today' : k === 1 ? 'Tomorrow' : new Date(addDays(sod(Date.now()), k)).toLocaleDateString([], { weekday: 'short', day: 'numeric' });
     body = <>{top}<Head t={`${Nm}'s course`} s={`${m.name} · ${m.pace}. Days move on by themselves from Day 1. At the end of each stage, the app looks at your logs and suggests moving on. You decide.`} />
@@ -357,15 +357,7 @@ export default function Onboarding() {
           {i === si ? <Badge label="Start" /> : null}
         </View>)}
       </Card>
-    </>;
-  } else {
-    cta = 'Start'; action = finish;
-    body = <>{top}<Head t="How do you want to start?" s="The timer learns from your logs, so a fresh start begins with program timing and gets more personal each day." />
-      {([[false, 'spark', `Start fresh with ${nm}`, 'Empty log. Begin today.', 'For real use'], [true, 'chart', 'Explore with a sample week', 'Fills in 7 days of example logs so you can see learned timing, insights and history.', '']] as const).map(([v, ic, t, s, b]) =>
-        <Pressable key={String(v)} onPress={() => setSample(v)} style={{ flexDirection: 'row', gap: 14, alignItems: 'flex-start', padding: 16, borderRadius: 18, backgroundColor: sample === v ? C.brandSoft : C.surface, borderWidth: 1.5, borderColor: sample === v ? C.brand : C.line, marginBottom: 10 }}>
-          <IconBox name={ic} tone={v ? 'water' : 'ok'} size={40} /><View style={{ flex: 1 }}><View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><T w="s">{t}</T>{b ? <Badge label={b} /> : null}</View><Sub>{s}</Sub></View>
-        </Pressable>)}
-      <Sub style={{ marginTop: 8 }}>Next, we'll ask to send you notifications. They're how potty reminders, the morning plan and the evening check-in reach you.</Sub>
+      <Sub style={{ marginTop: 14 }}>Next, we'll ask to send you notifications. They're how potty reminders, the morning plan and the evening check-in reach you.</Sub>
     </>;
   }
   return (
