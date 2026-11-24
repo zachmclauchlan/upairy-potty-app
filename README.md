@@ -65,6 +65,7 @@ A three-tile strip at the top of the Today screen (Morning, Through the day, Eve
 
 ### Sign-in (first screen)
 - **Email + order number.** The `order-signin` server function checks in Loop that the order number belongs to that email, then signs the parent in (UpAiry's own accounts, via Supabase). No password and no emailed code. Failed tries are limited to 8 an hour per email, so order numbers can't be guessed.
+- **Access list (team, testers, gifts):** people in the `manual_access` table sign in with their email and an access number instead of an order number, and get Potty Up as a gift. Nothing is created in Shopify or Loop, so no emails are sent. Add someone in Supabase → Table editor → `manual_access` (email, a 6-digit access number, a note).
 - **Unlocking Potty Up:** after sign-in, the server asks Loop whether that email has an active Potty Up subscription. If it does, the full app unlocks. This is rechecked every 6 hours, so cancellations take effect.
 - **No buy button in the app** (Apple's rules for apps that unlock a web purchase). Parents buy Potty Up on upairy.com.
 - **FAQ** on the screen: where to find the order number, which email to use, bought Potty Up but it says free, is my child's data shared.

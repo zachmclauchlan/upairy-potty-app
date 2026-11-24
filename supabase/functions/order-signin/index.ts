@@ -3,6 +3,7 @@
 // If the order number belongs to that email, we sign the parent in and return a session.
 // Whether Potty Up is unlocked is decided afterwards by the `membership` function.
 // Failed tries are limited per email, so order numbers can't be guessed.
+// People on the manual_access list (team, testers, gifts) use an access number instead and get Potty Up as a gift.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
@@ -47,8 +48,10 @@ Deno.serve(async (req) => {
   const { count } = await admin.from('signin_attempts').select('id', { count: 'exact', head: true }).eq('email', email).gte('at', since);
   if ((count ?? 0) >= MAX_FAILS) return json({ error: 'too_many_tries' }, 429);
 
-  let ok = false;
-  try { ok = await orderMatches(email, digits); }
+  const { data: manual } = await admin.from('manual_access').select('access_code').eq('email', email).maybeSingle();
+  const gift = !!manual && String(manual.access_code).replace(/\D/g, '') === digits;
+  let ok = gift;
+  if (!ok) try { ok = await orderMatches(email, digits); }
   catch (e) { console.error('order-signin', (e as Error).message); return json({ error: 'lookup_failed' }, 502); }
   if (!ok) { await admin.from('signin_attempts').insert({ email }); return json({ error: 'no_match' }, 401); }
 
@@ -58,8 +61,12 @@ Deno.serve(async (req) => {
   const link = await admin.auth.admin.generateLink({ type: 'magiclink', email });
   const hash = link.data?.properties?.hashed_token;
   if (!hash) { console.error('generateLink', link.error?.message); return json({ error: 'account_failed' }, 500); }
-  const { data, error } = await admin.auth.verifyOtp({ type: 'magiclink', token_hash: hash });
+  // A separate client for this step: verifyOtp switches a client to acting as the user, which would
+  // make the admin writes below run under the parent's own (read-only) permissions.
+  const authClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data, error } = await authClient.auth.verifyOtp({ type: 'magiclink', token_hash: hash });
   if (error || !data.session) { console.error('verifyOtp', error?.message); return json({ error: 'account_failed' }, 500); }
   await admin.from('signin_attempts').delete().eq('email', email);
+  if (gift) await admin.from('profiles').update({ plan: 'plus', plus_source: 'gift', plus_until: null, updated_at: new Date().toISOString() }).eq('id', data.session.user.id);
   return json({ access_token: data.session.access_token, refresh_token: data.session.refresh_token });
 });
