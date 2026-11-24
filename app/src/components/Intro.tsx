@@ -105,27 +105,27 @@ export default function Intro({ open, onDone }: { open: boolean; onDone: () => v
   const dim = 'rgba(18,24,18,0.66)';
 
   const bubble = (
-    <View style={[{ backgroundColor: C.surface, borderRadius: 22, padding: 18, marginHorizontal: 16 }, shadow]}>
+    <View style={[{ backgroundColor: C.surface, borderRadius: 20, padding: 20, marginHorizontal: 16 }, shadow]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-        <IconBox name={s.icon} tone={s.tone} size={38} />
-        <T w="b" size={18} style={{ flex: 1 }}>{s.title}</T>
+        <IconBox name={s.icon} tone={s.tone} />
+        <T w="fun" size={22} style={{ flex: 1 }}>{s.title}</T>
       </View>
-      <Sub style={{ fontSize: 14.5 }}>{s.body}</Sub>
+      <Sub style={{ fontSize: 15 }}>{s.body}</Sub>
       {s.demo === 'notif' ? <View style={{ backgroundColor: C.sunk, borderRadius: 16, padding: 12, marginTop: 12 }}>
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <View style={{ width: 32, height: 32, borderRadius: 9, backgroundColor: C.brand, alignItems: 'center', justifyContent: 'center' }}><T w="fun" size={16} color="#fff">U</T></View>
           <View style={{ flex: 1 }}><T w="s" size={13}>{S.child.name || 'Your child'} may need to go soon</T><Sub style={{ fontSize: 12 }}>Good time to offer the potty, around 10:40 AM.</Sub></View>
         </View>
         <View style={{ flexDirection: 'row', gap: 6, marginTop: 10 }}>
-          {['Wee on the potty', 'Nothing came', 'Accident'].map(b => <View key={b} style={{ flex: 1, backgroundColor: C.surface, borderRadius: 10, paddingVertical: 7, alignItems: 'center' }}><T w="m" size={11.5} color={C.water}>{b}</T></View>)}
+          {['Wee on the potty', 'Nothing came', 'Accident'].map(b => <View key={b} style={{ flex: 1, backgroundColor: C.surface, borderRadius: 10, paddingVertical: 7, alignItems: 'center' }}><T w="m" size={12} color={C.water}>{b}</T></View>)}
         </View>
       </View> : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, gap: 10 }}>
-        <View style={{ flexDirection: 'row', gap: 4, flex: 1, flexWrap: 'wrap' }}>{all.map((_, k) => <View key={k} style={{ width: k === i ? 14 : 5, height: 5, borderRadius: 3, backgroundColor: k === i ? C.brand : C.line }} />)}</View>
+        <View style={{ flexDirection: 'row', gap: 4, flex: 1, flexWrap: 'wrap' }}>{all.map((_, k) => <View key={k} style={{ width: k === i ? 16 : 6, height: 6, borderRadius: 3, backgroundColor: k === i ? C.brand : C.line }} />)}</View>
         {i > 0 ? <Pressable onPress={() => setI(all[i - 1].tap ? i - 2 : i - 1)} hitSlop={10}><T w="s" size={14} color={C.ink2}>Back</T></Pressable> : null}
         {s.tap
-          ? <View style={{ justifyContent: 'center', paddingHorizontal: 14, minHeight: 44, borderRadius: 14, backgroundColor: C.brandSoft }}><T w="s" size={14} color={C.brandInk}>Tap it below</T></View>
-          : <Btn title={last ? "Let's go" : 'Next'} onPress={() => last ? finish() : setI(i + 1)} style={{ paddingHorizontal: 22, minHeight: 44 }} />}
+          ? <View style={{ justifyContent: 'center', paddingHorizontal: 16, minHeight: 44, borderRadius: 22, backgroundColor: C.brandSoft, borderWidth: 2, borderColor: C.ink }}><T w="s" size={14}>Tap it below</T></View>
+          : <Btn small title={last ? "Let's go" : 'Next'} onPress={() => last ? finish() : setI(i + 1)} style={{ paddingHorizontal: 24 }} />}
       </View>
     </View>
   );
