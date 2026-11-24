@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { T, Btn, toast } from './ui';
 import Icon from './Icon';
 import { lyr } from './Sheets';
+import { useSong, lineAt } from './SongPlayer';
 import { C } from '@/lib/theme';
 import { S, update } from '@/lib/store';
 import { SONGS } from '@/lib/content';
@@ -50,7 +51,12 @@ function SitTimer() {
     setLeft(180); setLine(0); setOpen(true);
   }), []);
   useEffect(() => { if (!open) return; const t = setInterval(() => setLeft(l => Math.max(0, l - 1)), 1000); return () => clearInterval(t); }, [open]);
-  useEffect(() => { if (!open || !S.sitMusic) return; const t = setInterval(() => setLine(l => (l + 1) % 4), 3500); return () => clearInterval(t); }, [open, si]);
+  const sitSong = SONGS[si]; const sitLines = lyr(si).filter(x => x.trim());
+  // with audio: the song plays (on loop) while they sit; without: the lines cycle to sing along
+  const song = useSong(open && S.sitMusic ? sitSong?.a : undefined, { autoplay: true, loop: true });
+  useEffect(() => { if (!open || !S.sitMusic || sitSong?.a) return; const t = setInterval(() => setLine(l => (l + 1) % Math.max(1, sitLines.length)), 3500); return () => clearInterval(t); }, [open, si]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (!open) song.stop(); }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  const shown = sitSong?.a ? Math.max(0, sitLines.indexOf(lyr(si)[Math.max(0, lineAt(lyr(si), song.time, song.dur))])) : line;
   const done = (v: 'success' | 'tried') => { setOpen(false); logPotty(v, v === 'success' ? 'wee' : null); if (v === 'success') emit('celebrate'); else toast('Logged: sat, nothing came', 'Practice still counts'); };
   if (!open) return null;
   const Cc = 2 * Math.PI * 96; const sing = S.sitMusic;
@@ -67,7 +73,7 @@ function SitTimer() {
         </View>
         <T w="fun" size={44} style={{ marginTop: 14, lineHeight: 50 }}>Potty time!</T>
         {sing ? <>
-          <T w="fun" size={22} style={{ textAlign: 'center', minHeight: 60, marginTop: 12, lineHeight: 30 }}>{lyr(si)[line]}</T>
+          <T w="fun" size={22} style={{ textAlign: 'center', minHeight: 60, marginTop: 12, lineHeight: 30 }}>{sitLines[shown] ?? ''}</T>
           <Pressable onPress={() => { setSi((si + 1) % SONGS.length); setLine(0); }} style={{ flexDirection: 'row', gap: 6, alignItems: 'center', marginTop: 4 }}><Icon name="music" size={16} color={C.ink2} /><T w="s" size={13} color={C.ink2}>{SONGS[si].t} · next song</T></Pressable>
         </> : <T size={15} color={C.ink2} style={{ marginTop: 10 }}>Sit with {S.child.name} and read a book.</T>}
         <Pressable onPress={() => update(s => { s.sitMusic = !s.sitMusic; })} style={{ marginTop: 8 }}><T w="s" size={13} color={C.ink2}>{sing ? 'Song off' : 'Song on'}</T></Pressable>

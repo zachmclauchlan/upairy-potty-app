@@ -12,6 +12,7 @@ import { addEvent, logPotty } from '@/lib/actions';
 import { previewReminder, permission, reschedule } from '@/lib/notifications';
 import { on, emit } from '@/lib/bus';
 import { COACH_NAME } from '@/lib/coach';
+import { useSong, PlayBar, Lyrics, lineAt } from './SongPlayer';
 import { COURSES } from '@/lib/courseContent';
 import { inPrep, setStart, goToStage, today as todayDay } from '@/lib/course';
 
@@ -241,15 +242,18 @@ function SituationSheet({ i, close }: { i: number; close: () => void }) {
 /* ---------- songs (lyrics now; Suno audio drops in later) ---------- */
 export const lyr = (i: number) => SONGS[i].l.map(x => x.replace('{name}', S.child.name || 'you'));
 function SongSheet({ i, close }: { i: number; close: () => void }) {
-  const s = SONGS[i]; const [line, setLine] = useState(-1);
-  useEffect(() => { if (line < 0) return; const t = setTimeout(() => setLine(l => l >= 3 ? -1 : l + 1), 3500); return () => clearTimeout(t); }, [line]);
+  const s = SONGS[i]; const lines = lyr(i);
+  const song = useSong(s.a);
+  const [line, setLine] = useState(-1);
+  // no audio yet: the lines light up one by one to sing along
+  useEffect(() => { if (s.a || line < 0) return; const t = setTimeout(() => setLine(l => l >= lines.length - 1 ? -1 : l + 1), 3000); return () => clearTimeout(t); }, [line, s.a, lines.length]);
+  const active = s.a ? (song.playing || song.time > 0 ? lineAt(lines, song.time, song.dur) : -1) : line;
   return (
-    <Sheet open onClose={close} title={s.t}>
-      <Sub style={{ textAlign: 'center', marginTop: -10 }}>{s.tag} · sing it together</Sub>
-      <View style={{ marginVertical: 18 }}>{lyr(i).map((l, k) => <T key={k} w="fun" size={24} color={line === k || line < 0 ? C.ink : C.ink3} style={{ textAlign: 'center', lineHeight: 33 }}>{l}</T>)}</View>
-      <Btn icon={line >= 0 ? 'pause' : 'music'} title={line >= 0 ? 'Stop' : 'Sing along'} onPress={() => setLine(line >= 0 ? -1 : 0)} />
-      <Sub style={{ textAlign: 'center', marginTop: 8 }}>Song audio is coming soon. For now the lines light up so you can sing along.</Sub>
-      <Btn kind="ghost" icon="hour" title="Use it for the sit timer" style={{ marginTop: 10 }} onPress={() => { update(st => { st.sitSong = i; }); close(); toast(`${s.t} set for the sit timer`); }} />
+    <Sheet open onClose={() => { song.stop(); close(); }} title={s.t}>
+      <Sub style={{ textAlign: 'center', marginTop: -4, marginBottom: 16 }}>{s.tag} · sing it together</Sub>
+      {s.a ? <PlayBar song={song} /> : <Btn icon={line >= 0 ? 'pause' : 'music'} title={line >= 0 ? 'Stop' : 'Sing along'} onPress={() => setLine(line >= 0 ? -1 : 0)} />}
+      <View style={{ marginVertical: 18 }}><Lyrics lines={lines} active={active} /></View>
+      <Btn kind="ghost" icon="hour" title="Use it for the sit timer" onPress={() => { song.stop(); update(st => { st.sitSong = i; }); close(); toast(`${s.t} set for the sit timer`); }} />
     </Sheet>
   );
 }
