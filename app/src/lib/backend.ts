@@ -1,4 +1,4 @@
-// Connection to UpAiry's back end (Supabase): email-code sign-in, plan, order linking, AI coach.
+// Connection to UpAiry's back end (Supabase): sign-in with email + order number, Potty Up check, AI coach.
 // The URL and publishable key are meant to be public (they ship inside every app); access is
 // controlled by row-level security and the server functions. Secret keys live only on the server.
 import { createClient } from '@supabase/supabase-js';
@@ -24,17 +24,16 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
 
 export type Plan = { plan: 'plus' | 'free'; plusUntil: string | null; order: string | null };
 
-/** Step 1: email the parent a 6-digit code. Creates the account on first use. */
-export async function sendCode(email: string) {
-  const { error } = await supabase.auth.signInWithOtp({ email: email.trim().toLowerCase(), options: { shouldCreateUser: true } });
-  if (error) throw new Error(friendly(error, 'send'));
-}
-
-/** Step 2: check the code. On success the parent is signed in. */
-export async function verifyCode(email: string, code: string) {
-  const { data, error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: code.trim(), type: 'email' });
-  if (error || !data.session) throw new Error(error ? friendly(error, 'verify') : 'That code didn\'t work. Try again or send a new one.');
-  return data.session.user.email ?? email;
+/** Sign in with the email and order number from an upairy.com order. No password, no emailed code. */
+export async function signInWithOrder(email: string, order: string) {
+  const { data, error } = await supabase.functions.invoke('order-signin', { body: { email: email.trim().toLowerCase(), order: order.trim() } });
+  if (error) {
+    const body = await (error as any).context?.json?.().catch(() => null);
+    throw new Error(friendly(body?.error ?? (String((error as any).message ?? '').toLowerCase().includes('fetch') ? 'network' : 'failed')));
+  }
+  if (!data?.access_token) throw new Error(friendly('failed'));
+  const { error: e2 } = await supabase.auth.setSession({ access_token: data.access_token, refresh_token: data.refresh_token });
+  if (e2) throw new Error(friendly('failed'));
 }
 
 export type Membership = { plan: 'plus' | 'free'; member: boolean; gift?: boolean; order?: string | null; next_billing?: string | null; cancelling?: boolean; error?: string };
@@ -87,12 +86,10 @@ export async function askCoachServer(question: string, history: { role: 'user' |
   return data;
 }
 
-function friendly(err: { message?: string; code?: string; status?: number }, step: 'send' | 'verify') {
-  const code = String(err.code ?? ''), m = String(err.message ?? '').toLowerCase();
-  if (code === 'email_address_invalid') return "That email address doesn't look right. Check it and try again.";
-  if (code === 'email_address_not_authorized') return "We can't send to that address yet. Email sign-in is still being set up.";
-  if (code.startsWith('over_') || m.includes('rate') || m.includes('seconds')) return 'Please wait a minute before asking for another code.';
-  if (step === 'verify' && (code === 'otp_expired' || m.includes('expired') || m.includes('invalid'))) return "That code didn't work or has expired. Check it, or send a new one.";
-  if (err.status === 0 || m.includes('fetch') || m.includes('network')) return "Can't connect. Check your internet connection.";
-  return step === 'send' ? "We couldn't send a code just now. Try again in a minute." : "We couldn't sign you in just now. Try again.";
+function friendly(code: string) {
+  if (code === 'no_match') return "We couldn't find that order on this email. Check both match your order confirmation email.";
+  if (code === 'too_many_tries') return 'Too many tries. Please wait an hour, or contact us at upairy.com.';
+  if (code === 'bad_input') return 'Enter your email and your order number (it starts with #).';
+  if (code === 'network') return "Can't connect. Check your internet connection.";
+  return "We couldn't sign you in just now. Try again in a minute.";
 }

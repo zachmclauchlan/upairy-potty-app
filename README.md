@@ -30,7 +30,7 @@ Store name, subtitle, keywords and description: see [STORE_LISTING.md](STORE_LIS
 | **Android phone** | [Latest test build](https://expo.dev/accounts/upairy/projects/upairy-potty-app/builds/e77a7a8c-10dd-4bf9-87db-660fec14043c) | Download on the phone and allow "install from unknown sources". Full app with reminders. |
 | **iPhone** | Coming via TestFlight | Waiting on Apple developer approval. |
 
-**Sign-in:** enter your email and type the 6-digit code you are emailed. Choose **Explore with a sample week** during setup to see the app full of example data.
+**Sign-in:** the email and order number from an upairy.com order (no password, no emailed code). Choose **Explore with a sample week** during setup to see the app full of example data.
 
 ## Contents
 1. The daily loop · 2. Getting started · 3. Programs · 4. Smart timer · 5. Logging · 6. Notifications · 7. Night training · 8. Coach and AI · 9. Kid zone · 10. Progress · 11. Settings and UpAiry · 12. Privacy · 13. Built vs. to do · 14. Technical overview · 15. Running it yourself
@@ -64,10 +64,10 @@ A three-tile strip at the top of the Today screen (Morning, Through the day, Eve
 ## 2. Getting started
 
 ### Sign-in (first screen)
-- **Email + 6-digit code.** UpAiry's own accounts (Supabase), no passwords. The same button creates a free account for new parents.
+- **Email + order number.** The `order-signin` server function checks in Loop that the order number belongs to that email, then signs the parent in (UpAiry's own accounts, via Supabase). No password and no emailed code. Failed tries are limited to 8 an hour per email, so order numbers can't be guessed.
 - **Unlocking Potty Up:** after sign-in, the server asks Loop whether that email has an active Potty Up subscription. If it does, the full app unlocks. This is rechecked every 6 hours, so cancellations take effect.
 - **No buy button in the app** (Apple's rules for apps that unlock a web purchase). Parents buy Potty Up on upairy.com.
-- **FAQ** on the screen: why a code, didn't get the code, bought Potty Up but it says free, is my child's data shared.
+- **FAQ** on the screen: where to find the order number, which email to use, bought Potty Up but it says free, is my child's data shared.
 
 ### Setup (about a minute)
 1. Child's name, age range, and the words they use for wee and poo. These are shared with caregivers so everyone says the same thing.

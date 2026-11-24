@@ -1,52 +1,51 @@
-// Sign in with email + a 6-digit code (UpAiry's own accounts, via Supabase).
-// After sign-in we check whether the parent has Potty Up (sold on upairy.com, billed by Loop, matched by email).
-// No "buy" button or link here: App Store rules for apps that unlock web purchases.
+// Sign in with the email and order number from an upairy.com order. No password, no emailed code.
+// The server checks the order belongs to that email (in Loop), then we check for an active Potty Up
+// subscription on the same email. No "buy" button or link here: App Store rules for apps that unlock web purchases.
 import { useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { T, Sub, Btn, Card, Input, Row, Tip, toast } from './ui';
+import { T, Sub, Btn, Card, Input, Row, Tip } from './ui';
 import Icon from './Icon';
 import Logo from './Logo';
 import { C } from '@/lib/theme';
 import { update } from '@/lib/store';
-import { sendCode, verifyCode, checkMembership, type Membership } from '@/lib/backend';
+import { signInWithOrder, checkMembership, type Membership } from '@/lib/backend';
 
-type Step = 'email' | 'code' | 'done';
 const FAQ = [
-  ['Why a code instead of a password?', 'Nothing to remember or reset. We email you a 6-digit code each time you sign in on a new phone.'],
-  ["I didn't get the code", 'Check your spam or promotions folder, make sure the email is spelled right, then tap "Send a new code".'],
-  ["I bought Potty Up but it says free", 'Sign in with the same email you used at checkout on upairy.com. Potty Up is linked to that email.'],
+  ['Where do I find my order number?', 'In your order confirmation email from UpAiry. It starts with # (for example #1314664). You can type it with or without the #.'],
+  ['Which email do I use?', 'The email you used at checkout on upairy.com. It has to match the order.'],
+  ['I bought Potty Up but it says free', 'Sign in with the email and order number from your Potty Up order. Then tap "Check my purchase" in Settings.'],
   ["Is my child's data shared?", "No. Your child's logs stay on this phone. Your account only holds your email and whether you have Potty Up."],
 ];
 
 export default function Auth() {
   const ins = useSafeAreaInsets();
-  const [step, setStep] = useState<Step>('email');
-  const [email, setEmail] = useState(''); const [code, setCode] = useState('');
+  const [done, setDone] = useState(false);
+  const [email, setEmail] = useState(''); const [order, setOrder] = useState('');
   const [busy, setBusy] = useState(false); const [err, setErr] = useState(''); const [faq, setFaq] = useState<number | null>(null);
   const [m, setM] = useState<Membership | null>(null);
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const validOrder = order.replace(/\D/g, '').length >= 3;
 
-  const run = async (fn: () => Promise<void>) => { setBusy(true); setErr(''); try { await fn(); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); } };
-  const onSend = () => run(async () => { await sendCode(email); setCode(''); setStep('code'); toast('Code sent', 'Check ' + email.trim()); });
-  const onVerify = () => run(async () => {
-    await verifyCode(email, code);
-    setM(await checkMembership().catch(() => ({ plan: 'free', member: false } as Membership)));
-    setStep('done');
-  });
-  const finish = () => update(s => { s.account = { id: email.trim().toLowerCase(), plan: m?.plan ?? 'free', since: Date.now(), order: m?.order ?? null, plusUntil: null }; s.memberSince = Date.now(); });
-  const back = <Pressable onPress={() => { setStep('email'); setErr(''); }} hitSlop={12} style={{ marginLeft: -6, marginBottom: 4 }}><Icon name="chevL" size={24} color={C.ink2} /></Pressable>;
-  const H = (t: string, s: string) => <><T w="b" size={28} style={{ marginTop: 18, marginBottom: 8 }}>{t}</T><Sub style={{ fontSize: 15, marginBottom: 20 }}>{s}</Sub></>;
+  const onSignIn = async () => {
+    setBusy(true); setErr('');
+    try {
+      await signInWithOrder(email, order);
+      setM(await checkMembership().catch(() => ({ plan: 'free', member: false } as Membership)));
+      setDone(true);
+    } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+  };
+  const finish = () => update(s => { s.account = { id: email.trim().toLowerCase(), plan: m?.plan ?? 'free', since: Date.now(), order: order.trim(), plusUntil: null }; s.memberSince = Date.now(); });
 
   let body;
-  if (step === 'done') {
+  if (done) {
     const plus = m?.plan === 'plus';
     body = <>
       <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginTop: 30 }}><Icon name="check" size={36} color={C.brand} stroke={2.4} /></View>
       <T w="b" size={28} style={{ textAlign: 'center', marginTop: 20 }}>{plus ? 'Potty Up is unlocked' : "You're signed in"}</T>
       <Sub style={{ textAlign: 'center', marginTop: 8, marginBottom: 20, fontSize: 15 }}>{plus
         ? `Linked to ${email.trim()}. Everything is ready to go.`
-        : `Signed in as ${email.trim()}. ${m?.error === 'not_configured' ? 'Checking purchases is still being set up.' : "You're on the free version. If you bought Potty Up on upairy.com, sign in with the email you used at checkout."}`}</Sub>
+        : `Signed in as ${email.trim()}. You're on the free version. If you have Potty Up, it's linked to the email you used to buy it.`}</Sub>
       <Card pad={4} style={{ paddingHorizontal: 18 }}>
         {(plus ? ['The full day-by-day program', 'Smart reminders and the AI coach', 'Potty songs, kid mode and rewards', 'Free UpAiry gear as you go'] : ['Logging, timer and history', 'Readiness check and built-in guides', 'Your data stays on this phone'])
           .map((x, i) => <Row key={x} first={i === 0} title={x} icon="check" />)}
@@ -54,24 +53,17 @@ export default function Auth() {
       <View style={{ flex: 1, minHeight: 30 }} />
       <Btn title="Set up your child" onPress={finish} />
     </>;
-  } else if (step === 'code') {
-    body = <>
-      {back}
-      {H('Check your email', `We sent a 6-digit code to ${email.trim()}. It expires in an hour.`)}
-      <Input label="6-digit code" value={code} onChangeText={t => setCode(t.replace(/\D/g, '').slice(0, 6))} placeholder="123456" keyboardType="number-pad" autoComplete="one-time-code" textContentType="oneTimeCode" maxLength={6} autoFocus />
-      {err ? <Tip icon="info" tone="sun">{err}</Tip> : null}
-      <Btn title={busy ? 'Checking…' : 'Sign in'} onPress={onVerify} disabled={busy || code.length < 6} />
-      <Btn kind="text" title="Send a new code" onPress={onSend} disabled={busy} />
-    </>;
   } else {
     body = <>
       <Logo width={96} />
       <T w="b" size={34} color={C.brand} style={{ marginTop: 18 }}>Potty Up</T>
-      {H('Sign in', "Enter your email and we'll send you a code. Bought Potty Up on upairy.com? Use the email you checked out with.")}
+      <T w="b" size={28} style={{ marginTop: 18, marginBottom: 8 }}>Sign in</T>
+      <Sub style={{ fontSize: 15, marginBottom: 20 }}>Use the email and order number from your upairy.com order.</Sub>
       <Input label="Email" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboardType="email-address" autoCapitalize="none" autoComplete="email" textContentType="emailAddress" />
+      <Input label="Order number" value={order} onChangeText={setOrder} placeholder="#1314664" keyboardType="numbers-and-punctuation" autoCapitalize="none" autoCorrect={false} />
       {err ? <Tip icon="info" tone="sun">{err}</Tip> : null}
-      <Btn title={busy ? 'Sending…' : 'Email me a code'} onPress={onSend} disabled={busy || !validEmail} />
-      <Sub style={{ textAlign: 'center', marginTop: 12 }}>New here? The same button creates your free account.</Sub>
+      <Btn title={busy ? 'Checking…' : 'Sign in'} onPress={onSignIn} disabled={busy || !validEmail || !validOrder} />
+      <Sub style={{ textAlign: 'center', marginTop: 12 }}>Your order number is in your order confirmation email.</Sub>
       <T w="s" size={15} style={{ marginTop: 26, marginBottom: 8, marginLeft: 2 }}>Questions</T>
       <Card pad={2} style={{ paddingHorizontal: 18 }}>
         {FAQ.map(([q, a], i) => <View key={q}>
