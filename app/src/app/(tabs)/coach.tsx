@@ -4,9 +4,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { T, Sub, Chip } from '@/components/ui';
+import { T, Sub, Chip, IconBtn } from '@/components/ui';
 import Icon from '@/components/Icon';
-import { C, F, shadow } from '@/lib/theme';
+import { BW, C, F, outline, shadow } from '@/lib/theme';
 import { S, update, useApp } from '@/lib/store';
 import { aiContext, localAnswer } from '@/lib/logic';
 import { emit, on } from '@/lib/bus';
@@ -42,21 +42,21 @@ async function ask(q: string) {
 }
 
 function Avatar({ size = 34 }: { size?: number }) {
-  return <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: C.brand, alignItems: 'center', justifyContent: 'center' }}>
+  return <View style={[{ width: size, height: size, borderRadius: size / 2, backgroundColor: C.brand, alignItems: 'center', justifyContent: 'center' }, outline]}>
     <T w="fun" size={size * 0.5} color="#fff" style={{ lineHeight: size * 0.62 }}>{COACH_NAME[0]}</T>
   </View>;
 }
 
 function Bubble({ r, t, src }: { r: 'u' | 'a'; t: string; src?: string }) {
-  if (r === 'u') return <View style={{ alignSelf: 'flex-end', maxWidth: '84%', backgroundColor: C.brand, borderRadius: 20, borderBottomRightRadius: 6, paddingVertical: 11, paddingHorizontal: 15 }}>
+  if (r === 'u') return <View style={[{ alignSelf: 'flex-end', maxWidth: '84%', backgroundColor: C.brand, borderRadius: 20, borderBottomRightRadius: 6, paddingVertical: 10, paddingHorizontal: 16 }, outline]}>
     <T size={15} color="#fff" style={{ lineHeight: 22 }}>{t}</T>
   </View>;
   const typing = t === THINKING;
   return <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-end', maxWidth: '90%' }}>
     <Avatar size={28} />
-    <View style={[{ flexShrink: 1, backgroundColor: C.surface, borderRadius: 20, borderBottomLeftRadius: 6, paddingVertical: 11, paddingHorizontal: 15 }, shadow]}>
+    <View style={[{ flexShrink: 1, backgroundColor: C.surface, borderRadius: 20, borderBottomLeftRadius: 6, paddingVertical: 10, paddingHorizontal: 16 }, outline]}>
       <T size={15} color={typing ? C.ink3 : C.ink} style={{ lineHeight: 22 }}>{typing ? `${COACH_NAME} is typing…` : t}</T>
-      {!typing && src && src !== COACH_NAME ? <T size={11} color={C.ink3} style={{ marginTop: 6 }}>{src}</T> : null}
+      {!typing && src && src !== COACH_NAME ? <T size={12} color={C.ink3} style={{ marginTop: 6 }}>{src}</T> : null}
     </View>
   </View>;
 }
@@ -77,18 +77,16 @@ export default function Coach() {
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: C.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       {/* header */}
-      <View style={{ paddingTop: ins.top + 8, paddingHorizontal: 16, paddingBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: 1, borderBottomColor: C.line, backgroundColor: C.bg }}>
-        <Avatar size={42} />
+      <View style={{ paddingTop: ins.top + 8, paddingHorizontal: 16, paddingBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: BW, borderBottomColor: C.ink, backgroundColor: C.bg }}>
+        <Avatar size={44} />
         <View style={{ flex: 1 }}>
-          <T w="b" size={18}>{COACH_NAME}</T>
-          <Sub style={{ fontSize: 12.5 }}>{COACH_TAG} · AI</Sub>
+          <T w="fun" size={24}>{COACH_NAME}</T>
+          <Sub>{COACH_TAG} · AI</Sub>
         </View>
-        <Pressable onPress={() => emit('guides')} accessibilityLabel="Guides" style={[{ height: 38, paddingHorizontal: 12, borderRadius: 19, backgroundColor: C.surface, flexDirection: 'row', alignItems: 'center', gap: 6 }, shadow]}>
-          <Icon name="book" size={17} color={C.ink} /><T w="s" size={13}>Guides</T>
+        <Pressable onPress={() => emit('guides')} accessibilityLabel="Guides" style={[{ height: 40, paddingHorizontal: 14, borderRadius: 20, backgroundColor: C.surface, flexDirection: 'row', alignItems: 'center', gap: 6 }, shadow]}>
+          <Icon name="book" size={16} color={C.ink} /><T w="s" size={13}>Guides</T>
         </Pressable>
-        <Pressable onPress={() => emit('aiinfo')} accessibilityLabel={`About ${COACH_NAME}`} hitSlop={8} style={[{ width: 38, height: 38, borderRadius: 19, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }, shadow]}>
-          <Icon name="info" size={18} color={C.ink} />
-        </Pressable>
+        <IconBtn name="info" label={`About ${COACH_NAME}`} onPress={() => emit('aiinfo')} />
       </View>
 
       {/* conversation */}
@@ -105,15 +103,15 @@ export default function Coach() {
           <Chip label="Ask something else" onPress={() => input.current?.focus()} />
           <Chip label="New conversation" onPress={() => update(s => { s.chat = []; })} />
         </View> : null}
-        <Sub style={{ textAlign: 'center', fontSize: 11.5, marginTop: 6 }}>{COACH_NAME} is an AI coach. General guidance, not medical advice.</Sub>
+        <Sub style={{ textAlign: 'center', fontSize: 12, marginTop: 8 }}>{COACH_NAME} is an AI coach. General guidance, not medical advice.</Sub>
       </ScrollView>
 
       {/* composer */}
-      <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingHorizontal: 12, paddingTop: 8, paddingBottom: 10, borderTopWidth: 1, borderTopColor: C.line, backgroundColor: C.bg }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingHorizontal: 12, paddingTop: 12, paddingBottom: 12, backgroundColor: C.bg }}>
         <TextInput ref={input} value={q} onChangeText={setQ} multiline placeholder={`Message ${COACH_NAME}…`} placeholderTextColor={C.ink3}
-          style={{ flex: 1, maxHeight: 120, borderRadius: 22, backgroundColor: C.surface, borderWidth: 1.5, borderColor: C.line, paddingHorizontal: 16, paddingTop: 11, paddingBottom: 11, fontFamily: F.r, fontSize: 15, color: C.ink }} />
-        <Pressable onPress={() => send(q)} disabled={!q.trim() || busy} accessibilityLabel="Send" style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: q.trim() && !busy ? C.brand : C.line, alignItems: 'center', justifyContent: 'center' }}>
-          <Icon name="send" color="#fff" />
+          style={[{ flex: 1, maxHeight: 120, borderRadius: 24, backgroundColor: C.surface, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, fontFamily: F.r, fontSize: 15, color: C.ink }, outline]} />
+        <Pressable onPress={() => send(q)} disabled={!q.trim() || busy} accessibilityLabel="Send" style={[{ width: 48, height: 48, borderRadius: 24, backgroundColor: q.trim() && !busy ? C.brand : C.surface, alignItems: 'center', justifyContent: 'center' }, outline, !(q.trim() && !busy) && { opacity: 0.4 }]}>
+          <Icon name="send" color={q.trim() && !busy ? '#fff' : C.ink} />
         </Pressable>
       </View>
     </KeyboardAvoidingView>

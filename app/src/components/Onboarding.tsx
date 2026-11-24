@@ -9,7 +9,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { T, Sub, Btn, Card, Input, Label, Chip, Chips, Badge, IconBox } from './ui';
 import Icon, { type IconName } from './Icon';
-import { C } from '@/lib/theme';
+import { C, outline, shadow } from '@/lib/theme';
 import type { Tone } from '@/lib/theme';
 import { S, update, sod, addDays } from '@/lib/store';
 import { METHODS, QUIZ, WHERE, toneOf, type MethodKey } from '@/lib/content';
@@ -30,14 +30,14 @@ export function QuizRows({ quiz, set }: { quiz: Record<number, number>; set: (i:
 export function MethodCard({ k, on, rec, onPress }: { k: MethodKey; on: boolean; rec?: boolean; onPress: () => void }) {
   const m = METHODS[k];
   return (
-    <Pressable onPress={onPress} style={{ flexDirection: 'row', gap: 14, alignItems: 'flex-start', padding: 16, borderRadius: 18, backgroundColor: on ? C.brandSoft : C.surface, borderWidth: 1.5, borderColor: on ? C.brand : C.line, marginBottom: 10 }}>
+    <Pressable onPress={onPress} style={[{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', padding: 16, borderRadius: 20, backgroundColor: on ? C.brandSoft : C.surface, marginBottom: 12 }, on ? shadow : outline]}>
       <IconBox name={m.ic} tone={toneOf(m.tone)} size={40} />
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}><T w="s" size={15}>{m.name}</T>{rec ? <Badge label="Suggested" /> : null}</View>
         <Sub style={{ marginTop: 2 }}>{m.blurb}</Sub>
         <View style={{ flexDirection: 'row', gap: 6, marginTop: 8, flexWrap: 'wrap' }}><Badge tone="grey" icon="clock" label={m.pace} /><Badge tone="grey" icon="home" label={m.need} /></View>
       </View>
-      <View style={{ width: 22, height: 22, borderRadius: 11, borderWidth: on ? 6 : 1.8, borderColor: on ? C.brand : '#CFCBC1', marginTop: 2 }} />
+      <View style={{ width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: C.ink, backgroundColor: on ? C.brand : C.surface, marginTop: 2 }} />
     </Pressable>
   );
 }
@@ -85,8 +85,8 @@ const defaultStart = (m: MethodKey) => m === 'threeday' || m === 'barebottom' ? 
 
 function Head({ eyebrow, t, s }: { eyebrow?: string; t: string; s?: string }) {
   return <>
-    {eyebrow ? <Label color={C.brand} style={{ marginBottom: 6 }}>{eyebrow}</Label> : null}
-    <T w="b" size={28} style={{ lineHeight: 33, marginBottom: 8 }}>{t}</T>
+    {eyebrow ? <Label color={C.brandInk} style={{ marginBottom: 4 }}>{eyebrow}</Label> : null}
+    <T w="fun" size={32} style={{ marginBottom: 8 }}>{t}</T>
     {s ? <Sub style={{ fontSize: 15, lineHeight: 21, marginBottom: 20 }}>{s}</Sub> : null}
   </>;
 }
@@ -95,12 +95,12 @@ function Head({ eyebrow, t, s }: { eyebrow?: string; t: string; s?: string }) {
 function Answer({ t, s, ic, on, multi, onPress }: { t: string; s?: string; ic?: IconName; on: boolean; multi?: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} accessibilityRole={multi ? 'checkbox' : 'radio'} accessibilityState={{ checked: on }}
-      style={{ flexDirection: 'row', gap: 14, alignItems: 'center', paddingVertical: 15, paddingHorizontal: 16, borderRadius: 18, backgroundColor: on ? C.brandSoft : C.surface, borderWidth: 1.5, borderColor: on ? C.brand : C.line, marginBottom: 10 }}>
-      {ic ? <IconBox name={ic} tone="try" size={38} /> : null}
+      style={[{ flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16, borderRadius: 20, backgroundColor: on ? C.brandSoft : C.surface, marginBottom: 12 }, on ? shadow : outline]}>
+      {ic ? <IconBox name={ic} tone="try" /> : null}
       <View style={{ flex: 1 }}><T w="s" size={15}>{t}</T>{s ? <Sub>{s}</Sub> : null}</View>
       {multi
-        ? <View style={{ width: 24, height: 24, borderRadius: 7, borderWidth: on ? 0 : 1.8, borderColor: '#CFCBC1', backgroundColor: on ? C.brand : 'transparent', alignItems: 'center', justifyContent: 'center' }}>{on ? <Icon name="check" size={15} color="#fff" stroke={2.6} /> : null}</View>
-        : <View style={{ width: 22, height: 22, borderRadius: 11, borderWidth: on ? 6 : 1.8, borderColor: on ? C.brand : '#CFCBC1' }} />}
+        ? <View style={{ width: 24, height: 24, borderRadius: 8, borderWidth: 2, borderColor: C.ink, backgroundColor: on ? C.brand : C.surface, alignItems: 'center', justifyContent: 'center' }}>{on ? <Icon name="check" size={15} color="#fff" stroke={2.6} /> : null}</View>
+        : <View style={{ width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: C.ink, backgroundColor: on ? C.brand : C.surface }} />}
     </Pressable>
   );
 }
@@ -124,27 +124,27 @@ function Building({ name, reviews, onReady }: { name: string; reviews: Review[];
           <Circle cx={70} cy={70} r={R} stroke={C.brand} strokeWidth={10} fill="none" strokeLinecap="round" strokeDasharray={`${Cc}`} strokeDashoffset={Cc * (1 - pct / 100)} />
         </Svg>
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
-          <T w="b" size={34} style={{ lineHeight: 38 }}>{`${pct}%`}</T>
-          <Label style={{ fontSize: 10 }}>{done ? 'READY' : 'BUILDING'}</Label>
+          <T w="fun" size={36}>{`${pct}%`}</T>
+          <Label style={{ fontSize: 12 }}>{done ? 'Ready' : 'Building'}</Label>
         </View>
       </View>
-      <T w="b" size={26} style={{ marginTop: 18, textAlign: 'center' }}>{done ? `${name}'s plan is ready` : `Building ${name}'s plan`}</T>
-      <Sub style={{ fontSize: 15, textAlign: 'center', marginTop: 6, marginBottom: 18 }}>Choosing the method, pace and lessons that suit your child.</Sub>
+      <T w="fun" size={30} style={{ marginTop: 16, textAlign: 'center' }}>{done ? `${name}'s plan is ready` : `Building ${name}'s plan`}</T>
+      <Sub style={{ fontSize: 15, textAlign: 'center', marginTop: 4, marginBottom: 20 }}>Choosing the method, pace and lessons that suit your child</Sub>
     </View>
     {LOADING.map((l, i) => {
       const from = i * 25, state = pct >= from + 25 ? 'done' : pct >= from ? 'now' : 'later';
-      return <View key={l} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13, paddingHorizontal: 16, borderRadius: 16, marginBottom: 8, backgroundColor: state === 'later' ? 'transparent' : C.surface, borderWidth: 1, borderColor: state === 'later' ? C.line : 'transparent' }}>
-        <View style={{ width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: state === 'done' ? C.brand : 'transparent', borderWidth: state === 'done' ? 0 : 2, borderColor: state === 'now' ? C.brand : C.line }}>
+      return <View key={l} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 16, marginBottom: 8, backgroundColor: state === 'later' ? 'transparent' : C.surface, borderWidth: 2, borderColor: state === 'later' ? C.line : C.ink }}>
+        <View style={{ width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: state === 'done' ? C.brand : 'transparent', borderWidth: 2, borderColor: state === 'later' ? C.line : C.ink }}>
           {state === 'done' ? <Icon name="check" size={13} color="#fff" stroke={2.8} /> : null}
         </View>
         <T w={state === 'later' ? undefined : 's'} size={15} color={state === 'later' ? C.ink3 : C.ink} style={{ flex: 1 }}>{l}</T>
-        {state !== 'later' ? <T w="s" size={12} color={state === 'done' ? C.ink3 : C.brand}>{state === 'done' ? 'Done' : 'Now'}</T> : null}
+        {state !== 'later' ? <T w="s" size={12} color={state === 'done' ? C.ink3 : C.brandInk}>{state === 'done' ? 'Done' : 'Now'}</T> : null}
       </View>;
     })}
     {rv ? <Card style={{ marginTop: 16 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center' }}><T w="b" size={15} color={C.brand}>{rv.n[0]}</T></View>
-        <View style={{ flex: 1 }}><T w="s" size={14}>{`${rv.n}, ${rv.age}`}</T><Sub style={{ fontSize: 12 }}>{`${rv.loc} · ${rv.when}`}</Sub></View>
+        <View style={[{ width: 36, height: 36, borderRadius: 18, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center' }, outline]}><T w="s" size={15}>{rv.n[0]}</T></View>
+        <View style={{ flex: 1 }}><T w="s" size={14}>{`${rv.n}, ${rv.age}`}</T><Sub>{`${rv.loc} · ${rv.when}`}</Sub></View>
         <View style={{ flexDirection: 'row', gap: 1 }}>{[0, 1, 2, 3, 4].map(i => <Icon key={i} name="star" size={12} color={C.brand} fill={C.brand} />)}</View>
       </View>
       <T size={14} style={{ lineHeight: 21, marginTop: 10 }}>{`“${rv.t}”`}</T>
@@ -196,12 +196,12 @@ export default function Onboarding() {
   const top = (
     <View style={{ marginBottom: 20 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', height: 32 }}>
-        {hist.length > 1 ? <Pressable onPress={back} hitSlop={12} accessibilityLabel="Back" style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }}><Icon name="chevL" size={18} color={C.ink2} /></Pressable> : <View style={{ width: 32 }} />}
-        <View style={{ flex: 1, alignItems: 'center' }}><T w="b" size={16} color={C.brand}>Potty Up</T></View>
+        {hist.length > 1 ? <Pressable onPress={back} hitSlop={12} accessibilityLabel="Back" style={[{ width: 32, height: 32, borderRadius: 16, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }, outline]}><Icon name="chevL" size={16} color={C.ink} /></Pressable> : <View style={{ width: 32 }} />}
+        <View style={{ flex: 1, alignItems: 'center' }}><T w="fun" size={20} color={C.brand}>Potty Up</T></View>
         <View style={{ width: 32, alignItems: 'flex-end' }}>{qi >= 0 ? <T w="s" size={12} color={C.ink3}>{`${qi + 1}/${qn.length}`}</T> : null}</View>
       </View>
-      <View style={{ flexDirection: 'row', gap: 6, marginTop: 12 }}>
-        {[0, 1, 2, 3, 4].map(i => <View key={i} style={{ flex: 1, height: 4, borderRadius: 9, backgroundColor: i <= sectionOf[step] ? C.brand : C.line }} />)}
+      <View style={{ flexDirection: 'row', gap: 4, marginTop: 12 }}>
+        {[0, 1, 2, 3, 4].map(i => <View key={i} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: i <= sectionOf[step] ? C.brand : C.line }} />)}
       </View>
     </View>
   );
@@ -211,16 +211,16 @@ export default function Onboarding() {
     cta = null;
     body = <>
       <View style={{ alignItems: 'center' }}><Logo width={110} /></View>
-      <T w="b" size={28} style={{ lineHeight: 33, marginTop: 18, textAlign: 'center' }}>Let's build your child's potty plan</T>
-      <Sub style={{ fontSize: 15, lineHeight: 21, marginTop: 8, marginBottom: 22, textAlign: 'center' }}>A 2-minute quiz. We'll pick the method, pace and daily lessons that suit your child.</Sub>
-      <Label style={{ textAlign: 'center', marginBottom: 12 }}>HOW OLD IS YOUR CHILD?</Label>
+      <T w="fun" size={32} style={{ marginTop: 16, textAlign: 'center' }}>Let's build your child's potty plan</T>
+      <Sub style={{ fontSize: 15, lineHeight: 21, marginTop: 8, marginBottom: 24, textAlign: 'center' }}>A 2-minute quiz. We'll pick the method, pace and daily lessons that suit your child</Sub>
+      <T w="s" size={15} style={{ textAlign: 'center', marginBottom: 12 }}>How old is your child?</T>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
         {AGES.map(a => <Pressable key={a.v} onPress={() => pickThen(() => setAge(a.v), 'ageinfo')} accessibilityRole="radio" accessibilityState={{ checked: age === a.v }}
-          style={{ width: '47%', flexGrow: 1, aspectRatio: 1.05, borderRadius: 22, padding: 16, justifyContent: 'space-between', backgroundColor: age === a.v ? C.brandSoft : C.surface, borderWidth: 1.5, borderColor: age === a.v ? C.brand : C.line }}>
-          <IconBox name={a.ic} tone={a.tone} size={54} iconSize={26} round />
+          style={[{ width: '47%', flexGrow: 1, aspectRatio: 1.05, borderRadius: 20, padding: 16, justifyContent: 'space-between', backgroundColor: age === a.v ? C.brandSoft : C.surface }, shadow]}>
+          <IconBox name={a.ic} tone={a.tone} size={52} iconSize={24} />
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <T w="b" size={18}>{a.t}</T>
-            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }}><Icon name="chevR" size={16} color="#fff" /></View>
+            <T w="fun" size={22}>{a.t}</T>
+            <Icon name="chevR" size={18} color={C.ink} />
           </View>
         </Pressable>)}
       </View>
@@ -230,16 +230,16 @@ export default function Onboarding() {
     body = <>{top}
       <Card>
         <Badge label={`For parents of ${age === '3+' ? '3 year olds and up' : age === 'Under 2' ? 'under 2s' : age + ' year olds'}`} />
-        <T w="b" size={24} style={{ marginTop: 12, lineHeight: 29 }}>What this means for your child</T>
+        <T w="fun" size={26} style={{ marginTop: 12 }}>What this means for your child</T>
         <T size={15} style={{ marginTop: 8, lineHeight: 22 }}>{info.what}</T>
         {info.ifs.map(([a, b]) => <View key={a} style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
-          <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center' }}><Icon name="check" size={13} color={C.brand} stroke={2.6} /></View>
+          <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: C.ink }}><Icon name="check" size={12} color={C.ink} stroke={2.6} /></View>
           <T size={14} style={{ flex: 1, lineHeight: 21 }}><T w="s" size={14}>{a}</T>{`: ${b}`}</T>
         </View>)}
       </Card>
-      <View style={{ marginTop: 12, padding: 16, borderRadius: 18, backgroundColor: C.surface, borderLeftWidth: 4, borderLeftColor: C.brand }}>
-        <Label>THE #1 MISTAKE</Label>
-        <T w="b" size={18} style={{ marginTop: 6, lineHeight: 24 }}>{info.mistake}</T>
+      <View style={[{ padding: 16, borderRadius: 16, backgroundColor: C.sunSoft }, outline]}>
+        <Label color={C.ink}>The #1 mistake</Label>
+        <T size={16} style={{ marginTop: 4 }}>{info.mistake}</T>
       </View>
     </>;
   } else if (step === 'name') {
@@ -247,7 +247,7 @@ export default function Onboarding() {
     body = <>{top}<Head t="What's your child's name?" s="So the app, the songs and the coach can talk about them by name. You can add more children later." />
       <Input label="Name" value={name} onChangeText={setName} placeholder="e.g. Otto" autoCapitalize="words" />
       <Input label="Words they use for wee and poo (optional)" value={words} onChangeText={setWords} placeholder='e.g. "wee wee" and "poo"' />
-      <Sub style={{ marginTop: -6 }}>Shared with grandparents and daycare so everyone says the same thing.</Sub>
+      <Sub style={{ marginTop: -8 }}>Shared with grandparents and daycare so everyone says the same thing.</Sub>
     </>;
   } else if (step === 'where') {
     ok = !!where;
@@ -274,18 +274,18 @@ export default function Onboarding() {
     const named = HARDER.filter(h => harder.includes(h.v)).map(h => h.t.toLowerCase());
     body = <>{top}
       <Card>
-        <Label>{`${nm.toUpperCase()}'S READINESS`}</Label>
+        <Label>{`${Nm}'s readiness`}</Label>
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8, marginTop: 8 }}>
-          <T w="b" size={52} style={{ lineHeight: 56 }}>{String(n)}</T><T w="s" size={20} color={C.ink3} style={{ marginBottom: 8 }}>{`/ ${SIGNS.length} signs`}</T>
+          <T w="fun" size={64}>{String(n)}</T><T w="fun" size={22} color={C.ink2} style={{ marginBottom: 12 }}>{`of ${SIGNS.length} signs`}</T>
         </View>
-        <View style={{ flexDirection: 'row', gap: 4, marginTop: 8 }}>{SIGNS.map((_, i) => <View key={i} style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: i < n ? C.brand : C.sunk }} />)}</View>
-        <T w="b" size={20} style={{ marginTop: 16 }}>{title}</T>
+        <View style={{ flexDirection: 'row', gap: 4, marginTop: 8 }}>{SIGNS.map((_, i) => <View key={i} style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: i < n ? C.brand : C.line }} />)}</View>
+        <T w="fun" size={22} style={{ marginTop: 16 }}>{title}</T>
         <T size={15} style={{ marginTop: 6, lineHeight: 22 }}>{msg}</T>
       </Card>
-      {named.length ? <Card style={{ marginTop: 12 }}>
+      {named.length ? <Card>
         <View style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
-          <IconBox name="shield" tone="ok" size={38} />
-          <View style={{ flex: 1 }}><T w="b" size={16}>We've got you covered</T>
+          <IconBox name="shield" tone="ok" />
+          <View style={{ flex: 1 }}><T w="s" size={16}>We've got you covered</T>
             <T size={14} style={{ marginTop: 4, lineHeight: 21 }}>{`${named.length > 1 ? 'Each of these' : 'This'} is something lots of families work through: ${named.join(', ')}. ${Nm}'s lessons and Lara's advice will take it into account.`}</T></View>
         </View>
       </Card> : null}
@@ -314,24 +314,24 @@ export default function Onboarding() {
     const named = HARDER.filter(h => harder.includes(h.v));
     const teamT = team.includes('solo') ? 'Just you' : TEAM.filter(x => team.includes(x.v)).map(x => x.t.replace('My partner', 'You and your partner')).join(', ') || 'You';
     const rows: [string, string][] = [
-      ['YOUR CHILD', `${Nm}, ${AGES.find(a => a.v === age)?.t.toLowerCase() ?? 'age not set'}${temper ? ', ' + temper.replace('-', ' ') : ''}`],
-      ['STARTING POINT', WHERE.find(w => w.v === where)?.t ?? 'Not set'],
-      ...(night ? [] : [['READINESS', `${signs.length} of ${SIGNS.length} signs`] as [string, string]]),
-      ['SUGGESTED METHOD', m.name],
-      ['EXPECTED TIMELINE', m.pace],
-      ['TRAINING TEAM', teamT],
+      ['Your child', `${Nm}, ${AGES.find(a => a.v === age)?.t.toLowerCase() ?? 'age not set'}${temper ? ', ' + temper.replace('-', ' ') : ''}`],
+      ['Starting point', WHERE.find(w => w.v === where)?.t ?? 'Not set'],
+      ...(night ? [] : [['Readiness', `${signs.length} of ${SIGNS.length} signs`] as [string, string]]),
+      ['Suggested method', m.name],
+      ['Expected timeline', m.pace],
+      ['Training team', teamT],
     ];
     cta = 'Continue';
     body = <>{top}
       <Card>
-        <Label color={C.brand}>YOUR PLAN IS READY</Label>
-        <T w="b" size={26} style={{ marginTop: 6, lineHeight: 31 }}>{`${Nm}'s potty plan`}</T>
-        <Sub style={{ marginTop: 4, marginBottom: 6 }}>Based on your answers, here's what we found.</Sub>
-        {rows.map(([k, v]) => <View key={k} style={{ paddingVertical: 11, borderTopWidth: 1, borderTopColor: C.line }}>
-          <Label style={{ fontSize: 10 }}>{k}</Label><T w="s" size={16} style={{ marginTop: 3 }}>{v}</T>
+        <Label color={C.brandInk}>Your plan is ready</Label>
+        <T w="fun" size={30} style={{ marginTop: 4 }}>{`${Nm}'s potty plan`}</T>
+        <Sub style={{ marginTop: 4, marginBottom: 8 }}>Based on your answers, here's what we found</Sub>
+        {rows.map(([k, v]) => <View key={k} style={{ paddingVertical: 12, borderTopWidth: 1, borderTopColor: C.line }}>
+          <T size={13} color={C.ink2}>{k}</T><T w="s" size={16}>{v}</T>
         </View>)}
-        {named.length ? <View style={{ paddingTop: 11, borderTopWidth: 1, borderTopColor: C.line }}>
-          <Label style={{ fontSize: 10 }}>BUILT IN FOR YOU</Label>
+        {named.length ? <View style={{ paddingTop: 12, borderTopWidth: 1, borderTopColor: C.line }}>
+          <T size={13} color={C.ink2}>Built in for you</T>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>{named.map(h => <Badge key={h.v} label={h.t} />)}</View>
         </View> : null}
       </Card>
@@ -350,19 +350,19 @@ export default function Onboarding() {
       <Label style={{ marginBottom: 8 }}>When is Day 1?</Label>
       <Chips style={{ marginBottom: 6 }}>{[0, 1, 2, 3, 4, 5, 6].map(k => <Chip key={k} label={dayChip(k)} on={sIn === k} onPress={() => setStartIn(k)} />)}</Chips>
       <Sub style={{ marginBottom: 16 }}>{sIn === 0 ? 'Starting today.' : `You'll get ${sIn === 1 ? 'a day' : sIn + ' days'} of short "getting ready" lessons first.`}{mk === 'threeday' ? ' Pick 3 days you can be at home.' : ''}</Sub>
-      <Card pad={4} style={{ paddingHorizontal: 18, borderWidth: 1, borderColor: C.line, shadowOpacity: 0 }}>
-        {m.items.map((s, i) => <View key={i} style={{ flexDirection: 'row', gap: 14, paddingVertical: 13, borderTopWidth: i ? 1 : 0, borderTopColor: C.line, alignItems: 'center' }}>
-          <View style={{ width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: i < si ? C.brandSoft : i === si ? C.brand : C.sunk }}>{i < si ? <Icon name="check" size={15} color={C.brand} stroke={2.4} /> : <T w="s" size={13} color={i === si ? '#fff' : C.ink2}>{i + 1}</T>}</View>
+      <Card pad={4} style={{ paddingHorizontal: 16 }}>
+        {m.items.map((s, i) => <View key={i} style={{ flexDirection: 'row', gap: 12, paddingVertical: 12, borderTopWidth: i ? 1 : 0, borderTopColor: C.line, alignItems: 'center' }}>
+          <View style={{ width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: i < si ? C.brandSoft : i === si ? C.brand : C.surface, borderWidth: 1.5, borderColor: C.ink }}>{i < si ? <Icon name="check" size={14} color={C.ink} stroke={2.4} /> : <T w="s" size={13} color={i === si ? '#fff' : C.ink2}>{i + 1}</T>}</View>
           <View style={{ flex: 1 }}><T w="s">{s.t}</T><Sub>{s.d}{s.iv ? ' · every ' + s.iv + ' min' : ''}{i < si ? ' · skipped, already there' : ''}</Sub></View>
           {i === si ? <Badge label="Start" /> : null}
         </View>)}
       </Card>
-      <Sub style={{ marginTop: 14 }}>Next, we'll ask to send you notifications. They're how potty reminders, the morning plan and the evening check-in reach you.</Sub>
+      <Sub>Next, we'll ask to send you notifications. They're how potty reminders, the morning plan and the evening check-in reach you.</Sub>
     </>;
   }
   return (
-    <View style={{ flex: 1, backgroundColor: C.bg, paddingTop: ins.top + 12, paddingBottom: ins.bottom + 20, paddingHorizontal: 22 }}>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>{body}</ScrollView>
+    <View style={{ flex: 1, backgroundColor: C.bg, paddingTop: ins.top + 12, paddingBottom: ins.bottom + 20, paddingHorizontal: 20 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>{body}</ScrollView>
       {cta ? <Btn title={cta} onPress={action} disabled={!ok} /> : null}
     </View>
   );

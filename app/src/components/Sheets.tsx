@@ -105,7 +105,7 @@ function CheckinSheet({ day, close }: { day: number; close: () => void }) {
   const addMissed = (v: 'success' | 'accident' | 'poo') => { addEvent({ ts: isToday ? Date.now() - MIN : atHour(day, 17.5), type: 'potty', outcome: v === 'accident' ? 'accident' : 'success', what: v === 'poo' ? 'poo' : 'wee', by: 'prompt', late: true }); setAdded(a => a + 1); };
   const nums = (s = st) => <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
     {([[s.s, 'On potty', C.brand], [s.a, 'Accidents', C.acc], [step === 3 ? (s.rate == null ? '–' : s.rate + '%') : s.told, step === 3 ? 'Success' : 'Told you', C.ink]] as const).map(([v, l, c]) =>
-      <View key={l} style={{ flex: 1, backgroundColor: C.surface, borderRadius: 18, padding: 12 }}><T w="s" size={22} color={c}>{String(v)}</T><T size={12} color={C.ink2}>{l}</T></View>)}
+      <View key={l} style={{ flex: 1 }}><T w="fun" size={28} color={c}>{String(v)}</T><T size={12} color={C.ink2}>{l}</T></View>)}
   </View>;
   const title = step === 3 ? 'Plan for tomorrow' : isToday ? 'How did today go?' : 'How did yesterday go?';
   const left = step > 1 ? <SheetLink label="Back" onPress={() => setStep(step - 1)} /> : undefined;
@@ -137,7 +137,7 @@ function CheckinSheet({ day, close }: { day: number; close: () => void }) {
 You can always come back.`, 'Move on', () => finish('next'))
       : finish(v);
     body = <>{dots}{nums(d.st)}
-      <Card style={{ borderWidth: 1, borderColor: C.line, shadowOpacity: 0 }}>
+      <Card>
         <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}><Icon name="route" size={15} color={C.ink2} /><Label>Tomorrow</Label></View>
         <T w="s" size={16} style={{ marginTop: 6 }}>{d.label[d.rec]}</T>
         <Sub style={{ marginTop: 2 }}>{d.why}</Sub>
@@ -215,7 +215,7 @@ function HandoffSheet({ open, close }: { open: boolean; close: () => void }) {
   return (
     <Sheet open={open} onClose={close} title="Share an update">
       <Sub style={{ marginTop: -6, marginBottom: 14 }}>For your partner, grandparents or daycare at drop-off.</Sub>
-      <View style={{ backgroundColor: C.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: C.line, marginBottom: 14 }}><T size={14} style={{ lineHeight: 22 }}>{text}</T></View>
+      <View style={{ backgroundColor: C.surface, borderRadius: 16, padding: 16, borderWidth: 2, borderColor: C.ink, marginBottom: 16 }}><T size={14} style={{ lineHeight: 22 }}>{text}</T></View>
       <Btn icon="share" title="Share update" onPress={() => { Share.share({ message: text }).catch(() => {}); close(); }} />
     </Sheet>
   );
@@ -230,10 +230,10 @@ function SituationSheet({ i, close }: { i: number; close: () => void }) {
     <Sheet open onClose={close} title={s.t}>
       <Label style={{ marginBottom: 6 }}>What to do</Label>
       {s.steps.map((x, k) => <View key={k} style={{ flexDirection: 'row', gap: 12, paddingVertical: 8 }}>
-        <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center' }}><T w="s" size={12} color={C.brandInk}>{k + 1}</T></View>
+        <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: C.ink }}><T w="s" size={12}>{k + 1}</T></View>
         <T size={14} style={{ flex: 1 }}>{x}</T></View>)}
       <Label style={{ marginTop: 14, marginBottom: 8 }}>What to say</Label>
-      {s.say.map((x, k) => <View key={k} style={{ borderLeftWidth: 3, borderLeftColor: C.brand, backgroundColor: C.surface, padding: 12, borderTopRightRadius: 12, borderBottomRightRadius: 12, marginBottom: 8 }}><T size={14} style={{ fontStyle: 'italic' }}>{x}</T></View>)}
+      {s.say.map((x, k) => <View key={k} style={{ backgroundColor: C.sunk, padding: 12, borderRadius: 12, marginBottom: 8 }}><T size={14}>{x}</T></View>)}
       <Btn kind="ghost" icon="chat" title="Ask the coach about this" style={{ marginTop: 8 }} onPress={() => { close(); emit('tab', 'coach'); setTimeout(() => emit('ask', `Help: ${s.t.toLowerCase()}. What should I try next?`), 300); }} />
     </Sheet>
   );

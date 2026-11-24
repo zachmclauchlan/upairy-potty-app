@@ -14,12 +14,12 @@ export default function Timeline({ list, del }: { list: Ev[]; del?: boolean }) {
     return (
       <View key={e.id}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderTopWidth: i ? 1 : 0, borderTopColor: C.line }}>
-          <IconBox name={m.ic as IconName} tone={m.tone} size={38} iconSize={18} />
-          <View style={{ flex: 1 }}><T w="s" size={14}>{m.t}</T>{m.s ? <T size={12} color={C.ink2}>{m.s}{e.late ? ' · added later' : ''}</T> : null}</View>
-          <T size={13} color={C.ink2}>{fmt(e.ts)}</T>
+          <IconBox name={m.ic as IconName} tone={m.tone} size={32} iconSize={16} />
+          <View style={{ flex: 1 }}><T w="m" size={14}>{m.t}</T>{m.s ? <T size={12} color={C.ink2}>{m.s}{e.late ? ' · added later' : ''}</T> : null}</View>
+          <T size={13} color={C.ink2} style={{ fontVariant: ['tabular-nums'] }}>{fmt(e.ts)}</T>
           {del ? <Pressable onPress={() => removeEvent(e.id)} hitSlop={10} style={{ padding: 4 }}><Icon name="x" size={16} color={C.ink3} /></Pressable> : null}
         </View>
-        {gap ? <T size={11} color={C.ink3} style={{ marginLeft: 50, marginTop: -8, marginBottom: 8 }}>{gap} since the last wee</T> : null}
+        {gap ? <T size={11} color={C.ink3} style={{ marginLeft: 44, marginTop: -8, marginBottom: 8 }}>{gap} since the last wee</T> : null}
       </View>
     );
   })}</>;

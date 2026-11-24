@@ -2,6 +2,7 @@
 import { useSyncExternalStore } from 'react';
 import { readItem, writeItem, removeItem } from './storage';
 import type { MethodKey, Mood, Where } from './content';
+import { applyTheme, type ThemeKey } from './theme';
 
 export type Outcome = 'success' | 'accident' | 'tried';
 export type What = 'wee' | 'poo' | 'both';
@@ -34,6 +35,8 @@ export interface State {
   stickerBase?: number;
   /** From the setup quiz: temperament, what makes it harder, who's helping. Sent to the coach as context. */
   profile?: { temperament: string | null; harder: string[]; team: string[] };
+  /** Page colour picked in Settings. Paper when not set. */
+  theme?: ThemeKey;
   /** true while the demo "sample week" logs are loaded */
   sample?: boolean;
 }
@@ -90,6 +93,7 @@ function migrateCourse(st: State, raw: any): State {
 }
 
 export let S: State = load();
+applyTheme(S.theme);
 let version = 0;
 const listeners = new Set<() => void>();
 const commitHooks = new Set<() => void>();
@@ -99,6 +103,7 @@ let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
 /** Call after changing S: saves (debounced) and re-renders. */
 export function commit() {
+  applyTheme(S.theme);
   version++;
   listeners.forEach(l => l());
   if (saveTimer) clearTimeout(saveTimer);

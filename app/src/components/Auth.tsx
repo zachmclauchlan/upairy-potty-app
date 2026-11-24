@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { T, Sub, Btn, Card, Input, Label, Row, Tip, toast } from './ui';
 import Icon from './Icon';
 import Logo from './Logo';
-import { C } from '@/lib/theme';
+import { C, outline, shadow } from '@/lib/theme';
 import { signInWithOrder, checkMembership, signOut, type Membership } from '@/lib/backend';
 import { afterSignIn, fetchBackup, otherOwner } from '@/lib/backup';
 import { S } from '@/lib/store';
@@ -72,10 +72,10 @@ export default function Auth() {
   let body;
   if (done) {
     body = <>
-      <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginTop: 30 }}><Icon name="check" size={36} color={C.brand} stroke={2.4} /></View>
-      <T w="b" size={28} style={{ textAlign: 'center', marginTop: 20 }}>You're in</T>
+      <View style={[{ width: 72, height: 72, borderRadius: 36, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginTop: 32 }, shadow]}><Icon name="check" size={36} color={C.ink} stroke={2.4} /></View>
+      <T w="fun" size={36} style={{ textAlign: 'center', marginTop: 20 }}>You're in</T>
       <Sub style={{ textAlign: 'center', marginTop: 8, marginBottom: 20, fontSize: 15 }}>{`Potty Up is linked to ${email.trim()}. Everything is ready to go.`}</Sub>
-      <Card pad={4} style={{ paddingHorizontal: 18 }}>
+      <Card pad={4} style={{ paddingHorizontal: 16 }}>
         {['The full day-by-day program', 'Smart reminders and the AI coach', 'Potty songs, kid mode and rewards', '15% off at upairy.com']
           .map((x, i) => <Row key={x} first={i === 0} title={x} icon="check" />)}
       </Card>
@@ -88,50 +88,50 @@ export default function Auth() {
   } else {
     body = <>
       <Logo width={96} />
-      <T w="b" size={34} color={C.brand} style={{ marginTop: 18 }}>Potty Up</T>
-      <T w="b" size={28} style={{ marginTop: 18, marginBottom: 8 }}>Sign in</T>
-      <Sub style={{ fontSize: 15, marginBottom: 20 }}>Use the email from your upairy.com order.</Sub>
+      <T w="fun" size={44} color={C.brand} style={{ marginTop: 16 }}>Potty Up</T>
+      <T w="fun" size={28} style={{ marginTop: 20 }}>Sign in</T>
+      <Sub style={{ fontSize: 15, marginBottom: 20 }}>Use the email from your upairy.com order</Sub>
       <Input label="Email used on your order" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboardType="email-address" autoCapitalize="none" autoComplete="email" textContentType="emailAddress" />
       <Input label="Order number, postcode or last name" value={order} onChangeText={setOrder} placeholder="Order number, postcode or last name" autoCapitalize="words" autoCorrect={false} autoComplete="off" />
-      <Sub style={{ marginTop: -6, marginBottom: 14 }}>Your order number looks like #1314664. Can't find it? Just type the postcode your order went to, or your last name.</Sub>
+      <Sub style={{ marginTop: -8, marginBottom: 16 }}>Your order number looks like #1314664. Can't find it? Just type the postcode your order went to, or your last name.</Sub>
       {err ? <Tip icon="info" tone="sun">{err}</Tip> : null}
       <Btn title={busy ? 'Checking…' : 'Sign in'} onPress={onSignIn} disabled={busy || !validEmail || !validOrder} />
-      <Sub style={{ textAlign: 'center', marginTop: 12 }}>You'll stay signed in on this phone.</Sub>
+      <Sub style={{ textAlign: 'center', marginTop: 16 }}>You'll stay signed in on this phone</Sub>
 
       {/* Help me log in */}
       <Pressable onPress={() => { setHelp(!help); setFaq(null); }} accessibilityRole="button" accessibilityState={{ expanded: help }}
-        style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 28, padding: 16, borderRadius: 18, backgroundColor: C.brandSoft }}>
-        <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: C.brand, alignItems: 'center', justifyContent: 'center' }}><T w="b" size={20} color="#fff">?</T></View>
+        style={[{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 32, padding: 16, borderRadius: 20, backgroundColor: C.brandSoft }, shadow]}>
+        <View style={[{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }, outline]}><T w="fun" size={22}>?</T></View>
         <View style={{ flex: 1 }}>
-          <T w="b" size={17}>Help me log in</T>
+          <T w="fun" size={20}>Help me log in</T>
           <Sub>{help ? 'Tap to hide' : '2 easy ways, no order number needed'}</Sub>
         </View>
-        <Icon name={help ? 'chevD' : 'chevR'} size={20} color={C.brand} />
+        <Icon name={help ? 'chevD' : 'chevR'} size={18} color={C.ink} />
       </Pressable>
-      {help ? <Card style={{ marginTop: 10 }}>
+      {help ? <Card style={{ marginTop: 16, marginBottom: 4 }}>
         <T w="s" size={15}>No order number needed</T>
         <T size={14} style={{ lineHeight: 21, marginTop: 4 }}>Type the email you ordered with, then the postcode your order went to (or your last name), and tap Sign in.</T>
         <T w="s" size={15} style={{ marginTop: 16 }}>Or use your order number</T>
         <T size={14} style={{ lineHeight: 21, marginTop: 4 }}>It's in the confirmation email UpAiry sent when you ordered.</T>
-        <Label style={{ marginTop: 16 }}>SEARCH YOUR EMAIL FOR</Label>
-        <View style={{ marginTop: 6, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 12, backgroundColor: C.sunk }}>
-          <T w="s" size={18} selectable>{SEARCH}</T>
+        <Label style={{ marginTop: 16 }}>Search your email for</Label>
+        <View style={{ marginTop: 6, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12, backgroundColor: C.sunk }}>
+          <T w="s" size={17} selectable>{SEARCH}</T>
         </View>
         {['Search your email for those words, or tap your inbox below and we search it for you.', 'Open the email that says Order #… confirmed.', 'The order number is at the top. It starts with #.', 'Type it in the second box above, with the email that order went to, and tap Sign in.']
           .map((x, i) => <View key={i} style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
-            <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center', marginTop: 1 }}><T w="s" size={12} color={C.brand}>{String(i + 1)}</T></View>
+            <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: C.ink }}><T w="s" size={12}>{String(i + 1)}</T></View>
             <T size={14} style={{ flex: 1, lineHeight: 21 }}>{x}</T>
           </View>)}
         <Sub style={{ marginTop: 12 }}>The # is optional. Paste the whole line if that's easier, we only read the numbers.</Sub>
-        <Label style={{ marginTop: 18 }}>OPEN YOUR INBOX</Label>
+        <Label style={{ marginTop: 20 }}>Open your inbox</Label>
         <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
           {INBOXES.map(([n, url]) => <Pressable key={n} onPress={() => Linking.openURL(url).catch(() => {})} accessibilityRole="link"
-            style={{ flex: 1, alignItems: 'center', paddingVertical: 11, borderRadius: 12, borderWidth: 1, borderColor: C.line, backgroundColor: C.surface }}>
+            style={[{ flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 99, backgroundColor: C.surface }, outline]}>
             <T w="s" size={14}>{n}</T>
           </Pressable>)}
         </View>
         <Sub style={{ marginTop: 8, fontSize: 12 }}>These open your inbox in the browser. If the search box comes up empty, type the words in yourself.</Sub>
-        <View style={{ marginTop: 10 }}>
+        <View style={{ marginTop: 12 }}>
           {STUCK.map(([q, a], i) => <View key={q}>
             <Row first={i === 0} title={q} onPress={() => setFaq(faq === i ? null : i)} right={<Icon name={faq === i ? 'chevD' : 'chevR'} size={18} color={C.ink3} />} />
             {faq === i ? <Sub style={{ paddingBottom: 14, marginTop: -4 }}>{a}</Sub> : null}
@@ -139,20 +139,20 @@ export default function Auth() {
         </View>
       </Card> : null}
 
-      <View style={{ gap: 10, marginTop: 12 }}>
+      <View style={{ gap: 12, marginTop: 16 }}>
         {MORE.map(([q, a], i) => { const k = 10 + i, on = faq === k; return (
           <Pressable key={q} onPress={() => setFaq(on ? null : k)} accessibilityRole="button" accessibilityState={{ expanded: on }}
-            style={{ paddingVertical: 16, paddingHorizontal: 18, borderRadius: 16, borderWidth: 1, borderColor: C.line, backgroundColor: C.surface }}>
+            style={[{ paddingVertical: 14, paddingHorizontal: 16, borderRadius: 16, backgroundColor: C.surface }, outline]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <T w="s" size={15} style={{ flex: 1 }}>{q}</T>
-              <Icon name={on ? 'chevD' : 'chevR'} size={18} color={C.ink3} />
+              <Icon name={on ? 'chevD' : 'chevR'} size={16} color={C.ink2} />
             </View>
-            {on ? <Sub style={{ marginTop: 10, lineHeight: 20 }}>{a}</Sub> : null}
+            {on ? <Sub style={{ marginTop: 8, lineHeight: 20 }}>{a}</Sub> : null}
           </Pressable>); })}
       </View>
-      <Pressable onPress={() => Linking.openURL(CONTACT).catch(() => {})} accessibilityRole="link" style={{ marginTop: 22, alignItems: 'center' }}>
-        <T w="s" size={14} color={C.brand} style={{ textAlign: 'center' }}>Can't sign in? Contact us and we'll find your order</T>
-        <Sub style={{ marginTop: 4, fontSize: 12 }}>We usually reply within 1–2 business days.</Sub>
+      <Pressable onPress={() => Linking.openURL(CONTACT).catch(() => {})} accessibilityRole="link" style={{ marginTop: 24, alignItems: 'center' }}>
+        <T w="s" size={14} color={C.brandInk} style={{ textAlign: 'center' }}>Can't sign in? Contact us and we'll find your order</T>
+        <Sub style={{ marginTop: 4, fontSize: 12 }}>We usually reply within 1–2 business days</Sub>
       </Pressable>
     </>;
   }

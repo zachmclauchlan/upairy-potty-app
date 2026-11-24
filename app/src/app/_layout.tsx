@@ -4,7 +4,7 @@ import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
-import { Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
+import { Figtree_400Regular, Figtree_500Medium, Figtree_600SemiBold } from '@expo-google-fonts/figtree';
 import { Chewy_400Regular } from '@expo-google-fonts/chewy';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Auth from '@/components/Auth';
@@ -35,7 +35,7 @@ function useNotifications() {
 
 export default function Root() {
   const st = useApp();
-  const [loaded, error] = useFonts({ Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold, Chewy_400Regular });
+  const [loaded, error] = useFonts({ Figtree_400Regular, Figtree_500Medium, Figtree_600SemiBold, Chewy_400Regular });
   useEffect(() => { if (loaded || error) SplashScreen.hideAsync().catch(() => {}); }, [loaded, error]);
   useNotifications();
   const [replay, setReplay] = useState(false);

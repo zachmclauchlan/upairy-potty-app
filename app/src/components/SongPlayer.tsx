@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from 'expo-audio';
 import { T, Sub } from './ui';
 import Icon from './Icon';
-import { C } from '@/lib/theme';
+import { C, shadow } from '@/lib/theme';
 
 let modeSet = false;
 const setLoop = (p: { loop: boolean }, v: boolean) => { p.loop = v; };
@@ -47,12 +47,12 @@ export function PlayBar({ song, light }: { song: ReturnType<typeof useSong>; lig
   const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-      <Pressable onPress={song.toggle} accessibilityLabel={song.playing ? 'Pause' : 'Play'} style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: C.brand, alignItems: 'center', justifyContent: 'center' }}>
+      <Pressable onPress={song.toggle} accessibilityLabel={song.playing ? 'Pause' : 'Play'} style={[{ width: 52, height: 52, borderRadius: 26, backgroundColor: C.brand, alignItems: 'center', justifyContent: 'center' }, shadow]}>
         <Icon name={song.playing ? 'pause' : 'music'} size={22} color="#fff" />
       </Pressable>
       <View style={{ flex: 1 }}>
-        <View style={{ height: 6, borderRadius: 3, backgroundColor: light ? '#EFE7D2' : C.sunk, overflow: 'hidden' }}>
-          <View style={{ width: `${pct}%`, height: 6, backgroundColor: C.brand }} />
+        <View style={{ height: 12, borderRadius: 6, backgroundColor: C.surface, overflow: 'hidden', borderWidth: 1.5, borderColor: C.ink }}>
+          <View style={{ width: `${pct}%`, height: '100%', backgroundColor: C.brand }} />
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
           <Sub style={{ fontSize: 12 }}>{mmss(song.time)}</Sub>

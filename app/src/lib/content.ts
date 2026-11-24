@@ -121,5 +121,5 @@ export const MOODS: [Mood, string, IconName][] = [['great','Great day','smile'],
 
 export const TAGS: string[] = ['Told me before going','Poo on the potty','Dry nap','Refused to sit','Busy day out','Unwell or tired'];
 
-export const STKC: string[] = ['#F2B705','#E8735A','#5AA35A','#4A8BD6','#B27AD6','#F29E4C'];
+export const STKC: string[] = ['#FF9FB0','#E8735A','#6DB36D','#6AA5E8','#C095E0','#F7A860'];
 
