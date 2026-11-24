@@ -32,6 +32,8 @@ export interface State {
   backup: { on: boolean; at: number; owner: string | null };
   /** sticker chart restarts from this many potty successes (Reset stars) */
   stickerBase?: number;
+  /** From the setup quiz: temperament, what makes it harder, who's helping. Sent to the coach as context. */
+  profile?: { temperament: string | null; harder: string[]; team: string[] };
   /** true while the demo "sample week" logs are loaded */
   sample?: boolean;
 }

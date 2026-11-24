@@ -218,7 +218,8 @@ export function aiContext() {
     `Today so far: ${st.s} on the potty, ${st.a} accidents, ${st.t} sits with nothing, told the parent first ${st.told} times.`,
     `Last 7 days success rate by day (oldest first): ${days.map(d => d.rate == null ? 'no logs' : d.rate + '%').join(', ')}.`,
     `Learned timing: ${L.gap.ok ? `usual gap between wees ${L.gap.v} min` : 'not enough data yet'}; ${L.drink.ok ? `wee about ${L.drink.v} min after drinks` : 'drink timing not learned'}.`,
-    `Last poo: ${lp ? daysBetween(lp.ts, today) + ' day(s) ago' : 'not logged'}. Dry nights this week: ${dryNights7()}.`].join('\n');
+    `Last poo: ${lp ? daysBetween(lp.ts, today) + ' day(s) ago' : 'not logged'}. Dry nights this week: ${dryNights7()}.`,
+    ...(S.profile ? [`From the parent's setup quiz: temperament ${S.profile.temperament ?? 'not given'}; things making it harder: ${S.profile.harder.join(', ') || 'none'}; helping with training: ${S.profile.team.join(', ') || 'not given'}.`] : [])].join('\n');
 }
 export function localAnswer(q: string) {
   const s = q.toLowerCase(); let best: typeof SITUATIONS[number] | null = null, score = 0;
