@@ -111,7 +111,7 @@ function History() {
           const s = dayStats(t), fut = t > today, on = t === sel;
           return <Pressable key={i} disabled={fut} onPress={() => setSel(t)} style={{ width: `${100 / 7}%`, alignItems: 'center', paddingVertical: 7, borderRadius: 14, backgroundColor: on ? C.ink : 'transparent', gap: 3 }}>
             <T w="s" size={15} color={on ? '#fff' : fut ? C.ink3 : C.ink}>{new Date(t).getDate()}</T>
-            <T w="s" size={10} color={on ? 'rgba(255,255,255,.7)' : C.ink2} style={{ height: 13, lineHeight: 13 }}>{s.rate == null ? '' : s.rate + '%'}</T>
+            <T w="s" size={10} color={on ? 'rgba(255,255,255,.7)' : C.ink2} style={{ height: 15, lineHeight: 15 }}>{s.rate == null ? '' : s.rate + '%'}</T>
             <View style={{ flexDirection: 'row', gap: 2, height: 5 }}>{[...Array(Math.min(s.s, 4))].map((_, k) => <View key={'s' + k} style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: C.brand }} />)}{[...Array(Math.min(s.a, 2))].map((_, k) => <View key={'a' + k} style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: C.acc }} />)}</View>
           </Pressable>; })}
       </View>

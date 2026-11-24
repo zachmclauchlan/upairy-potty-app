@@ -6,8 +6,14 @@ import { C, F, R, shadow, TONES, Tone } from '@/lib/theme';
 
 /* ---------- text ---------- */
 type W = 'r' | 'm' | 's' | 'b' | 'fun';
+// Poppins and Chewy are taller than system fonts. Android clips any text whose line height is
+// below about 1.5x its size, so T always enforces that minimum, even when a style asks for less.
+const MIN_LINE = 1.5;
 export function T({ w = 'r', size = 15, color = C.ink, style, ...p }: TextProps & { w?: W; size?: number; color?: string }) {
-  return <Text {...p} style={[{ fontFamily: F[w], fontSize: size, color, lineHeight: Math.round(size * 1.4) }, style]} />;
+  const flat = (StyleSheet.flatten(style) || {}) as { fontSize?: number; lineHeight?: number };
+  const fs = flat.fontSize ?? size;
+  const lineHeight = Math.max(flat.lineHeight ?? 0, Math.ceil(fs * MIN_LINE));
+  return <Text {...p} style={[{ fontFamily: F[w], fontSize: size, color }, Platform.OS === 'android' && { includeFontPadding: false }, style, { lineHeight }]} />;
 }
 export const Label = ({ children, color = C.ink2, style }: { children: ReactNode; color?: string; style?: any }) =>
   <T w="s" size={12} color={color} style={[{ letterSpacing: 0.3, textTransform: 'uppercase' }, style]}>{children}</T>;

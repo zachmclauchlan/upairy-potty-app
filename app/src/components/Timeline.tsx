@@ -19,7 +19,7 @@ export default function Timeline({ list, del }: { list: Ev[]; del?: boolean }) {
           <T size={13} color={C.ink2}>{fmt(e.ts)}</T>
           {del ? <Pressable onPress={() => removeEvent(e.id)} hitSlop={10} style={{ padding: 4 }}><Icon name="x" size={16} color={C.ink3} /></Pressable> : null}
         </View>
-        {gap ? <T size={11} color={C.ink3} style={{ marginLeft: 50, marginTop: -6, marginBottom: -2 }}>{gap} since the last wee</T> : null}
+        {gap ? <T size={11} color={C.ink3} style={{ marginLeft: 50, marginTop: -8, marginBottom: 8 }}>{gap} since the last wee</T> : null}
       </View>
     );
   })}</>;

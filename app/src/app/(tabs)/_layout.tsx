@@ -16,7 +16,7 @@ export default function TabLayout() {
       tabBarActiveTintColor: C.brand,
       tabBarInactiveTintColor: C.ink3,
       tabBarStyle: { backgroundColor: 'rgba(255,255,255,0.97)', borderTopColor: C.line, height: 66 + bottom, paddingTop: 4, paddingBottom: bottom },
-      tabBarLabelStyle: { fontFamily: F.m, fontSize: 11, lineHeight: 15 },
+      tabBarLabelStyle: { fontFamily: F.m, fontSize: 11, lineHeight: 17 },
       sceneStyle: { backgroundColor: C.bg },
     }}>
       {TABS.map(([name, title, ic]) => <Tabs.Screen key={name} name={name} options={{ title, tabBarIcon: ({ color }) => <Icon name={ic} size={23} color={color as string} /> }} />)}
