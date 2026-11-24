@@ -5,7 +5,7 @@
 //
 // Secrets (Supabase → Edge Functions → Secrets):
 //   LOOP_API_TOKEN          Loop → Settings → API tokens and webhooks (scope: Read subscription contracts)
-//   MEMBERSHIP_PRODUCT_ID   Shopify product ID of the "Potty Up" app product (number or gid://shopify/Product/…)
+//   MEMBERSHIP_PRODUCT_ID   optional: overrides the Potty Up product ID below
 //   SHOPIFY_STORE_DOMAIN, SHOPIFY_ADMIN_TOKEN   optional, only to show the parent's latest order
 // A manual "gift" plan in the database (e.g. for Amazon buyers) is kept regardless.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
@@ -13,6 +13,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const LOOP_API = 'https://api.loopsubscriptions.com/admin/2026-04';
 const SHOPIFY_API_VERSION = '2026-07';
+// The "Potty Up" product on upairy.com (unlisted, subscription only). MEMBERSHIP_PRODUCT_ID overrides it.
+const POTTY_UP_PRODUCT_ID = '15531787157725';
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -37,7 +39,7 @@ async function loopSubscriptions(email: string): Promise<LoopSub[]> {
 
 /** Does this subscription include the membership? Matches the product ID, or the name if no ID is set. */
 function isMembership(sub: LoopSub) {
-  const wanted = numericId(Deno.env.get('MEMBERSHIP_PRODUCT_ID'));
+  const wanted = numericId(Deno.env.get('MEMBERSHIP_PRODUCT_ID') || POTTY_UP_PRODUCT_ID);
   return (sub.lines ?? []).some(l => wanted
     ? numericId(l.productShopifyId) === wanted
     : /potty ?up|upairy plus|membership/i.test(`${l.productTitle ?? ''} ${l.sellingPlanGroupName ?? ''} ${l.name ?? ''}`));
