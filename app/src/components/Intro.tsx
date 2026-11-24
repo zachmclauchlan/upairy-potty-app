@@ -22,7 +22,7 @@ const steps = (): Step[] => {
     { target: 'day', icon: 'sunrise', tone: 'sun', title: 'Your day in three steps', body: 'Morning: log the wake-up. Through the day: offer the potty and log it. Evening: a 20-second check-in that plans tomorrow.' },
     { target: 'timer', icon: 'clock', tone: 'water', title: 'The potty timer', body: `It counts down to the next try and learns ${nm}'s rhythm from your logs. Tap Log potty after every try, and Pause for naps or outings.` },
     { target: null, icon: 'bell', tone: 'sun', title: 'Reminders you can log from', body: `A few minutes before ${nm} is likely to need to go, you'll get a nudge. Tap a button on it to log in one tap.`, demo: 'notif' },
-    { target: { tab: 1 }, icon: 'route', tone: 'ok', title: 'Program', body: 'Your method, step by step. Each step has a goal, and the evening check-in moves you on, repeats, or steps back.' },
+    { target: { tab: 1 }, icon: 'route', tone: 'ok', title: 'Program', body: 'Your course, day by day: a short lesson and checklist each day. Days move on by themselves, and at the end of each stage the app suggests when to move on.' },
     { target: { tab: 2 }, icon: 'chat', tone: 'water', title: `${COACH_NAME}, your potty coach`, body: `Stuck on poo, accidents or daycare? Ask ${COACH_NAME} anything, any time. ${COACH_NAME} knows ${nm}'s program and recent logs.` },
     { target: { tab: 3 }, icon: 'star', tone: 'sun', title: 'Kid zone', body: 'Stars, stickers, rewards you choose, potty songs and kid mode, for the little one.' },
     { target: { tab: 4 }, icon: 'chart', tone: 'ok', title: 'Progress', body: `What the app has learned about ${nm}, and every day you've logged.` },

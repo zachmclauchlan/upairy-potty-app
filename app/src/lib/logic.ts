@@ -1,6 +1,7 @@
 // Everything the app works out from the logs: stats, learned timing, the timer, program rules.
 import { S, MIN, HR, DAY, sod, uid, addDays, atHour, daysBetween, type Ev, type State } from './store';
 import { METHODS, SITUATIONS, QUIZ, type RuleKey, type Step } from './content';
+import { inPrep, todayLesson, daysToGo, stage, stageDay, courseDay, course } from './course';
 
 /* ---------- formatting ---------- */
 export const fmt = (t: number) => new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -26,7 +27,22 @@ export const lastPoo = () => [...evs()].reverse().find(e => isPotty(e) && (e.wha
 
 /* ---------- program ---------- */
 export const M = () => METHODS[S.method];
-export const item = (): Step => M().items[Math.min(S.pIdx, M().items.length - 1)];
+/** Today's stage. Before Day 1 it's a "getting ready" stage with no timer. */
+export const item = (): Step => {
+  if (inPrep()) { const l = todayLesson().lesson, n = daysToGo(); return { t: 'Getting ready', d: n === 1 ? 'Day 1 is tomorrow' : `${n} days until Day 1`, len: course().prep.length, iv: null, rule: 'always', steps: l.todo, expect: l.normal }; }
+  return stage();
+};
+/** At the end of a stage: does the log say they're ready to move on? (Today or yesterday met the goal.) */
+export function gateAdvice() {
+  const st = stage(), r = RULES[st.rule], next = course().stages[S.pIdx + 1];
+  const t = dayStats(sod(Date.now())), y = dayStats(addDays(sod(Date.now()), -1));
+  const ready = r.ok(t) || r.ok(y);
+  const nm = S.child.name || 'Your child';
+  const why = ready
+    ? `${nm} met this stage's goal (${r.t.toLowerCase()}). Ready for "${next?.t}"?`
+    : `This stage usually takes ${st.d.toLowerCase()}. The goal (${r.t.toLowerCase()}) isn't met yet, so one more day often helps. You can still move on.`;
+  return { ready, why, next, goal: r.t };
+}
 export const RULES: Record<RuleKey, { t: string; ok: (s: DayStats) => boolean }> = {
   always: { t: 'Moves on after one day', ok: () => true },
   catch3: { t: 'At least 3 wees on the potty in a day', ok: s => s.s >= 3 },
@@ -52,26 +68,39 @@ export function recommend(st: State = S) {
 }
 export function ciStreak() { let n = 0, d = sod(Date.now()); if (!S.checkins[d]) d = addDays(d, -1); while (S.checkins[d]) { n++; d = addDays(d, -1); } return n; }
 
-/** What the evening check-in suggests for tomorrow. */
+/** What the evening check-in suggests for tomorrow. Days move on by themselves; this only covers
+ *  the end of a stage (move on?) and hard days (repeat or go back). */
+export type Plan = 'next' | 'carry' | 'repeat' | 'back';
 export function decision(day: number, mood: string | null) {
-  const st = dayStats(day), it = item(), items = M().items;
-  const ok = RULES[it.rule].ok(st); const moreDays = S.pDay < it.len; const nextIt = items[S.pIdx + 1];
-  let rec: 'next' | 'stay', why: string;
-  if (it.rule === 'done') { rec = 'stay'; why = 'This is the last step. Keep going until it feels normal.'; }
-  else if (st.s + st.a === 0 && !['always', 'night4', 'night5'].includes(it.rule)) { rec = 'stay'; why = "Nothing was logged, so there's nothing to judge. Repeat this step tomorrow."; }
-  else if (moreDays) { rec = 'next'; why = `Day ${S.pDay} of ${it.len} on this step. ${ok ? 'Today met the goal.' : 'Today was below the goal, which is normal early on.'}`; }
-  else if (ok) { rec = 'next'; why = `${RULES[it.rule].t}: met today.`; }
-  else { rec = 'stay'; why = `The goal for this step is: ${RULES[it.rule].t.toLowerCase()}. Not there yet, so one more day usually helps.`; }
-  if (mood === 'tough' && rec === 'next' && !moreDays) { rec = 'stay'; why = 'You said it was a tough day, so one more day on this step is a good idea even though the numbers look okay.'; }
-  const nextLbl = moreDays ? `Continue: ${it.t}, day ${S.pDay + 1}` : nextIt ? `Move on to ${nextIt.t}` : 'Keep going';
-  const stayLbl = `Repeat ${it.t.replace(/^Day \d: /, '').toLowerCase()} tomorrow`;
-  return { st, rec, why, nextLbl, stayLbl, moreDays, goal: RULES[it.rule].t, back: S.pIdx > 0 ? items[S.pIdx - 1] : null };
+  const st = dayStats(day), cur = stage(), stages = course().stages;
+  const next = stages[S.pIdx + 1], prev = S.pIdx > 0 ? stages[S.pIdx - 1] : null;
+  const stageEnds = !inPrep() && cur.rule !== 'done' && !!next && stageDay() >= cur.len;
+  const nothing = st.s + st.a === 0 && !['always', 'night4', 'night5'].includes(cur.rule);
+  let rec: Plan, why: string;
+  if (inPrep()) { rec = 'carry'; why = daysToGo() <= 1 ? "Tomorrow is Day 1. Get a good night's sleep!" : `${daysToGo() - 1} more days of getting ready.`; }
+  else if (stageEnds) {
+    const g = gateAdvice();
+    rec = g.ready && mood !== 'tough' ? 'next' : 'repeat';
+    why = mood === 'tough' && g.ready ? 'The numbers look good, but you said it was a tough day. One more day on this stage is a good idea.' : g.why;
+  }
+  else if (nothing) { rec = 'repeat'; why = "Nothing was logged today, so there's nothing to judge. Repeating today tomorrow keeps you on track."; }
+  else if (mood === 'tough') { rec = 'repeat'; why = 'Tough days happen. Repeating today tomorrow gives you both a calmer go at it.'; }
+  else { rec = 'carry'; why = `Day ${courseDay()} done. Tomorrow carries on with the next lesson.`; }
+  const label: Record<Plan, string> = {
+    next: next ? `Move on to "${next.t}"` : 'Keep going',
+    carry: inPrep() ? 'Sounds good' : `Carry on to Day ${courseDay() + 1}`,
+    repeat: stageEnds ? `One more day of "${cur.t}"` : 'Repeat today tomorrow',
+    back: prev ? `Go back to "${prev.t}"` : '',
+  };
+  return { st, rec, why, label, stageEnds, prev, next, goal: RULES[cur.rule].t };
 }
-export function applyDecision(v: 'next' | 'stay' | 'back') {
-  const items = M().items, it = item();
-  if (v === 'next') { if (S.pDay < it.len) { S.pDay++; return `Tomorrow: ${it.t}, day ${S.pDay}`; } if (S.pIdx < items.length - 1) { S.pIdx++; S.pDay = 1; return `Moved on to ${item().t}`; } return 'Kept going'; }
-  if (v === 'stay') return `Repeating ${it.t} tomorrow`;
-  S.pIdx = Math.max(0, S.pIdx - 1); S.pDay = 1; return `Went back to ${item().t}`;
+/** Apply the check-in choice. Changes start tomorrow. */
+export function applyDecision(v: Plan) {
+  const tmw = addDays(sod(Date.now()), 1);
+  if (v === 'next') { S.pIdx = Math.min(S.pIdx + 1, course().stages.length - 1); S.stageStart = tmw; S.gateSnooze = 0; return `Tomorrow: ${stage().t}`; }
+  if (v === 'back') { S.pIdx = Math.max(0, S.pIdx - 1); S.stageStart = tmw; S.gateSnooze = 0; return `Tomorrow: back to ${stage().t}`; }
+  if (v === 'repeat') { if (!S.repeats.includes(tmw)) S.repeats.push(tmw); S.gateSnooze = tmw; return `Tomorrow repeats Day ${courseDay()}`; }
+  return inPrep() ? 'Getting ready' : `Tomorrow: Day ${courseDay() + 1}`;
 }
 
 /** Open the evening check-in, asking first if the day isn't over yet. */
@@ -185,7 +214,7 @@ export function aiContext() {
   const today = sod(Date.now()), st = dayStats(today), L = learned(), it = item();
   const days = [...Array(7)].map((_, i) => dayStats(addDays(today, -(6 - i)))); const lp = lastPoo();
   return [`Child: age ${S.child.age || 'unknown'}. (Name withheld for privacy; call them "your child".)`,
-    `Method: ${M().name}. Current step: ${it.t} (${it.d}), day ${S.pDay} of ${it.len}. Step goal: ${RULES[it.rule].t}.`,
+    `Method: ${M().name}. ${inPrep() ? `Getting ready, ${daysToGo()} day(s) until Day 1` : `Course day ${courseDay()}. Current stage: ${it.t} (${it.d}), day ${stageDay()} of ${it.len}`}. Today's lesson: ${todayLesson().lesson.t}. Stage goal: ${RULES[it.rule].t}.`,
     `Today so far: ${st.s} on the potty, ${st.a} accidents, ${st.t} sits with nothing, told the parent first ${st.told} times.`,
     `Last 7 days success rate by day (oldest first): ${days.map(d => d.rate == null ? 'no logs' : d.rate + '%').join(', ')}.`,
     `Learned timing: ${L.gap.ok ? `usual gap between wees ${L.gap.v} min` : 'not enough data yet'}; ${L.drink.ok ? `wee about ${L.drink.v} min after drinks` : 'drink timing not learned'}.`,
@@ -224,6 +253,8 @@ export function sampleWeek(st: State) {
   }
   (['wet', 'wet', 'dry', 'wet', 'dry', 'dry'] as const).forEach((o, k) => push(atHour(addDays(start, k + 1), 6.6), { type: 'night', outcome: o }));
   st.events = ev; st.start = start; st.memberSince = now - 18 * DAY; st.pants = 6; st.sample = true;
-  const items = METHODS[st.method].items; st.pIdx = items[0].iv == null && st.method !== 'night' ? 1 : 0; st.pDay = 1;
-  for (let d = 0; d < 6; d++) { const it = items[st.pIdx]; st.checkins[addDays(start, d)] = 'Moved on'; if (st.pDay < it.len) st.pDay++; else if (st.pIdx < items.length - 1) { st.pIdx++; st.pDay = 1; } }
+  // sample: Day 1 was 6 days ago, now on the second stage
+  st.stageStart = addDays(start, 2); st.repeats = []; st.coursePause = null; st.gateSnooze = 0; st.courseV = 1;
+  st.pIdx = Math.min(1, METHODS[st.method].items.length - 1);
+  for (let d = 0; d < 6; d++) st.checkins[addDays(start, d)] = d === 1 ? 'Moved on to the next stage' : 'Carried on';
 }

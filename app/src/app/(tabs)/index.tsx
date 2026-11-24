@@ -8,10 +8,11 @@ import Timeline from '@/components/Timeline';
 import Night from '@/components/Night';
 import { C, shadow } from '@/lib/theme';
 import { S, useApp, update, sod, DAY, addDays } from '@/lib/store';
-import { dayStats, fmt, greet, hm, isPotty, item, lastPoo, learned, M, NEED, onDay, timerState } from '@/lib/logic';
+import { dayStats, fmt, greet, hm, isPotty, item, lastPoo, learned, NEED, onDay, timerState } from '@/lib/logic';
 import { logQuick } from '@/lib/actions';
 import { emit, on } from '@/lib/bus';
 import { tourRef } from '@/lib/tour';
+import { GateCard, LessonCard, courseLabel } from '@/components/CourseBits';
 
 function useNow(ms = 5000) { const [n, setN] = useState(Date.now()); useEffect(() => { const t = setInterval(() => setN(Date.now()), ms); return () => clearInterval(t); }, [ms]); return n; }
 
@@ -77,36 +78,21 @@ function Ring() {
 }
 
 function PlanCard() {
-  const today = sod(Date.now()), it = item(), ci = S.checkins[today];
-  const key = S.method + S.pIdx + '-' + today; const done = S.steps[key] || [];
+  const today = sod(Date.now()), ci = S.checkins[today];
   const late = new Date().getHours() >= 16;
   return (
-    <Card>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <View style={{ flex: 1 }}>
-          <Badge icon={M().ic} label={M().name} />
-          <T w="s" size={17} style={{ marginTop: 6 }}>{ci ? 'Tomorrow: ' : ''}{it.t}</T>
-          <Sub>{it.len > 1 ? `${it.d} · day ${S.pDay} of ${it.len}` : it.d}</Sub>
-        </View>
-        {!ci ? <Sub>{done.length}/{it.steps.length}</Sub> : null}
-      </View>
-      <Sub style={{ marginTop: 8 }}>{it.expect}</Sub>
-      {!ci ? it.steps.map((s, j) => {
-        const on = done.includes(j);
-        return <Pressable key={j} onPress={() => update(st => { const l = st.steps[key] || []; st.steps[key] = on ? l.filter(x => x !== j) : [...l, j]; })} style={{ flexDirection: 'row', gap: 12, paddingVertical: 11, borderTopWidth: 1, borderTopColor: C.line, marginTop: j ? 0 : 12 }}>
-          <View style={{ width: 22, height: 22, borderRadius: 7, borderWidth: 1.8, borderColor: on ? C.brand : '#CFCBC1', backgroundColor: on ? C.brand : 'transparent', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>{on ? <Icon name="check" size={14} color="#fff" stroke={2.6} /> : null}</View>
-          <T size={14} color={on ? C.ink3 : C.ink} style={{ flex: 1, textDecorationLine: on ? 'line-through' : 'none' }}>{s}</T>
-        </Pressable>;
-      }) : null}
-      <Pressable onPress={ci ? undefined : () => emit('checkin', today)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12, padding: 12, borderRadius: 14, backgroundColor: !ci && late ? C.brandSoft : C.sunk }}>
+    <>
+      <GateCard compact />
+      <LessonCard full={false} />
+      <Pressable onPress={ci ? undefined : () => emit('checkin', today)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: -2, marginBottom: 12, padding: 12, borderRadius: 14, backgroundColor: !ci && late ? C.brandSoft : C.sunk }}>
         <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: ci ? C.brandSoft : late ? '#fff' : C.surface, alignItems: 'center', justifyContent: 'center' }}><Icon name={ci ? 'check' : 'moon'} size={17} color={C.brand} /></View>
         <View style={{ flex: 1 }}>
-          <T w="s" size={14}>{ci ? "Today's check-in done" : 'Evening check-in'}</T>
-          <T size={12} color={C.ink2}>{ci ? ci : late ? 'Ready when you are. Takes 20 seconds.' : "Opens tonight. See how today went and plan tomorrow."}</T>
+          <T w="s" size={14}>{ci ? "Today's check-in done" : 'Evening check-in (optional)'}</T>
+          <T size={12} color={C.ink2}>{ci ? ci : late ? 'How did today go? 20 seconds.' : 'Tonight: see how today went. The course moves on either way.'}</T>
         </View>
         {!ci ? <Icon name="chevR" size={18} color={C.ink2} /> : null}
       </Pressable>
-    </Card>
+    </>
   );
 }
 
@@ -159,7 +145,7 @@ export default function Today() {
             <View key={l} style={{ flex: 1, alignItems: 'center', borderLeftWidth: i ? 1 : 0, borderLeftColor: C.line }}><T w="s" size={22} color={c}>{String(v)}</T><T w="m" size={11} color={C.ink2}>{l}</T></View>)}
         </View>
         {pooDays != null && pooDays >= 2 ? <View style={{ marginTop: 12 }}><Tip icon="poo" tone="poo"><T w="s" size={14}>No poo for {pooDays} days</T><Sub>Holding in poo is common when training. Offer water and fruit{L.poo.ok ? `, and a sit around ${fmt(sod(Date.now()) + (L.poo.v as number) * 3.6e6)} when ${nm} usually goes` : ', and a sit 20 minutes after meals'}.</Sub><Pressable onPress={() => emit('article', 0)}><T w="s" size={13} color={C.poo} style={{ marginTop: 6 }}>What helps</T></Pressable></Tip></View> : null}
-        <SectionHead title="Today's plan" right="Program" onRight={() => emit('tab', 'program')} />
+        <SectionHead title={courseLabel()} right="Course" onRight={() => emit('tab', 'program')} />
         <PlanCard />
         <SectionHead title="Timeline" right={`${todays.length} logged`} />
         <Card pad={6} style={{ paddingHorizontal: 18 }}>{todays.length ? <Timeline list={todays} del /> : <Sub style={{ textAlign: 'center', paddingVertical: 20 }}>Nothing logged yet today.{'\n'}Tap “Woke up” to start the timer.</Sub>}</Card>

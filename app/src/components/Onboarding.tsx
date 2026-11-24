@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { T, Sub, Btn, Card, Input, Label, Chip, Chips, Badge, IconBox } from './ui';
 import Icon from './Icon';
 import { C } from '@/lib/theme';
-import { S, update, sod } from '@/lib/store';
+import { S, update, sod, addDays } from '@/lib/store';
 import { METHODS, QUIZ, WHERE, toneOf, type MethodKey } from '@/lib/content';
 import { quizScore, quizVerdict, recommend, sampleWeek, startIndex } from '@/lib/logic';
 import Logo from './Logo';
@@ -41,12 +41,16 @@ function H({ t, s }: { t: string; s?: string }) {
   return <><T w="b" size={28} style={{ lineHeight: 33, marginBottom: 8 }}>{t}</T>{s ? <Sub style={{ fontSize: 15, lineHeight: 21, marginBottom: 20 }}>{s}</Sub> : null}</>;
 }
 
+/** Default days until Day 1: intensive methods get a day to prepare. */
+const defaultStart = (m: MethodKey) => m === 'threeday' || m === 'barebottom' ? 1 : 0;
+
 export default function Onboarding() {
   const ins = useSafeAreaInsets();
   const [step, setStep] = useState(0);
   const [name, setName] = useState(S.child.name); const [age, setAge] = useState(S.child.age); const [words, setWords] = useState(S.child.words);
   const [where, setWhere] = useState(S.where); const [quiz, setQuiz] = useState<Record<number, number>>({}); const [home3, setHome3] = useState<boolean | null>(null);
   const [method, setMethod] = useState<MethodKey | null>(null); const [sample, setSample] = useState(false);
+  const [startIn, setStartIn] = useState<number | null>(null); // days from today until Day 1
   const draft = { ...S, where, quiz, home3, method: method ?? 'threeday' };
   const rec = recommend(draft as any);
   const nm = name || 'your child';
@@ -61,7 +65,9 @@ export default function Onboarding() {
     update(s => {
       s.child = { name: name.trim() || 'Your child', age, words: words.trim() };
       s.where = where; s.quiz = quiz; s.home3 = home3; s.method = method ?? rec;
-      s.pIdx = startIndex(s); s.pDay = 1; s.start = sod(Date.now());
+      s.pIdx = startIndex(s); s.pDay = 1;
+      const d1 = addDays(sod(Date.now()), sample ? 0 : startIn ?? defaultStart(s.method));
+      s.start = d1; s.stageStart = d1; s.repeats = []; s.coursePause = null; s.gateSnooze = 0; s.courseV = 1;
       if (sample) sampleWeek(s);
       s.onboarded = true;
     });
@@ -80,8 +86,8 @@ export default function Onboarding() {
     body = <>
       <Logo width={132} />
       <T w="b" size={28} style={{ lineHeight: 33, marginTop: 20, marginBottom: 8 }}>Potty training, planned around your child.</T>
-      <Sub style={{ fontSize: 15, lineHeight: 21, marginBottom: 24 }}>Answer a few questions and we'll build a day-by-day program. The app learns your child's rhythm as you log.</Sub>
-      {([['route', 'ok', 'A program that fits', '3-day intensive, bare bottom at home, or gentle. Chosen for your child and your week.'], ['spark', 'water', 'Timing that learns', "Starts with the program's timing, then learns how often your child really goes."], ['moon', 'sun', 'A 20-second evening check-in', 'See how the day went and decide together what tomorrow looks like.']] as const).map(([ic, tone, t, s]) =>
+      <Sub style={{ fontSize: 15, lineHeight: 21, marginBottom: 24 }}>Answer a few questions and we'll build a day-by-day course. The app learns your child's rhythm as you log.</Sub>
+      {([['route', 'ok', 'A program that fits', '3-day intensive, bare bottom at home, or gentle. Chosen for your child and your week.'], ['spark', 'water', 'Timing that learns', "Starts with the program's timing, then learns how often your child really goes."], ['book', 'sun', 'A short lesson each day', 'What to do, what to say, and what is normal today. Pick a start date and go.']] as const).map(([ic, tone, t, s]) =>
         <View key={t} style={{ flexDirection: 'row', gap: 14, marginBottom: 18 }}><IconBox name={ic} tone={tone} size={42} /><View style={{ flex: 1 }}><T w="s">{t}</T><Sub>{s}</Sub></View></View>)}
     </>;
   } else if (step === 1) {
@@ -116,7 +122,12 @@ export default function Onboarding() {
   } else if (step === 5) {
     const mk = method ?? rec; const m = METHODS[mk]; const si = startIndex({ ...draft, method: mk } as any);
     cta = 'Looks good';
-    body = <>{bars(4)}<H t={`${nm}'s program`} s={`${m.name} · ${m.pace}. Each evening's check-in decides if you stay on a step, move on, or step back.`} />
+    const sIn = startIn ?? defaultStart(mk);
+    const dayChip = (k: number) => k === 0 ? 'Today' : k === 1 ? 'Tomorrow' : new Date(addDays(sod(Date.now()), k)).toLocaleDateString([], { weekday: 'short', day: 'numeric' });
+    body = <>{bars(4)}<H t={`${nm}'s course`} s={`${m.name} · ${m.pace}. Days move on by themselves from Day 1. At the end of each stage, the app looks at your logs and suggests moving on. You decide.`} />
+      <Label style={{ marginBottom: 8 }}>When is Day 1?</Label>
+      <Chips style={{ marginBottom: 6 }}>{[0, 1, 2, 3, 4, 5, 6].map(k => <Chip key={k} label={dayChip(k)} on={sIn === k} onPress={() => setStartIn(k)} />)}</Chips>
+      <Sub style={{ marginBottom: 16 }}>{sIn === 0 ? 'Starting today.' : `You'll get ${sIn === 1 ? 'a day' : sIn + ' days'} of short "getting ready" lessons first.`}{mk === 'threeday' ? ' Pick 3 days you can be at home.' : ''}</Sub>
       <Card pad={4} style={{ paddingHorizontal: 18, borderWidth: 1, borderColor: C.line, shadowOpacity: 0 }}>
         {m.items.map((s, i) => <View key={i} style={{ flexDirection: 'row', gap: 14, paddingVertical: 13, borderTopWidth: i ? 1 : 0, borderTopColor: C.line, alignItems: 'center' }}>
           <View style={{ width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: i < si ? C.brandSoft : i === si ? C.brand : C.sunk }}>{i < si ? <Icon name="check" size={15} color={C.brand} stroke={2.4} /> : <T w="s" size={13} color={i === si ? '#fff' : C.ink2}>{i + 1}</T>}</View>

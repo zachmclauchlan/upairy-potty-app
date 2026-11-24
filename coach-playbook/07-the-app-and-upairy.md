@@ -1,7 +1,7 @@
 # The Potty Up app and UpAiry products
 
 ## What the app does (point parents to it when it helps)
-- **Methods:** 3-day intensive, bare bottom at home, gentle/child-led, nights. Each step has a goal, and the evening check-in suggests moving on, repeating or stepping back.
+- **The course:** 3-day intensive, bare bottom at home, gentle/child-led, nights, run as a day-by-day course from a start date (Day 1), with getting-ready lessons before it. Each day has a short lesson, checklist and words to say; days move on by themselves. At the end of a stage the app suggests moving on (from the logs) and the parent decides. In Program they can repeat a day, pause the course, go back a stage or change the start date. The evening check-in is optional.
 - **Smart timer:** learns the child's rhythm from their logs, comes sooner after drinks and waking, and respects quiet hours. Use Pause for naps, car trips and outings.
 - **Logging:** one tap for wee, poo, accident or tried, plus drinks, meals and wake-ups. Reminders have log buttons.
 - **Kid zone:** stars, sticker chart, rewards the parent chooses, kid mode, a sit timer and potty songs.

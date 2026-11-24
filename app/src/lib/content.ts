@@ -1,6 +1,7 @@
 // Content carried over word for word from the prototype (index.html).
 import type { IconName } from '@/components/Icon';
 import type { Tone } from './theme';
+import { COURSES } from './courseContent';
 
 export type MethodKey = 'threeday' | 'barebottom' | 'gentle' | 'night';
 export type RuleKey = 'always' | 'catch3' | 'catch2' | 'rate50' | 'rate60' | 'rate70x' | 'rate75' | 'rate80' | 'night4' | 'night5' | 'done';
@@ -17,36 +18,10 @@ export const CDN = 'https://cdn.shopify.com/s/files/1/0684/6149/4493/files/';
 export const toneOf = (t: string) => t.replace('t-', '') as Tone;
 
 export const METHODS: Record<MethodKey, Method> = {
- threeday:{name:'3-day intensive',ic:'bolt',tone:'t-sun',blurb:'Three full days at home with nothing on the bottom half. Fastest, but needs your full attention.',need:'3 days at home',pace:'About 1 week',items:[
-  {t:'Get ready',d:'The day before',len:1,iv:null,rule:'always',steps:['Put the potty in the room you spend most time in','Stock up: training pants, spare clothes, drinks and snacks','Clear your plans for the next 3 days','Tell them: "Tomorrow the nappies are going bye-bye"'],expect:'Tomorrow is the big day. Nothing to log yet.'},
-  {t:'Day 1: Bare bottom',d:'Day 1',len:1,iv:15,rule:'catch3',steps:['Nappies away, nothing on the bottom half','Offer the potty when the timer runs out','Give extra drinks so there are more chances to practise','Stay close and watch for wiggling or stopping'],expect:'5 to 10 accidents is normal today. Each one teaches them the feeling.'},
-  {t:'Day 2: Bare bottom',d:'Day 2',len:1,iv:20,rule:'rate50',steps:['Offer when the timer runs out and after drinks','Ask less, watch more: wait for them to head to the potty','Make a big deal of it when they tell you','Keep accidents boring: "Wee goes in the potty"'],expect:'Accidents usually drop. Many children tell you once or twice today.'},
-  {t:'Day 3: First outing',d:'Day 3',len:1,iv:30,rule:'rate60',steps:['Wee right before a 20-minute walk','Training pants on for the outing','Bring spare clothes and wipes','Offer as soon as you get home'],expect:'A dry walk is a big win. A few accidents at home is fine.'},
-  {t:'Pants on',d:'Days 4–7',len:4,iv:45,rule:'rate75',steps:['Training pants on at home','Offer before leaving the house and after naps','Wait for them to tell you, prompt less','Praise telling you first'],expect:'Accidents tend to happen when tired, busy playing, or out.'},
-  {t:'Out and about',d:'Week 2',len:7,iv:60,rule:'rate80',steps:['Wee before every outing','Find the toilet as soon as you arrive','Travel potty in the car','One longer outing today'],expect:'New places make children forget. Offer more often than at home.'},
-  {t:'Independence',d:'Weeks 3–4',len:14,iv:90,rule:'done',steps:['Turn the timer off for the morning','Only remind before leaving and at bedtime','Let them do pants and handwashing alone'],expect:'Daytime is done when they tell you most of the time and accidents are rare.'},
- ]},
- barebottom:{name:'Bare bottom at home',ic:'home',tone:'t-ok',blurb:'Bare bottom at home in the mornings, then all day. More relaxed, and works around daycare.',need:'Mornings at home',pace:'About 3–4 weeks',items:[
-  {t:'Get ready',d:'3 days',len:3,iv:null,rule:'always',steps:['Read a potty book together','Sit on the potty after waking and before bath','Let them see you use the toilet','Put training pants and the potty where they can see them'],expect:'Just making the potty normal. Log any sits so the app starts learning.'},
-  {t:'Bare-bottom mornings',d:'Week 1',len:7,iv:30,rule:'rate60',steps:['Bare bottom from breakfast to lunch','Offer when the timer runs out','Nappy or pull-up for nap and afternoon','Log every wee and accident in the morning'],expect:'Lots of accidents on the first two mornings, then fewer.'},
-  {t:'Bare bottom all day at home',d:'Week 2',len:7,iv:40,rule:'rate70x',steps:['Bare bottom whenever you are home','Offer after drinks and meals','Training pants when you go out','Notice the signs they show before a wee'],expect:'Outings may still be wet. That is normal this week.'},
-  {t:'Pants on at home',d:'Week 3',len:7,iv:50,rule:'rate80',steps:['Training pants on at home','Let the timer stretch','Offer before leaving the house'],expect:'Some children have more accidents in pants at first. It settles.'},
-  {t:'Out and about',d:'Week 4',len:7,iv:60,rule:'rate80',steps:['Wee before every outing','Find the toilet as soon as you arrive','Travel potty in the car'],expect:'Offer more often in new places.'},
-  {t:'Independence',d:'Weeks 5–6',len:14,iv:90,rule:'done',steps:['Turn the timer off for the morning','Only remind before leaving and at bedtime'],expect:'Daytime is done when they tell you most of the time.'},
- ]},
- gentle:{name:'Gentle, child-led',ic:'leaf',tone:'t-water',blurb:'Nappies stay on to begin with. The potty becomes part of the daily routine until they start using it.',need:'No time off needed',pace:'1–3 months',items:[
-  {t:'Potty in the routine',d:'1–3 weeks',len:14,iv:null,rule:'catch2',steps:['Sit on the potty after waking up','Sit after meals and before bath','Read a book while they sit','Log every sit, even if nothing comes'],expect:'Nothing has to happen yet. Each log teaches the app their rhythm.'},
-  {t:'Pants in the mornings',d:'1–2 weeks',len:7,iv:60,rule:'rate60',steps:['Training pants on until lunch','Offer when the timer runs out','Nappy for nap and afternoon'],expect:'Expect a few wet pants. Keep it light.'},
-  {t:'Pants all day',d:'1–2 weeks',len:7,iv:60,rule:'rate75',steps:['Training pants all day','Offer after drinks, meals and waking','Nappy only for sleep'],expect:'Accidents tend to come when tired or busy.'},
-  {t:'Out and about',d:'1–2 weeks',len:7,iv:75,rule:'rate80',steps:['Wee before every outing','Find the toilet when you arrive'],expect:'Offer more often in new places.'},
-  {t:'Independence',d:'Ongoing',len:14,iv:90,rule:'done',steps:['Wait for them to tell you','Only remind before leaving and at bedtime'],expect:'Daytime is done when they tell you most of the time.'},
- ]},
- night:{name:'Nights',ic:'moon',tone:'t-water',blurb:'For children dry in the day. Night dryness depends on a hormone that develops on its own schedule.',need:'Day dry first',pace:'Varies',items:[
-  {t:'Watch dry mornings',d:'1–2 weeks',len:14,iv:null,rule:'night4',steps:['Check the nappy every morning','Log dry or wet','Log the last drink of the day'],expect:'4 or more dry mornings a week means they are likely ready.'},
-  {t:'Bedtime routine',d:'1 week',len:7,iv:null,rule:'always',steps:['Last drink an hour before bed','Wee before bath and again right before sleep','Night light on the way to the potty'],expect:'Building habits before the nappy comes off.'},
-  {t:'Nappy-free nights',d:'2+ weeks',len:14,iv:null,rule:'night5',steps:['Bed mat and spare sheets ready','Training pants at night','Log every morning'],expect:'Wet nights are common for weeks. Stay calm and keep logging.'},
-  {t:'7 dry nights',d:'Finish line',len:7,iv:null,rule:'done',steps:['Keep the bedtime routine going'],expect:'If most nights are still wet after a month, it is fine to pause and try again later.'},
- ]},
+ threeday:{name:'3-day intensive',ic:'bolt',tone:'t-sun',blurb:'Three full days at home with nothing on the bottom half. Fastest, but needs your full attention.',need:'3 days at home',pace:'About 1 week',items:COURSES.threeday.stages},
+ barebottom:{name:'Bare bottom at home',ic:'home',tone:'t-ok',blurb:'Bare bottom at home in the mornings, then all day. More relaxed, and works around daycare.',need:'Mornings at home',pace:'About 3–4 weeks',items:COURSES.barebottom.stages},
+ gentle:{name:'Gentle, child-led',ic:'leaf',tone:'t-water',blurb:'Nappies stay on to begin with. The potty becomes part of the daily routine until they start using it.',need:'No time off needed',pace:'1–3 months',items:COURSES.gentle.stages},
+ night:{name:'Nights',ic:'moon',tone:'t-water',blurb:'For children dry in the day. Night dryness depends on a hormone that develops on its own schedule.',need:'Day dry first',pace:'Varies',items:COURSES.night.stages},
 };
 
 export const ARTICLES: Article[] = [

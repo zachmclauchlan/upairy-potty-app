@@ -7,18 +7,20 @@ import { QuizRows, MethodCard } from './Onboarding';
 import { C, F } from '@/lib/theme';
 import { S, update, commit, sod, MIN, uid, atHour, type Outcome, type What } from '@/lib/store';
 import { ARTICLES, METHODS, MOODS, SITUATIONS, SONGS, TAGS, type MethodKey, type Mood } from '@/lib/content';
-import { isEarlyCheckin, applyDecision, ciStreak, dayStats, decision, handoffText, hm, item, learned, M, NEED, quizScore, quizVerdict, RULES, startIndex } from '@/lib/logic';
+import { type Plan, isEarlyCheckin, applyDecision, ciStreak, dayStats, decision, handoffText, hm, item, learned, NEED, quizScore, quizVerdict, RULES, startIndex } from '@/lib/logic';
 import { addEvent, logPotty } from '@/lib/actions';
 import { previewReminder, permission, reschedule } from '@/lib/notifications';
 import { on, emit } from '@/lib/bus';
 import { COACH_NAME } from '@/lib/coach';
+import { COURSES } from '@/lib/courseContent';
+import { inPrep, setStart, goToStage, today as todayDay } from '@/lib/course';
 
 type Open = { k: string; arg?: any } | null;
 
 export default function Sheets() {
   const [open, setOpen] = useState<Open>(null);
   useEffect(() => {
-    const keys = ['log', 'checkin', 'timer', 'pause', 'reminders', 'handoff', 'article', 'situation', 'song', 'quiz', 'method', 'editkid', 'addreward', 'step', 'aiinfo', 'guides'];
+    const keys = ['log', 'checkin', 'timer', 'pause', 'reminders', 'handoff', 'article', 'situation', 'song', 'quiz', 'method', 'editkid', 'addreward', 'step', 'aiinfo', 'guides', 'lesson', 'startdate'];
     const offs = keys.map(k => on(k, arg => {
       // a day that's already checked in (e.g. tapping an old reminder) shouldn't move the program again
       if (k === 'checkin' && S.checkins[arg ?? sod(Date.now())]) { toast('Already checked in', S.checkins[arg ?? sod(Date.now())]); return; }
@@ -47,6 +49,8 @@ export default function Sheets() {
     <EditKidSheet open={k === 'editkid'} close={close} />
     <AddRewardSheet open={k === 'addreward'} close={close} />
     {k === 'step' ? <StepSheet i={open!.arg} close={close} /> : null}
+    {k === 'lesson' ? <LessonSheet arg={open!.arg} close={close} /> : null}
+    <StartSheet open={k === 'startdate'} close={close} />
     <Sheet open={k === 'guides'} onClose={close} title="Guides">
       <Sub style={{ marginBottom: 10 }}>Step-by-step help that works offline.</Sub>
       <Label style={{ marginBottom: 8 }}>Right now</Label>
@@ -104,9 +108,9 @@ function CheckinSheet({ day, close }: { day: number; close: () => void }) {
   </View>;
   const title = step === 3 ? 'Plan for tomorrow' : isToday ? 'How did today go?' : 'How did yesterday go?';
   const left = step > 1 ? <SheetLink label="Back" onPress={() => setStep(step - 1)} /> : undefined;
-  const finish = (v: 'next' | 'stay' | 'back') => {
+  const finish = (v: Plan) => {
     const msg = applyDecision(v);
-    S.checkins[day] = msg; S.days[day] = { mood, tags, note, decision: msg }; commit(); close();
+    update(st => { st.checkins[day] = msg; st.days[day] = { mood, tags, note, decision: msg }; }); close();
     const sk = ciStreak(); toast(`${isToday ? 'Day logged' : 'Yesterday logged'}${sk > 1 ? ` · ${sk}-day streak` : ''}`, msg);
   };
   let body;
@@ -125,18 +129,22 @@ function CheckinSheet({ day, close }: { day: number; close: () => void }) {
     <Btn title="Next" onPress={() => setStep(3)} /></>;
   else {
     const d = decision(day, mood);
+    const alts: Plan[] = d.rec === 'next' ? ['repeat'] : d.rec === 'repeat' ? [d.stageEnds ? 'next' : 'carry'] : inPrep() ? [] : ['repeat'];
+    const pick = (v: Plan) => v === 'next' && d.rec !== 'next'
+      ? confirmAsk('Move on anyway?', `${nm} hasn't met this stage's goal yet (${d.goal.toLowerCase()}). Moving on early often means more accidents in the next stage.
+
+You can always come back.`, 'Move on', () => finish('next'))
+      : finish(v);
     body = <>{dots}{nums(d.st)}
       <Card style={{ borderWidth: 1, borderColor: C.line, shadowOpacity: 0 }}>
-        <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}><Icon name="route" size={15} color={C.ink2} /><Label>The program suggests</Label></View>
-        <T w="s" size={16} style={{ marginTop: 6 }}>{d.rec === 'next' ? d.nextLbl : d.stayLbl}</T>
+        <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}><Icon name="route" size={15} color={C.ink2} /><Label>Tomorrow</Label></View>
+        <T w="s" size={16} style={{ marginTop: 6 }}>{d.label[d.rec]}</T>
         <Sub style={{ marginTop: 2 }}>{d.why}</Sub>
       </Card>
-      <Btn title={d.rec === 'next' ? d.nextLbl : d.stayLbl} onPress={() => finish(d.rec)} />
-      {d.rec === 'next'
-        ? <Btn kind="ghost" title={d.stayLbl} onPress={() => finish('stay')} style={{ marginTop: 10 }} />
-        : <Btn kind="ghost" title={d.moreDays ? d.nextLbl : 'Move on anyway'} style={{ marginTop: 10 }} onPress={() => d.moreDays ? finish('next') : confirmAsk('Move on anyway?', `${nm} hasn't met this step's goal yet (${d.goal.toLowerCase()}). Moving on early often means more accidents in the next step.\n\nYou can always come back.`, 'Move on', () => finish('next'))} />}
-      {d.back ? <Btn kind="text" title={`Hard day? Go back to ${d.back.t}`} onPress={() => finish('back')} /> : null}
-      <Sub style={{ textAlign: 'center', marginTop: 8 }}>{nm}'s progress is never lost. You can change step any time in Program.</Sub></>;
+      <Btn title={d.label[d.rec]} onPress={() => finish(d.rec)} />
+      {alts.map(v => <Btn key={v} kind="ghost" title={d.label[v]} onPress={() => pick(v)} style={{ marginTop: 10 }} />)}
+      {d.prev && !inPrep() ? <Btn kind="text" title={`Hard day? ${d.label.back}`} onPress={() => finish('back')} /> : null}
+      <Sub style={{ textAlign: 'center', marginTop: 8 }}>Days move on by themselves. You can pause, repeat or change stage any time in Program.</Sub></>;
   }
   return <Sheet open onClose={close} title={title} left={left} right={<SheetLink label="Later" onPress={close} />}>{body}</Sheet>;
 }
@@ -260,7 +268,7 @@ function MethodSheet({ open, close }: { open: boolean; close: () => void }) {
   return (
     <Sheet open={open} onClose={close} title="Change method" right={<SheetLink label="Cancel" onPress={close} />}>
       <Sub style={{ marginTop: -6, marginBottom: 14 }}>Your logs and learned timing stay. The program restarts at the matching step.</Sub>
-      {(Object.keys(METHODS) as MethodKey[]).map(k => <MethodCard key={k} k={k} on={S.method === k} onPress={() => { if (S.method === k) { close(); return; } confirmAsk('Switch method?', `You'll start ${METHODS[k].name} from its first step. Your logs and learned timing stay.`, 'Switch', () => { update(s => { s.method = k; s.pIdx = startIndex(s); s.pDay = 1; }); toast('Switched to ' + METHODS[k].name); close(); }); }} />)}
+      {(Object.keys(METHODS) as MethodKey[]).map(k => <MethodCard key={k} k={k} on={S.method === k} onPress={() => { if (S.method === k) { close(); return; } confirmAsk('Switch method?', `You'll start ${METHODS[k].name} from its first stage, with Day 1 today. Your logs and learned timing stay.`, 'Switch', () => { update(s => { s.method = k; s.pIdx = startIndex(s); }); setStart(todayDay()); toast('Switched to ' + METHODS[k].name, 'Day 1 is today. Change the date in Program.'); close(); }); }} />)}
     </Sheet>
   );
 }
@@ -292,18 +300,50 @@ function AddRewardSheet({ open, close }: { open: boolean; close: () => void }) {
     </Sheet>
   );
 }
+/** One lesson of the course: arg = { st: stage index (-1 = getting ready), i: lesson index }. */
+function LessonSheet({ arg, close }: { arg: { st: number; i: number }; close: () => void }) {
+  const c = COURSES[S.method];
+  const L = arg.st < 0 ? c.prep[arg.i] : c.stages[arg.st]?.lessons[arg.i];
+  if (!L) return null;
+  const where = arg.st < 0 ? 'Getting ready' : c.stages[arg.st].t;
+  return (
+    <Sheet open onClose={close} title={L.t}>
+      <Sub style={{ textAlign: 'center', marginTop: -8, marginBottom: 14 }}>{where}</Sub>
+      <T size={15} style={{ lineHeight: 23, marginBottom: 14 }}>{L.why}</T>
+      <Label style={{ marginBottom: 8 }}>Today</Label>
+      <Card pad={4} style={{ paddingHorizontal: 18 }}>{L.todo.map((x, k) => <Row key={k} first={k === 0} icon="check" title={x} />)}</Card>
+      {L.say.length ? <><Label style={{ marginBottom: 8 }}>What to say</Label>
+        <Card style={{ gap: 8 }}>{L.say.map((x, k) => <T key={k} size={14} style={{ lineHeight: 21 }}>{x}</T>)}</Card></> : null}
+      <Tip icon="info">{`What's normal: ${L.normal}`}</Tip>
+      <Btn kind="ghost" icon="chat" title={`Ask ${COACH_NAME} about this`} onPress={() => { close(); emit('tab', 'coach'); setTimeout(() => emit('ask', `I'm on "${L.t}" (${where}). Any tips for us?`), 500); }} />
+    </Sheet>
+  );
+}
+/** A stage of the course, with its lessons, and moving to it. */
 function StepSheet({ i, close }: { i: number; close: () => void }) {
-  const s = M().items[i];
+  const s = COURSES[S.method].stages[i];
   return (
     <Sheet open onClose={close} title={s.t}>
       <Sub style={{ textAlign: 'center', marginTop: -8, marginBottom: 14 }}>{s.d}{s.iv ? ' · offer every ' + s.iv + ' min' : ''}</Sub>
-      <Card pad={4} style={{ paddingHorizontal: 18 }}>{s.steps.map((x, k) => <Row key={k} first={k === 0} title={x} />)}</Card>
-      <Tip icon="info">{`${s.expect}\n${RULES[s.rule].t}.`}</Tip>
-      {i < S.pIdx ? <Btn kind="ghost" title="Go back to this step" onPress={() => { update(st => { st.pIdx = i; st.pDay = 1; }); close(); toast('Now on: ' + item().t, 'You can move forward again from the check-in'); }} /> : null}
-      {i > S.pIdx ? <>
-        <Tip icon="info" tone="sun">{`You're on "${item().t}". This step opens when the evening check-in moves you on, usually after: ${RULES[item().rule].t.toLowerCase()}.`}</Tip>
-        <Btn kind="text" title="Skip ahead anyway" onPress={() => confirmAsk('Skip ahead?', `${S.child.name} hasn't finished "${item().t}" yet. Skipping steps is the most common reason accidents come back.\n\nOnly skip if you're sure they're past it.`, 'Skip ahead', () => { update(st => { st.pIdx = i; st.pDay = 1; }); close(); toast('Now on: ' + item().t); })} />
-      </> : null}
+      <Card pad={4} style={{ paddingHorizontal: 18 }}>{s.lessons.map((l, k) => <Row key={k} first={k === 0} icon="book" title={l.t} sub={`Day ${k + 1} of this stage`} onPress={() => { close(); setTimeout(() => emit('lesson', { st: i, i: k }), 350); }} />)}</Card>
+      <Tip icon="info">{`${s.expect}
+Moving on: ${RULES[s.rule].t.toLowerCase()}.`}</Tip>
+      {i < S.pIdx ? <Btn kind="ghost" title="Go back to this stage" onPress={() => { goToStage(i); close(); toast('Now on: ' + s.t, 'Starting today'); }} /> : null}
+      {i > S.pIdx && !inPrep() ? <Btn kind="text" title="Skip ahead to this stage" onPress={() => confirmAsk('Skip ahead?', `${S.child.name} hasn't finished "${item().t}" yet. Skipping ahead is the most common reason accidents come back.
+
+Only skip if you're sure they're past it.`, 'Skip ahead', () => { goToStage(i); close(); toast('Now on: ' + s.t); })} /> : null}
+    </Sheet>
+  );
+}
+/** Pick the date of Day 1. */
+function StartSheet({ open, close }: { open: boolean; close: () => void }) {
+  const t = todayDay();
+  const days = [...Array(8)].map((_, k) => { const d = new Date(t); d.setDate(d.getDate() + k); return d.getTime(); });
+  const label = (d: number, k: number) => k === 0 ? 'Today' : k === 1 ? 'Tomorrow' : new Date(d).toLocaleDateString([], { weekday: 'short', day: 'numeric' });
+  return (
+    <Sheet open={open} onClose={close} title="When is Day 1?" right={<SheetLink label="Cancel" onPress={close} />}>
+      <Sub style={{ marginTop: -6, marginBottom: 14 }}>The course counts days from here. Before Day 1 you'll get a short countdown to get ready. Changing it restarts the course from the first stage.</Sub>
+      <Chips style={{ marginBottom: 16 }}>{days.map((d, k) => <Chip key={d} label={label(d, k)} on={S.start === d} onPress={() => { update(st => { st.pIdx = startIndex(st); }); setStart(d); close(); toast(k === 0 ? 'Day 1 is today' : `Day 1 is ${label(d, k).toLowerCase()}`, k === 0 ? "Here's today's lesson" : 'Countdown started'); }} />)}</Chips>
     </Sheet>
   );
 }

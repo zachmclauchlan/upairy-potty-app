@@ -19,6 +19,8 @@ export interface State {
   child: { name: string; age: string; words: string };
   where: Where | null; home3: boolean | null; quiz: Record<number, number>;
   method: MethodKey; pIdx: number; pDay: number; start: number; memberSince: number;
+  /** course engine (see course.ts) */
+  stageStart: number; repeats: number[]; coursePause: number | null; gateSnooze: number; courseV: number;
   mode: 'smart' | 'fixed'; interval: number;
   bedtime: number; quietOn: boolean; quietStart: number; quietEnd: number;
   pausedUntil: number; pauseWhy: string;
@@ -47,6 +49,7 @@ export function fresh(): State {
     v: 1, account: null, onboarded: false, toured: false,
     child: { name: '', age: '', words: '' }, where: null, home3: null, quiz: {},
     method: 'threeday', pIdx: 0, pDay: 1, start: sod(Date.now()), memberSince: Date.now(),
+    stageStart: sod(Date.now()), repeats: [], coursePause: null, gateSnooze: 0, courseV: 1,
     mode: 'smart', interval: 45, bedtime: 19.5, quietOn: true, quietStart: 19.5, quietEnd: 6.5,
     pausedUntil: 0, pauseWhy: '',
     rem: { on: true, lead: 5, meals: true, bed: true, morning: true, evening: true },
@@ -64,10 +67,22 @@ function load(): State {
     try {
       const s = JSON.parse(raw);
       const f = fresh();
-      return { ...f, ...s, rem: { ...f.rem, ...(s.rem || {}) }, child: { ...f.child, ...(s.child || {}) }, backup: { ...f.backup, ...(s.backup || {}) } };
+      const st: State = { ...f, ...s, rem: { ...f.rem, ...(s.rem || {}) }, child: { ...f.child, ...(s.child || {}) }, backup: { ...f.backup, ...(s.backup || {}) } };
+      return migrateCourse(st, s);
     } catch { /* corrupted: start fresh */ }
   }
   return fresh();
+}
+
+/** Older versions put a "Get ready" step first and only moved on at check-in. Carry people over. */
+function migrateCourse(st: State, raw: any): State {
+  if (raw.courseV === 1) return st;
+  if ((st.method === 'threeday' || st.method === 'barebottom') && raw.pIdx != null) st.pIdx = Math.max(0, raw.pIdx - 1);
+  st.stageStart = sod(Date.now()); st.repeats = []; st.coursePause = null; st.gateSnooze = 0; st.courseV = 1;
+  // never got past the old "Get ready" step, or no start yet: Day 1 is today
+  const neverStarted = (st.method === 'threeday' || st.method === 'barebottom') && (raw.pIdx ?? 0) === 0;
+  if (!raw.start || raw.start > sod(Date.now()) || neverStarted) st.start = sod(Date.now());
+  return st;
 }
 
 export let S: State = load();
