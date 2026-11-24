@@ -16,7 +16,7 @@
 - **Kid zone:** stars, sticker chart, rewards the parent sets, kid mode, a sit timer, 20 original potty songs
 - **Progress:** what the app has learned about the child, success trends, accident times, a full history calendar
 - **Handover:** a one-tap update for grandparents or daycare
-- **Potty Up is sold on upairy.com:** a product in the Shopify cart, billed by Loop (7-day trial). Signing in with the checkout email unlocks the full app, plus free gear (pants at day 30, bed mat at day 60) and a shop matched to each program step
+- **Potty Up is sold on upairy.com:** a product in the Shopify cart, billed by Loop (7-day trial). Signing in with the checkout email unlocks the full app, 15% off at upairy.com, and a shop matched to each program step
 - **Private:** child data stays on the phone, with no ads or tracking
 - **Platforms:** iPhone and Android (Expo / React Native), plus a web preview
 
@@ -219,7 +219,6 @@ Short articles: holding in poo, when it goes backwards, daycare and grandparents
 - **Child profile:** name, age and words, all editable.
 - **Potty Up card:**
   - "Unlocked" or "free version".
-  - Gear progress: **a free 5-pack of training pants at day 30** and **a free waterproof bed mat at day 60**.
   - 15% off at upairy.com while they have Potty Up.
   - Manage or cancel on upairy.com.
   - Free accounts see "Check my purchase" instead.
@@ -257,7 +256,7 @@ A text-ready handover for grandparents or daycare, sent through the phone's shar
 | Sign-in → Shopify order lookup | Placeholder (accepts any input) |
 | AI coach server + UpAiry coach skill | Placeholder (built-in guides answer for now) |
 | Song audio (Suno) | Lyrics in, audio to come |
-| Subscriptions (App Store / Play billing, e.g. via RevenueCat) and perk fulfilment (free pants / bed mat codes via Shopify) | To do |
+| Subscriptions (App Store / Play billing, e.g. via RevenueCat) | To do |
 | Caregiver sync (shared family), multiple children | To do |
 | Home-screen widgets, Apple Watch, Siri | Later |
 

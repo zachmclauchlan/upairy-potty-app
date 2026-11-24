@@ -2,12 +2,12 @@ import { useEffect, useRef } from 'react';
 import { Alert, Platform, Pressable, ScrollView, Share, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { T, Sub, Card, Row, Btn, Badge, Meter, SectionHead, toast } from '@/components/ui';
+import { T, Sub, Card, Row, Btn, Badge, SectionHead, toast } from '@/components/ui';
 import Icon from '@/components/Icon';
 import { Designs, ProductCard, openShop } from '@/components/Shop';
 import { C, shadow } from '@/lib/theme';
 import { S, useApp, update, resetAll } from '@/lib/store';
-import { item, M, memberDays, quizScore } from '@/lib/logic';
+import { item, M, quizScore } from '@/lib/logic';
 import { emit } from '@/lib/bus';
 import Logo from '@/components/Logo';
 import { deleteAccount, refreshPlan, signOut as serverSignOut } from '@/lib/backend';
@@ -23,7 +23,7 @@ export default function Settings() {
   const { focus } = useLocalSearchParams<{ focus?: string }>();
   const scroll = useRef<any>(null); const shopY = useRef(0);
   useEffect(() => { if (focus === 'shop') setTimeout(() => scroll.current?.scrollTo({ y: shopY.current - 20, animated: true }), 350); }, [focus]);
-  const d = memberDays(), free = S.account?.plan === 'free';
+  const free = S.account?.plan === 'free';
   const close = () => router.back();
   const open = (k: string) => { close(); setTimeout(() => emit(k), 350); };
   const signOut = () => { close(); serverSignOut(); update(s => { s.account = null; }); toast('Signed out'); };
@@ -44,15 +44,11 @@ export default function Settings() {
           {!free ? <Badge tone="white" label="Unlocked" /> : null}
         </View>
         {free ? <>
-          <T size={14} color="rgba(255,255,255,.9)" style={{ marginTop: 8, marginBottom: 14 }}>You're on the free version. The full Potty Up adds the day-by-day program, smart reminders, the AI coach, songs and free UpAiry gear. Bought it on upairy.com? Make sure you signed in with the email you used at checkout.</T>
+          <T size={14} color="rgba(255,255,255,.9)" style={{ marginTop: 8, marginBottom: 14 }}>You're on the free version. The full Potty Up adds the day-by-day program, smart reminders, the AI coach, songs, kid mode and rewards. Bought it on upairy.com? Make sure you signed in with the email you used at checkout.</T>
           <Btn kind="white" title="Check my purchase" onPress={async () => { const p = await refreshPlan(true).catch(() => null); toast(p?.plan === 'plus' ? 'Potty Up is unlocked' : 'No Potty Up purchase on ' + (S.account?.id ?? 'this email'), p?.plan === 'plus' ? 'Everything is ready' : 'Use the email from your upairy.com checkout'); }} />
         </> : <>
-          <T size={14} color="rgba(255,255,255,.9)" style={{ marginTop: 8, marginBottom: 14 }}>The full program, smart reminders, the AI coach, songs, and real UpAiry gear as you go.</T>
-          {([[30, 'Free 5-pack of training pants'], [60, 'Free waterproof bed mat']] as const).map(([n, t]) => <View key={t} style={{ marginBottom: 12 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><T w="s" size={13} color="#fff">{t}</T><T size={13} color="#fff">{d >= n ? 'Unlocked' : `Day ${d} of ${n}`}</T></View>
-            <Meter pct={d / n * 100} color="#fff" track="rgba(255,255,255,.2)" style={{ marginTop: 6 }} />
-          </View>)}
-          <T size={13} color="rgba(255,255,255,.85)">Plus 15% off everything at upairy.com while you have Potty Up.</T>
+          <T size={14} color="rgba(255,255,255,.9)" style={{ marginTop: 8, marginBottom: 14 }}>The full program, smart reminders, the AI coach, songs, kid mode and rewards.</T>
+          <T size={13} color="rgba(255,255,255,.85)">15% off everything at upairy.com while you have Potty Up.</T>
           <T size={13} color="rgba(255,255,255,.85)" style={{ marginTop: 10 }}>Manage or cancel Potty Up from your account on upairy.com.</T>
         </>}
       </View>

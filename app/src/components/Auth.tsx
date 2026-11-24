@@ -47,7 +47,7 @@ export default function Auth() {
         ? `Linked to ${email.trim()}. Everything is ready to go.`
         : `Signed in as ${email.trim()}. You're on the free version. If you have Potty Up, it's linked to the email you used to buy it.`}</Sub>
       <Card pad={4} style={{ paddingHorizontal: 18 }}>
-        {(plus ? ['The full day-by-day program', 'Smart reminders and the AI coach', 'Potty songs, kid mode and rewards', 'Free UpAiry gear as you go'] : ['Logging, timer and history', 'Readiness check and built-in guides', 'Your data stays on this phone'])
+        {(plus ? ['The full day-by-day program', 'Smart reminders and the AI coach', 'Potty songs, kid mode and rewards', '15% off at upairy.com'] : ['Logging, timer and history', 'Readiness check and built-in guides', 'Your data stays on this phone'])
           .map((x, i) => <Row key={x} first={i === 0} title={x} icon="check" />)}
       </Card>
       <View style={{ flex: 1, minHeight: 30 }} />
