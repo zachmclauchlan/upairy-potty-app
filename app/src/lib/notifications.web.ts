@@ -7,3 +7,4 @@ export function handleResponse(_r: any) {}
 export async function reschedule() {}
 export async function previewReminder() { toast('Reminders work on the phone app', 'Open it in Expo Go to try them'); }
 export const Notifications = null as any;
+export async function cancelAll() {}

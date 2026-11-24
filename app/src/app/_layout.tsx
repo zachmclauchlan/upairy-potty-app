@@ -12,10 +12,10 @@ import Onboarding from '@/components/Onboarding';
 import Sheets from '@/components/Sheets';
 import Overlays from '@/components/Overlays';
 import Intro from '@/components/Intro';
-import { ToastHost } from '@/components/ui';
+import { ToastHost, T, Sub, Btn } from '@/components/ui';
 import { C } from '@/lib/theme';
 import { useApp, S, update } from '@/lib/store';
-import { isSignedIn, refreshPlan } from '@/lib/backend';
+import { sessionState, refreshPlan } from '@/lib/backend';
 import { startBackup, backupNow } from '@/lib/backup';
 import { initNotifications, handleResponse, reschedule, Notifications } from '@/lib/notifications';
 import { on } from '@/lib/bus';
@@ -43,12 +43,14 @@ export default function Root() {
   // On launch: a saved account without a real sign-in (e.g. from the test version) goes back to
   // sign-in; a real one gets its plan refreshed from the server.
   useEffect(() => {
-    isSignedIn().then(ok => { if (!ok && S.account) update(s => { s.account = null; }); else if (ok) refreshPlan().catch(() => {}); }).catch(() => {});
+    // Offline: keep the parent in the app (logging, timer and reminders all work without internet).
+    sessionState().then(st => { if (st === 'none' && S.account) update(s => { s.account = null; }); else if (st === 'ok') refreshPlan().catch(() => {}); }).catch(() => {});
   }, []);
   // cloud backup: upload a while after changes, and straight away when the app goes to the background
   useEffect(() => {
     const stop = startBackup();
-    const sub = AppState.addEventListener('change', s => { if (s !== 'active') backupNow().catch(() => {}); });
+    // Back in the app: rebuild reminders (time has passed, a pause may have ended, the timezone may have changed).
+    const sub = AppState.addEventListener('change', s => { if (s !== 'active') backupNow().catch(() => {}); else reschedule(); });
     return () => { stop(); sub.remove(); };
   }, []);
   // rebuild reminders whenever logs or settings change
@@ -73,5 +75,17 @@ export default function Root() {
         <ToastHost />
       </View>
     </SafeAreaProvider>
+  );
+}
+
+/** If any screen crashes, show a friendly retry instead of a blank screen. Data is safe on the phone. */
+export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Promise<void> }) {
+  return (
+    <View style={{ flex: 1, backgroundColor: C.bg, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+      <T w="b" size={22} style={{ textAlign: 'center' }}>Something went wrong</T>
+      <Sub style={{ textAlign: 'center', marginTop: 8, marginBottom: 20 }}>Your logs are safe. Tap to try again. If it keeps happening, contact us from upairy.com.</Sub>
+      <Btn title="Try again" onPress={() => { retry().catch(() => {}); }} />
+      <Sub style={{ textAlign: 'center', marginTop: 16, fontSize: 11 }}>{String(error?.message ?? '').slice(0, 160)}</Sub>
+    </View>
   );
 }

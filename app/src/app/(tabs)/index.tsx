@@ -7,7 +7,7 @@ import KidChip from '@/components/KidChip';
 import Timeline from '@/components/Timeline';
 import Night from '@/components/Night';
 import { C, shadow } from '@/lib/theme';
-import { S, useApp, update, sod, DAY } from '@/lib/store';
+import { S, useApp, update, sod, DAY, addDays } from '@/lib/store';
 import { dayStats, fmt, greet, hm, isPotty, item, lastPoo, learned, M, NEED, onDay, timerState } from '@/lib/logic';
 import { logQuick } from '@/lib/actions';
 import { emit } from '@/lib/bus';
@@ -17,7 +17,7 @@ function useNow(ms = 5000) { const [n, setN] = useState(Date.now()); useEffect((
 function Rhythm() {
   const now = Date.now(), today = sod(now), h = new Date().getHours();
   const woke = onDay(today, e => e.type === 'wake').length > 0, n = onDay(today, isPotty).length, ci = !!S.checkins[today];
-  const yday = today - DAY, missed = !S.checkins[yday] && onDay(yday, isPotty).length > 0 && h < 16;
+  const yday = addDays(today, -1), missed = !S.checkins[yday] && onDay(yday, isPotty).length > 0 && h < 17;
   const phase = ci ? 3 : h >= 17 ? 2 : woke ? 1 : 0;
   const cell = (done: boolean, isNow: boolean, ic: IconName, tone: any, t: string, s: string, act?: () => void) => (
     <Pressable onPress={act} disabled={!act} style={[{ flex: 1, backgroundColor: C.surface, borderRadius: 16, padding: 10, gap: 6, borderWidth: 2, borderColor: isNow ? C.brand : 'transparent' }, shadow]}>

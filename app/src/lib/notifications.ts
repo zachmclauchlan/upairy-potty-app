@@ -2,8 +2,8 @@
 // respect quiet hours and pauses, and stop after two missed tries (see timerState).
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
-import { S, HR, MIN, DAY, sod } from './store';
-import { fmt, item, onDay, isPotty, predict, quietNow } from './logic';
+import { S, MIN, sod, addDays, atHour } from './store';
+import { fmt, item, onDay, isPotty, predict, quietNow, timerState } from './logic';
 import { logPotty, logQuick } from './actions';
 import { emit } from './bus';
 import { toast } from '@/components/ui';
@@ -49,8 +49,16 @@ export function handleResponse(r: Notifications.NotificationResponse) {
   else if (a === 'lognothing') { logPotty('tried', null); toast('Logged: sat, nothing came', 'Practice still counts'); }
   else if (a === 'logaccident') { logPotty('accident', 'wee'); toast('Accident logged', "No worries. That's how they learn."); }
   else if (a === 'logwake') { logQuick('wake'); toast('Good morning!', `Today: ${item().t}. The timer has started.`); }
-  else if (a === 'opencheckin' || r.notification.request.content.categoryIdentifier === 'evening') emit('checkin');
+  else if (a === 'opencheckin' || r.notification.request.content.categoryIdentifier === 'evening') {
+    const day = Number((r.notification.request.content.data as any)?.day) || sod(Date.now());
+    emit('checkin', day);
+  }
+  // so the same tap isn't handled again the next time the app starts
+  Notifications.clearLastNotificationResponseAsync?.().catch(() => {});
 }
+
+/** Remove every scheduled reminder (sign-out, account deletion). */
+export async function cancelAll() { await Notifications.cancelAllScheduledNotificationsAsync().catch(() => {}); }
 
 let busy = false, again = false;
 /** Cancel and rebuild every scheduled reminder from the current state. */
@@ -62,15 +70,20 @@ export async function reschedule() {
     if (!(await permission(false))) return;
     await Notifications.cancelAllScheduledNotificationsAsync();
     const now = Date.now(), today = sod(now), nm = S.child.name || 'Your child';
-    const at = async (ts: number, title: string, body: string, categoryIdentifier?: string) => {
+    const at = async (ts: number, title: string, body: string, categoryIdentifier?: string, data?: Record<string, unknown>) => {
       if (ts <= now + 30 * 1000) return;
       await Notifications.scheduleNotificationAsync({
-        content: { title, body, categoryIdentifier, sound: true, ...(Platform.OS === 'android' ? { channelId: 'reminders' } : {}) } as any,
+        content: { title, body, categoryIdentifier, data, sound: true, ...(Platform.OS === 'android' ? { channelId: 'reminders' } : {}) } as any,
         trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: new Date(ts), ...(Platform.OS === 'android' ? { channelId: 'reminders' } : {}) } as any,
       });
     };
-    // potty tries: the next one and one after, then stop until the parent logs again
-    const p = predict();
+    // potty tries: the next one and one after, then stop until the parent logs again.
+    // If paused or in quiet hours right now, plan the first try for when that ends.
+    let p = predict();
+    if (!p) {
+      const s = timerState();
+      if (s && s.state !== 'run') { const r = timerState(s.until + MIN); if (r?.state === 'run') p = r; }
+    }
     if (S.rem.on && p && p.missed < 2) {
       for (let k = 0; k < 2 - p.missed; k++) {
         const due = p.due + k * p.gap * MIN, fire = due - S.rem.lead * MIN;
@@ -81,16 +94,17 @@ export async function reschedule() {
     // after-meal sit
     const meal = [...onDay(today, e => e.type === 'meal')].pop();
     if (S.rem.meals && meal) await at(meal.ts + 20 * MIN, 'Time for an after-meal sit', 'A sit about 20 minutes after eating often catches a wee or poo.', 'potty');
-    // bedtime wee
-    if (S.rem.bed) await at(today + S.bedtime * HR - 15 * MIN, 'Bedtime wee soon', 'One wee before bath and one right before sleep.');
-    // evening check-in, today (if logs and not done) and tomorrow
-    const eve = 18.5 * HR;
-    if (S.rem.evening) {
-      if (!S.checkins[today] && onDay(today, isPotty).length) await at(today + eve, 'How did today go?', "20-second check-in. It sets up tomorrow's plan.", 'evening');
-      await at(today + DAY + eve, 'How did today go?', "20-second check-in. It sets up tomorrow's plan.", 'evening');
+    // Daily reminders for the next 3 days, so they keep coming even if the app isn't opened for a while.
+    // Times are built from the calendar (atHour/addDays), so they stay right across daylight-saving changes.
+    for (let k = 0; k < 3; k++) {
+      const day = addDays(today, k);
+      if (S.rem.bed) await at(atHour(day, S.bedtime) - 15 * MIN, 'Bedtime wee soon', 'One wee before bath and one right before sleep.');
+      // evening check-in (today only if there are logs and it isn't done yet)
+      if (S.rem.evening && (k > 0 || (!S.checkins[day] && onDay(day, isPotty).length)))
+        await at(atHour(day, 18.5), 'How did today go?', "20-second check-in. It sets up tomorrow's plan.", 'evening', { day });
+      // next morning's plan
+      if (S.rem.morning) await at(atHour(addDays(day, 1), Math.max(7, S.quietEnd + 0.5)), 'Good morning!', `Today: ${item().t}. Tap "Woke up now" to start the timer.`, 'morning');
     }
-    // tomorrow morning plan
-    if (S.rem.morning) await at(today + DAY + Math.max(7, S.quietEnd + 0.5) * HR, 'Good morning!', `Today: ${item().t}. Tap "Woke up now" to start the timer.`, 'morning');
   } catch { /* scheduling is best effort */ } finally {
     busy = false;
     if (again) { again = false; reschedule(); }

@@ -9,13 +9,14 @@ import Icon from './Icon';
 import Logo from './Logo';
 import { C } from '@/lib/theme';
 import { signInWithOrder, checkMembership, type Membership } from '@/lib/backend';
-import { afterSignIn, fetchBackup } from '@/lib/backup';
+import { afterSignIn, fetchBackup, otherOwner } from '@/lib/backup';
+import { S } from '@/lib/store';
 
 const FAQ = [
   ['Where do I find my order number?', 'In your order confirmation email from UpAiry. It starts with # (for example #1314664). You can type it with or without the #.'],
   ['Which email do I use?', 'The email you used at checkout on upairy.com. It has to match the order.'],
   ['I bought Potty Up but it says free', 'Sign in with the email and order number from your Potty Up order. Then tap "Check my purchase" in Settings.'],
-  ["Is my child's data shared?", "No. Your child's logs stay on this phone. Your account only holds your email and whether you have Potty Up."],
+  ["Is my child's data shared?", "Never sold or shared for ads. Your child's logs live on this phone and, if backup is on, are saved privately to your account so they move to a new phone. You can turn backup off or delete everything in Settings."],
 ];
 
 export default function Auth() {
@@ -25,6 +26,7 @@ export default function Auth() {
   const [busy, setBusy] = useState(false); const [err, setErr] = useState(''); const [faq, setFaq] = useState<number | null>(null);
   const [m, setM] = useState<Membership | null>(null);
   const [saved, setSaved] = useState<number | null>(null);
+  const [other, setOther] = useState<string | null>(null);
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const validOrder = order.replace(/\D/g, '').length >= 3;
 
@@ -35,13 +37,14 @@ export default function Auth() {
       setM(await checkMembership().catch(() => ({ plan: 'free', member: false } as Membership)));
       const b = await fetchBackup().catch(() => null);
       setSaved(b && (b.data as any)?.onboarded ? b.at : null);
+      setOther(otherOwner(email.trim().toLowerCase()));
       setDone(true);
     } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
-  const finish = async () => {
+  const finish = async (choice: 'replace' | 'keep' = 'replace') => {
     setBusy(true);
     const id = email.trim().toLowerCase();
-    const restored = await afterSignIn(id, { id, plan: m?.plan ?? 'free', since: Date.now(), order: order.trim(), plusUntil: null }).catch(() => null);
+    const restored = await afterSignIn(id, { id, plan: m?.plan ?? 'free', since: Date.now(), order: order.trim(), plusUntil: null }, choice).catch(() => null);
     if (restored) toast('Your data is back', 'Restored from ' + new Date(restored).toLocaleDateString());
   };
 
@@ -60,7 +63,9 @@ export default function Auth() {
       </Card>
       <View style={{ flex: 1, minHeight: 30 }} />
       {saved ? <Tip icon="check" tone="ok">{`We found your saved data from ${new Date(saved).toLocaleDateString()}. It will be restored to this phone.`}</Tip> : null}
-      <Btn title={busy ? 'Loading…' : saved ? 'Continue' : 'Set up your child'} onPress={finish} disabled={busy} />
+      {other ? <Tip icon="info" tone="sun">{`This phone has ${S.child.name || 'a child'}'s logs from another account (${other}). ${saved ? 'Restoring your data will replace them.' : 'Starting fresh will remove them from this phone.'}${S.backup.on && S.backup.at ? '' : ' They are not backed up.'}`}</Tip> : null}
+      <Btn title={busy ? 'Loading…' : other ? (saved ? 'Restore my data' : 'Start fresh') : saved ? 'Continue' : 'Set up your child'} onPress={() => finish('replace')} disabled={busy} />
+      {other ? <Btn kind="text" title={`Keep ${S.child.name || 'these'} logs on this phone`} onPress={() => finish('keep')} disabled={busy} /> : null}
     </>;
   } else {
     body = <>

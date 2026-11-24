@@ -1,12 +1,12 @@
 // Everything the app works out from the logs: stats, learned timing, the timer, program rules.
-import { S, MIN, HR, DAY, sod, uid, type Ev, type State } from './store';
+import { S, MIN, HR, DAY, sod, uid, addDays, atHour, daysBetween, type Ev, type State } from './store';
 import { METHODS, SITUATIONS, QUIZ, type RuleKey, type Step } from './content';
 
 /* ---------- formatting ---------- */
 export const fmt = (t: number) => new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 export const dayName = (t: number, o: Intl.DateTimeFormatOptions = { weekday: 'short' }) => new Date(t).toLocaleDateString([], o);
 export function dur(ms: number) { const m = Math.round(ms / MIN); if (m < 60) return m + ' min'; return Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + (m % 60) + ' min' : ''); }
-export const hm = (h: number) => fmt(sod(Date.now()) + h * HR);
+export const hm = (h: number) => fmt(atHour(sod(Date.now()), h));
 const median = (a: number[]) => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y); const k = Math.floor(s.length / 2); return s.length % 2 ? s[k] : (s[k - 1] + s[k]) / 2; };
 export function greet() { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; }
 
@@ -21,7 +21,7 @@ export function dayStats(d: number) {
   return { s, a, t: p.filter(e => e.outcome === 'tried').length, told: p.filter(e => e.by === 'child').length, rate: s + a ? Math.round(100 * s / (s + a)) : null };
 }
 export type DayStats = ReturnType<typeof dayStats>;
-export const dryNights7 = () => S.events.filter(e => e.type === 'night' && e.outcome === 'dry' && e.ts > sod(Date.now()) - 6 * DAY).length;
+export const dryNights7 = () => S.events.filter(e => e.type === 'night' && e.outcome === 'dry' && e.ts > addDays(sod(Date.now()), -6)).length;
 export const lastPoo = () => [...evs()].reverse().find(e => isPotty(e) && (e.what === 'poo' || e.what === 'both'));
 
 /* ---------- program ---------- */
@@ -50,7 +50,7 @@ export function recommend(st: State = S) {
   if (sc >= 45) return 'barebottom' as const;
   return 'gentle' as const;
 }
-export function ciStreak() { let n = 0, d = sod(Date.now()); if (!S.checkins[d]) d -= DAY; while (S.checkins[d]) { n++; d -= DAY; } return n; }
+export function ciStreak() { let n = 0, d = sod(Date.now()); if (!S.checkins[d]) d = addDays(d, -1); while (S.checkins[d]) { n++; d = addDays(d, -1); } return n; }
 
 /** What the evening check-in suggests for tomorrow. */
 export function decision(day: number, mood: string | null) {
@@ -81,7 +81,7 @@ export function isEarlyCheckin(day: number) { return day === sod(Date.now()) && 
 /* ---------- learning: measured only from this child's own logs ---------- */
 export const NEED = { gap: 6, drink: 3, wake: 3, poo: 3 };
 export function learned() {
-  const from = sod(Date.now()) - 5 * DAY; const all = evs().filter(e => e.ts >= from);
+  const from = addDays(sod(Date.now()), -5); const all = evs().filter(e => e.ts >= from);
   const w = all.filter(isWee); const gaps: number[] = [], am: number[] = [], pm: number[] = [];
   for (let i = 1; i < w.length; i++) {
     if (sod(w[i].ts) !== sod(w[i - 1].ts)) continue;
@@ -103,7 +103,7 @@ export function learned() {
 
 /* ---------- quiet hours and the forgiving timer ---------- */
 export function quietNow(t = Date.now()) { if (!S.quietOn) return false; const d = new Date(t), h = d.getHours() + d.getMinutes() / 60, a = S.quietStart, b = S.quietEnd; return a > b ? (h >= a || h < b) : (h >= a && h < b); }
-export function quietEndTs(tomorrow = false) { const now = Date.now(); let t = sod(now) + S.quietEnd * HR; if (tomorrow || t <= now) t += DAY; return t; }
+export function quietEndTs(tomorrow = false) { const now = Date.now(); let t = atHour(sod(now), S.quietEnd); if (tomorrow || t <= now) t = atHour(addDays(sod(now), 1), S.quietEnd); return t; }
 
 export type TimerState =
   | { state: 'quiet'; until: number }
@@ -120,7 +120,7 @@ export function timerState(now = Date.now()): TimerState | null {
   if (quietNow(now)) return { state: 'quiet', until: quietEndTs() };
   if (S.pausedUntil > now) return { state: 'paused', until: S.pausedUntil, why: S.pauseWhy };
   const t = onDay(today); const lastWee = [...t].reverse().find(isWee); const lastWake = [...t].reverse().find(e => e.type === 'wake');
-  const qEnd = S.quietOn ? today + S.quietEnd * HR : null;
+  const qEnd = S.quietOn ? atHour(today, S.quietEnd) : null;
   let anchor: { type: string; ts: number } | undefined = [lastWee, lastWake].filter(Boolean).sort((a, b) => b!.ts - a!.ts)[0] as Ev | undefined;
   if (S.pausedUntil && S.pausedUntil <= now && S.pausedUntil > today && (!anchor || anchor.ts < S.pausedUntil)) anchor = { type: 'resume', ts: S.pausedUntil };
   if (!anchor && qEnd && now > qEnd) anchor = { type: 'start', ts: qEnd }; // no wake-up logged: start from the end of quiet hours
@@ -139,7 +139,7 @@ export function timerState(now = Date.now()): TimerState | null {
     missed = Math.ceil((now - due - GRACE) / (gap * MIN)); due += missed * gap * MIN; total = gap * MIN;
     why = ['replay', now - anchor.ts > 3 * HR ? `Nothing logged for a while, that's okay. Next try around ${fmt(due)}` : `Missed one or didn't log it? No problem. Next try around ${fmt(due)}`];
   }
-  if (S.quietOn && due >= today + S.quietStart * HR) return { state: 'quiet-soon', until: quietEndTs(true) };
+  if (S.quietOn && due >= atHour(today, S.quietStart)) return { state: 'quiet-soon', until: quietEndTs(true) };
   return { state: 'run', due, gap, why, total, missed, learnedGap: src === 'learned' };
 }
 export function predict() { const p = timerState(); return p && p.state === 'run' ? p : null; }
@@ -183,13 +183,13 @@ Offer after meals and drinks, and before going out. After accidents, keep it cal
 /* ---------- coach ---------- */
 export function aiContext() {
   const today = sod(Date.now()), st = dayStats(today), L = learned(), it = item();
-  const days = [...Array(7)].map((_, i) => dayStats(today - (6 - i) * DAY)); const lp = lastPoo();
+  const days = [...Array(7)].map((_, i) => dayStats(addDays(today, -(6 - i)))); const lp = lastPoo();
   return [`Child: age ${S.child.age || 'unknown'}. (Name withheld for privacy; call them "your child".)`,
     `Method: ${M().name}. Current step: ${it.t} (${it.d}), day ${S.pDay} of ${it.len}. Step goal: ${RULES[it.rule].t}.`,
     `Today so far: ${st.s} on the potty, ${st.a} accidents, ${st.t} sits with nothing, told the parent first ${st.told} times.`,
     `Last 7 days success rate by day (oldest first): ${days.map(d => d.rate == null ? 'no logs' : d.rate + '%').join(', ')}.`,
     `Learned timing: ${L.gap.ok ? `usual gap between wees ${L.gap.v} min` : 'not enough data yet'}; ${L.drink.ok ? `wee about ${L.drink.v} min after drinks` : 'drink timing not learned'}.`,
-    `Last poo: ${lp ? Math.floor((today - sod(lp.ts)) / DAY) + ' day(s) ago' : 'not logged'}. Dry nights this week: ${dryNights7()}.`].join('\n');
+    `Last poo: ${lp ? daysBetween(lp.ts, today) + ' day(s) ago' : 'not logged'}. Dry nights this week: ${dryNights7()}.`].join('\n');
 }
 export function localAnswer(q: string) {
   const s = q.toLowerCase(); let best: typeof SITUATIONS[number] | null = null, score = 0;
@@ -202,10 +202,10 @@ export function localAnswer(q: string) {
 /* ---------- sample week, for demos and testing ---------- */
 export function sampleWeek(st: State) {
   let r = 11; const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
-  const now = Date.now(), today = sod(now), start = today - 6 * DAY; const ev: Ev[] = [];
+  const now = Date.now(), today = sod(now), start = addDays(today, -6); const ev: Ev[] = [];
   const push = (ts: number, o: Omit<Ev, 'id' | 'ts'>) => { if (ts < now) ev.push({ id: uid(), ts, ...o }); };
   for (let d = 0; d < 7; d++) {
-    const base = start + d * DAY, p = d / 6;
+    const base = addDays(start, d), p = d / 6;
     const wake = base + (6.8 + rnd() * .4) * HR; push(wake, { type: 'wake' });
     [7.4, 12.1, 17.5].forEach(h => { push(base + (h + rnd() * .2) * HR, { type: 'meal' }); push(base + (h + .1) * HR, { type: 'drink' }); });
     [9.9, 15.3].forEach(h => push(base + (h + rnd() * .3) * HR, { type: 'drink' }));
@@ -222,8 +222,8 @@ export function sampleWeek(st: State) {
       t += (24 + p * 34 + rnd() * 16) * MIN; i++;
     }
   }
-  (['wet', 'wet', 'dry', 'wet', 'dry', 'dry'] as const).forEach((o, k) => push(start + (k + 1) * DAY + 6.6 * HR, { type: 'night', outcome: o }));
-  st.events = ev; st.start = start; st.memberSince = now - 18 * DAY; st.pants = 6;
+  (['wet', 'wet', 'dry', 'wet', 'dry', 'dry'] as const).forEach((o, k) => push(atHour(addDays(start, k + 1), 6.6), { type: 'night', outcome: o }));
+  st.events = ev; st.start = start; st.memberSince = now - 18 * DAY; st.pants = 6; st.sample = true;
   const items = METHODS[st.method].items; st.pIdx = items[0].iv == null && st.method !== 'night' ? 1 : 0; st.pDay = 1;
-  for (let d = 0; d < 6; d++) { const it = items[st.pIdx]; st.checkins[start + d * DAY] = 'Moved on'; if (st.pDay < it.len) st.pDay++; else if (st.pIdx < items.length - 1) { st.pIdx++; st.pDay = 1; } }
+  for (let d = 0; d < 6; d++) { const it = items[st.pIdx]; st.checkins[addDays(start, d)] = 'Moved on'; if (st.pDay < it.len) st.pDay++; else if (st.pIdx < items.length - 1) { st.pIdx++; st.pDay = 1; } }
 }

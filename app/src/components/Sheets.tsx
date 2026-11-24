@@ -1,15 +1,15 @@
 // All bottom sheets, opened from anywhere through the event bus.
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, Share, View } from 'react-native';
+import { Linking, Platform, Pressable, Share, View } from 'react-native';
 import { Sheet, SheetLink, T, Sub, Btn, Opt, Chip, Chips, Label, Card, Row, Toggle, Input, Tip, toast, confirmAsk } from './ui';
 import Icon from './Icon';
 import { QuizRows, MethodCard } from './Onboarding';
 import { C, F } from '@/lib/theme';
-import { S, update, commit, sod, MIN, HR, uid, type Outcome, type What } from '@/lib/store';
+import { S, update, commit, sod, MIN, uid, atHour, type Outcome, type What } from '@/lib/store';
 import { ARTICLES, METHODS, MOODS, SITUATIONS, SONGS, TAGS, type MethodKey, type Mood } from '@/lib/content';
 import { isEarlyCheckin, applyDecision, ciStreak, dayStats, decision, handoffText, hm, item, learned, M, NEED, quizScore, quizVerdict, RULES, startIndex } from '@/lib/logic';
 import { addEvent, logPotty } from '@/lib/actions';
-import { previewReminder, permission } from '@/lib/notifications';
+import { previewReminder, permission, reschedule } from '@/lib/notifications';
 import { on, emit } from '@/lib/bus';
 
 type Open = { k: string; arg?: any } | null;
@@ -19,6 +19,8 @@ export default function Sheets() {
   useEffect(() => {
     const keys = ['log', 'checkin', 'timer', 'pause', 'reminders', 'handoff', 'article', 'situation', 'song', 'quiz', 'method', 'editkid', 'addreward', 'step', 'aiinfo'];
     const offs = keys.map(k => on(k, arg => {
+      // a day that's already checked in (e.g. tapping an old reminder) shouldn't move the program again
+      if (k === 'checkin' && S.checkins[arg ?? sod(Date.now())]) { toast('Already checked in', S.checkins[arg ?? sod(Date.now())]); return; }
       if (k === 'checkin' && isEarlyCheckin(arg ?? sod(Date.now()))) {
         confirmAsk('Check in early?', `The day isn't over yet, so tomorrow's plan would be based on part of today. Check-in opens at 4 pm.\n\nOnly check in now if you've finished logging for today.`, 'Check in now', () => setOpen({ k, arg }), 'Wait');
         return;
@@ -44,7 +46,7 @@ export default function Sheets() {
     <EditKidSheet open={k === 'editkid'} close={close} />
     <AddRewardSheet open={k === 'addreward'} close={close} />
     {k === 'step' ? <StepSheet i={open!.arg} close={close} /> : null}
-    <Sheet open={k === 'aiinfo'} onClose={close} title="AI coach"><Tip icon="shield" tone="water"><T w="s" size={14} color={C.waterInk}>What the coach sees</T><T size={13} color={C.waterInk}>Age range, program step, and summary numbers like today's wins and the usual gap. Never your child's name, photos or notes. Your conversation is saved on this phone only.</T></Tip><Card pad={4} style={{ paddingHorizontal: 18 }}><Row first title="Built by UpAiry" sub="Trained on UpAiry's potty training method and guides. Nothing to set up." /><Row title="Status" sub="Live. Up to 20 questions a day. If it can't be reached, the built-in guides answer instead." /></Card><Sub style={{ textAlign: 'center' }}>General guidance, not medical advice.</Sub></Sheet>
+    <Sheet open={k === 'aiinfo'} onClose={close} title="AI coach"><Tip icon="shield" tone="water"><T w="s" size={14} color={C.waterInk}>What the coach sees</T><T size={13} color={C.waterInk}>Age range, program step, and summary numbers like today's wins and the usual gap. Never your child's name, photos or notes. Your conversation stays in the app (and in your backup if it's on). It isn't kept on our servers.</T></Tip><Card pad={4} style={{ paddingHorizontal: 18 }}><Row first title="Built by UpAiry" sub="Trained on UpAiry's potty training method and guides. Nothing to set up." /><Row title="Status" sub="Live. Up to 20 questions a day. If it can't be reached, the built-in guides answer instead." /></Card><Sub style={{ textAlign: 'center' }}>General guidance, not medical advice.</Sub></Sheet>
   </>;
 }
 
@@ -87,7 +89,7 @@ function CheckinSheet({ day, close }: { day: number; close: () => void }) {
   const [step, setStep] = useState(1); const [mood, setMood] = useState<Mood | null>(prev?.mood ?? null); const [tags, setTags] = useState<string[]>(prev?.tags ?? []); const [note, setNote] = useState(prev?.note ?? ''); const [added, setAdded] = useState(0);
   const isToday = day === sod(Date.now()); const st = dayStats(day); const nm = S.child.name;
   const dots = <View style={{ flexDirection: 'row', gap: 5, justifyContent: 'center', marginTop: -6, marginBottom: 14 }}>{[1, 2, 3].map(i => <View key={i} style={{ width: 22, height: 4, borderRadius: 9, backgroundColor: i <= step ? C.brand : C.line }} />)}</View>;
-  const addMissed = (v: 'success' | 'accident' | 'poo') => { addEvent({ ts: isToday ? Date.now() - MIN : day + 17.5 * HR, type: 'potty', outcome: v === 'accident' ? 'accident' : 'success', what: v === 'poo' ? 'poo' : 'wee', by: 'prompt', late: true }); setAdded(a => a + 1); };
+  const addMissed = (v: 'success' | 'accident' | 'poo') => { addEvent({ ts: isToday ? Date.now() - MIN : atHour(day, 17.5), type: 'potty', outcome: v === 'accident' ? 'accident' : 'success', what: v === 'poo' ? 'poo' : 'wee', by: 'prompt', late: true }); setAdded(a => a + 1); };
   const nums = (s = st) => <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
     {([[s.s, 'On potty', C.brand], [s.a, 'Accidents', C.acc], [step === 3 ? (s.rate == null ? '–' : s.rate + '%') : s.told, step === 3 ? 'Success' : 'Told you', C.ink]] as const).map(([v, l, c]) =>
       <View key={l} style={{ flex: 1, backgroundColor: C.surface, borderRadius: 18, padding: 12 }}><T w="s" size={22} color={c}>{String(v)}</T><T size={12} color={C.ink2}>{l}</T></View>)}
@@ -152,7 +154,7 @@ function TimerSheet({ open, close }: { open: boolean; close: () => void }) {
   );
 }
 function PauseSheet({ open, close }: { open: boolean; close: () => void }) {
-  const qs = sod(Date.now()) + S.quietStart * HR;
+  const qs = atHour(sod(Date.now()), S.quietStart);
   const set = (min: number, label: string) => { update(s => { s.pausedUntil = Date.now() + min * MIN; s.pauseWhy = label; }); close(); toast('Timer paused', `${label}. Resumes at ${new Date(S.pausedUntil).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} or when you log.`); };
   return (
     <Sheet open={open} onClose={close} title="Pause the timer" right={<SheetLink label="Cancel" onPress={close} />}>
@@ -184,7 +186,7 @@ function RemSheet({ open, close }: { open: boolean; close: () => void }) {
         {sw('evening', 'Evening check-in', "At 6:30 pm, if you haven't checked in yet")}
       </Card>
       <Pressable onPress={() => { close(); setTimeout(() => emit('timer'), 350); }}><Tip icon="moon" tone="water">{`Quiet hours ${S.quietOn ? hm(S.quietStart) + ' – ' + hm(S.quietEnd) : 'off'}. No timer or reminders overnight. Tap to change.`}</Tip></Pressable>
-      {Platform.OS !== 'web' && granted === false ? <Btn icon="bell" title="Allow notifications" onPress={() => permission(true).then(setGranted)} style={{ marginBottom: 10 }} /> : null}
+      {Platform.OS !== 'web' && granted === false ? <Btn icon="bell" title="Allow notifications" onPress={() => permission(true).then(ok => { setGranted(ok); if (ok) reschedule(); else Linking.openSettings().catch(() => {}); })} style={{ marginBottom: 10 }} /> : null}
       <Btn kind="ghost" icon="bolt" title="Preview a reminder" onPress={() => { close(); previewReminder(); }} />
     </Sheet>
   );

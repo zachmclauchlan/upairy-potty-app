@@ -38,13 +38,19 @@ Deno.serve(async (req) => {
   const user = userData?.user;
   if (!user) return json({ error: 'not_signed_in' }, 401);
 
-  let body: { question?: string; history?: { role: string; text: string }[]; context?: string };
+  let body: { question?: string; history?: { role: string; text: string }[]; context?: string; tz?: string };
   try { body = await req.json(); } catch { return json({ error: 'bad_request' }, 400); }
   const question = clip(body.question, 1000).trim();
   if (!question) return json({ error: 'empty_question' }, 400);
 
-  // Daily limit keeps costs predictable.
-  const { data: used, error: usageErr } = await admin.rpc('bump_coach_usage', { p_user: user.id });
+  // The coach is part of Potty Up (a Loop subscription, or gifted access).
+  const { data: profile } = await admin.from('profiles').select('plan').eq('id', user.id).maybeSingle();
+  if (profile?.plan !== 'plus') return json({ error: 'not_plus' }, 403);
+
+  // Daily limit keeps costs predictable. The day is the parent's local day; a failed answer is refunded.
+  const tz = clip(body.tz, 64) || 'UTC';
+  const refund = () => admin.rpc('refund_coach_usage', { p_user: user.id, p_tz: tz });
+  const { data: used, error: usageErr } = await admin.rpc('bump_coach_usage', { p_user: user.id, p_tz: tz });
   if (usageErr) return json({ error: 'usage_failed' }, 500);
   if ((used as number) > DAILY_LIMIT) return json({ error: 'daily_limit', limit: DAILY_LIMIT }, 429);
 
@@ -83,6 +89,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     const status = (e as any)?.status;
     console.error('coach error', status, (e as Error)?.message);
+    await refund();
     return json({ error: status === 429 ? 'busy' : 'coach_failed' }, status === 429 ? 503 : 502);
   }
 });

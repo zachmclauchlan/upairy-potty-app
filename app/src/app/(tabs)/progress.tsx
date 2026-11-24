@@ -5,7 +5,7 @@ import Icon, { IconName } from '@/components/Icon';
 import KidChip from '@/components/KidChip';
 import Timeline from '@/components/Timeline';
 import { C, shadow, Tone } from '@/lib/theme';
-import { S, useApp, sod, DAY, HR } from '@/lib/store';
+import { S, useApp, sod, addDays, atHour } from '@/lib/store';
 import { MOODS } from '@/lib/content';
 import { dayName, dayStats, fmt, isPotty, learned, NEED, onDay } from '@/lib/logic';
 import { emit } from '@/lib/bus';
@@ -30,13 +30,13 @@ export default function Progress() {
 function Insights() {
   const today = sod(Date.now()), L = learned(), nm = S.child.name;
   if (!S.events.some(isPotty)) return <Card><Sub style={{ textAlign: 'center', paddingVertical: 16, fontSize: 14 }}>Nothing to show yet.{'\n'}Insights fill in as you log. A day of logging is enough to see {nm}'s first patterns.</Sub></Card>;
-  const days = [...Array(7)].map((_, i) => { const d = today - (6 - i) * DAY; return { d, ...dayStats(d) }; });
+  const days = [...Array(7)].map((_, i) => { const d = addDays(today, -(6 - i)); return { d, ...dayStats(d) }; });
   const active = days.filter(x => x.rate != null);
   const tot = days.reduce((a, x) => ({ s: a.s + x.s, told: a.told + x.told, a: a.a + x.a }), { s: 0, told: 0, a: 0 });
   const rate = tot.s + tot.a ? Math.round(100 * tot.s / (tot.s + tot.a)) : null;
   const first = active[0]?.rate ?? 0, last = active[active.length - 1]?.rate ?? 0;
   const toldPct = tot.s ? Math.round(100 * tot.told / tot.s) : null;
-  const hrs = [...Array(13)].map((_, i) => S.events.filter(e => isPotty(e) && e.outcome === 'accident' && e.ts > today - 13 * DAY && new Date(e.ts).getHours() === 7 + i).length);
+  const hrs = [...Array(13)].map((_, i) => S.events.filter(e => isPotty(e) && e.outcome === 'accident' && e.ts > addDays(today, -13) && new Date(e.ts).getHours() === 7 + i).length);
   const hmax = Math.max(1, ...hrs); const peak = 7 + hrs.indexOf(Math.max(...hrs)); const ph = (h: number) => (h % 12 || 12) + (h < 12 ? ' am' : ' pm');
   const row = (ic: IconName, tone: Tone, t: string, ok: boolean, val: string, unit: string, n: number, need: number, note: string, i: number) => (
     <View key={t} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13, borderTopWidth: i ? 1 : 0, borderTopColor: C.line }}>
@@ -59,7 +59,7 @@ function Insights() {
       {row('clock', 'ok', 'Time between wees', L.gap.ok, L.gap.v + ' min', 'typical', L.gap.n, NEED.gap, L.gap.am && L.gap.pm ? `${L.gap.am} min mornings, ${L.gap.pm} min afternoons` : `From ${L.gap.n} gaps`, 0)}
       {row('cup', 'water', 'Wee after a drink', L.drink.ok, L.drink.v + ' min', 'later', L.drink.n, NEED.drink, `From ${L.drink.n} drinks`, 1)}
       {row('sunrise', 'sun', 'Wee after waking', L.wake.ok, L.wake.v + ' min', 'later', L.wake.n, NEED.wake, `From ${L.wake.n} wake-ups`, 2)}
-      {row('poo', 'poo', 'Usual poo time', L.poo.ok, L.poo.ok ? fmt(today + (L.poo.v as number) * HR) : '', 'roughly', L.poo.n, NEED.poo, `From ${L.poo.n} poos`, 3)}
+      {row('poo', 'poo', 'Usual poo time', L.poo.ok, L.poo.ok ? fmt(atHour(today, L.poo.v as number)) : '', 'roughly', L.poo.n, NEED.poo, `From ${L.poo.n} poos`, 3)}
     </Card>
     <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
       {metric('Success rate', rate != null ? rate + '%' : '–', active.length > 1 ? `${first}% → ${last}% this week` : 'First day', last >= first)}
@@ -124,7 +124,7 @@ function History() {
     {ci ? <Card style={{ flexDirection: 'row', gap: 12 }}>
       <IconBox name={(md?.[2] as IconName) ?? 'route'} tone="try" size={36} />
       <View style={{ flex: 1 }}><T w="s" size={14}>{md ? md[1] : 'Check-in'}</T><Sub>{ci}</Sub>{dl?.tags?.length ? <Sub>{dl.tags.join(' · ')}</Sub> : null}{dl?.note ? <Sub style={{ fontStyle: 'italic' }}>"{dl.note}"</Sub> : null}</View>
-    </Card> : sel === today - DAY && list.length ? <Pressable onPress={() => emit('checkin', sel)}><Tip icon="moon">No check-in this day. Tap to fill it in now.</Tip></Pressable> : null}
+    </Card> : sel === addDays(today, -1) && list.length ? <Pressable onPress={() => emit('checkin', sel)}><Tip icon="moon">No check-in this day. Tap to fill it in now.</Tip></Pressable> : null}
     <Card pad={6} style={{ paddingHorizontal: 18 }}>{list.length ? <Timeline list={list} del={sel === today} /> : <Sub style={{ textAlign: 'center', paddingVertical: 20 }}>Nothing logged this day.</Sub>}</Card>
   </>;
 }

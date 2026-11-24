@@ -67,6 +67,17 @@ export async function refreshPlan(force = false): Promise<Plan | null> {
 }
 
 export async function isSignedIn() { const { data } = await supabase.auth.getSession(); return !!data.session; }
+
+/**
+ * On launch: 'ok' = signed in, 'none' = no sign-in on this phone (send to the sign-in screen),
+ * 'offline' = a sign-in is saved but couldn't be refreshed (no internet). Keep the parent in the app.
+ * Supabase deletes the saved sign-in when the server rejects it, so a saved one after a failed refresh means a network problem.
+ */
+export async function sessionState(): Promise<'ok' | 'none' | 'offline'> {
+  const { data } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+  if (data.session) return 'ok';
+  return readItem(`sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`) ? 'offline' : 'none';
+}
 export async function signOut() { await supabase.auth.signOut().catch(() => {}); }
 
 /** Permanently delete the UpAiry account on the server. */
@@ -77,8 +88,11 @@ export async function deleteAccount() {
 }
 
 /** Ask the AI coach. Returns the reply, or a reason it couldn't answer. */
+/** The phone's timezone, e.g. "Pacific/Auckland", so the coach's daily limit resets at local midnight. */
+const localTz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return 'UTC'; } };
+
 export async function askCoachServer(question: string, history: { role: 'user' | 'assistant'; text: string }[], context: string): Promise<{ reply?: string; remaining?: number; error?: string }> {
-  const { data, error } = await supabase.functions.invoke('coach', { body: { question, history, context } });
+  const { data, error } = await supabase.functions.invoke('coach', { body: { question, history, context, tz: localTz() } });
   if (error) {
     const body = await (error as any).context?.json?.().catch(() => null);
     return { error: body?.error ?? 'coach_failed' };

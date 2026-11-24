@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { Card, T, Sub, Opt, IconBox, SectionHead, Tip, Chip, Label } from './ui';
 import { C } from '@/lib/theme';
-import { S, sod, DAY, HR, MIN } from '@/lib/store';
+import { S, sod, MIN, addDays, atHour } from '@/lib/store';
 import { dryNights7, dur, evs, fmt, onDay } from '@/lib/logic';
 import { addEvent, removeEvent } from '@/lib/actions';
 import { emit } from '@/lib/bus';
@@ -9,11 +9,11 @@ import { emit } from '@/lib/bus';
 export default function Night() {
   const today = sod(Date.now()); const nights = evs().filter(e => e.type === 'night');
   const lastN = nights.find(e => sod(e.ts) === today);
-  const strip = [...Array(14)].map((_, i) => { const d = today - (13 - i) * DAY; const n = nights.find(e => sod(e.ts) === d); return n ? n.outcome : null; });
+  const strip = [...Array(14)].map((_, i) => { const d = addDays(today, -(13 - i)); const n = nights.find(e => sod(e.ts) === d); return n ? n.outcome : null; });
   const dry7 = dryNights7(); let streak = 0; for (const n of [...nights].reverse()) { if (n.outcome === 'dry') streak++; else break; }
-  const lastDrink = [...onDay(today, e => e.type === 'drink')].pop(); const bed = today + S.bedtime * HR;
+  const lastDrink = [...onDay(today, e => e.type === 'drink')].pop(); const bed = atHour(today, S.bedtime);
   const gapBed = lastDrink ? (bed - lastDrink.ts) / MIN : null;
-  const logNight = (o: 'dry' | 'wet') => { addEvent({ ts: Math.min(Date.now(), today + 6.6 * HR), type: 'night', outcome: o }); if (o === 'dry') emit('celebrate'); };
+  const logNight = (o: 'dry' | 'wet') => { addEvent({ ts: Math.min(Date.now(), atHour(today, 6.6)), type: 'night', outcome: o }); if (o === 'dry') emit('celebrate'); };
   return <>
     <Card>
       <Label>Last night</Label>

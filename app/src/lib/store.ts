@@ -28,10 +28,18 @@ export interface State {
   pants: number; sitSong: number | null; sitMusic: boolean;
   /** Cloud backup to the parent's account. owner = the email this data belongs to. */
   backup: { on: boolean; at: number; owner: string | null };
+  /** true while the demo "sample week" logs are loaded */
+  sample?: boolean;
 }
 
 export const MIN = 6e4, HR = 36e5, DAY = 864e5;
 export const sod = (t: number) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
+/** Local midnight n calendar days from a day. Safe across daylight-saving changes (a day isn't always 24 h). */
+export const addDays = (day: number, n: number) => { const d = new Date(day); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + n); return d.getTime(); };
+/** A local clock time on a day, e.g. atHour(today, 18.5) = 6:30 pm, correct on daylight-saving days. */
+export const atHour = (day: number, h: number) => { const d = new Date(day); d.setHours(0, 0, 0, 0); d.setMinutes(Math.round(h * 60)); return d.getTime(); };
+/** Whole calendar days between two days (rounds away the odd daylight-saving hour). */
+export const daysBetween = (a: number, b: number) => Math.round((sod(b) - sod(a)) / DAY);
 export const uid = () => Math.random().toString(36).slice(2, 10);
 
 export function fresh(): State {

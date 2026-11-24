@@ -4,7 +4,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { Card, T, Sub, Label, Meter } from './ui';
 import Icon from './Icon';
 import { C, shadow } from '@/lib/theme';
-import { S, update, sod, DAY } from '@/lib/store';
+import { S, update, sod, addDays } from '@/lib/store';
 import { CDN, DESIGNS, PAIRS, PRODUCTS, SHOP } from '@/lib/content';
 import { dayStats, item, M } from '@/lib/logic';
 
@@ -47,7 +47,7 @@ export function stepProducts(): string[] {
 
 export function PantsPlanner() {
   const need = PAIRS[S.method] || 8, have = S.pants;
-  const today = sod(Date.now()); const avg = Math.round([1, 2, 3].map(d => dayStats(today - d * DAY).a).reduce((a, b) => a + b, 0) / 3);
+  const today = sod(Date.now()); const avg = Math.round([1, 2, 3].map(d => dayStats(addDays(today, -d)).a).reduce((a, b) => a + b, 0) / 3);
   const enough = have >= need; const every = Math.max(1, Math.floor(have / Math.max(avg, 1)));
   const step = (d: number) => update(s => { s.pants = Math.max(0, Math.min(40, s.pants + d)); });
   return (

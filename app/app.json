@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.upairy.potty",
@@ -22,7 +22,8 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.upairy.potty",
-      "permissions": [
+      "permissions": [],
+      "blockedPermissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.FOREGROUND_SERVICE",
@@ -38,7 +39,6 @@
       "expo-router",
       "expo-status-bar",
       "expo-sqlite",
-      "expo-audio",
       "expo-font",
       [
         "expo-splash-screen",
@@ -73,6 +73,12 @@
         "projectId": "a70bc096-1590-47b0-803e-79d58465e637"
       }
     },
-    "owner": "upairy"
+    "owner": "upairy",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/a70bc096-1590-47b0-803e-79d58465e637"
+    }
   }
 }

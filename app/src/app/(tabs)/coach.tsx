@@ -13,16 +13,26 @@ import { askCoachServer } from '@/lib/backend';
 
 // The AI coach runs on UpAiry's server (Supabase function "coach"), which holds the Claude key
 // and the UpAiry coach skill. The app sends only the question, recent chat and an anonymous summary.
+let inFlight = false;
+/** A question cut off by closing the app leaves "Thinking…" behind: tidy it up. */
+function tidyChat() {
+  const last = S.chat[S.chat.length - 1];
+  if (!inFlight && last?.r === 'a' && last.t === 'Thinking…') update(() => { last.t = "That answer didn't finish. Please ask again."; });
+}
 async function ask(q: string) {
-  q = q.trim(); if (!q) return;
-  update(s => { s.chat.push({ r: 'u', t: q }); });
+  q = q.trim(); if (!q || inFlight) return;
+  inFlight = true;
+  update(s => { s.chat.push({ r: 'u', t: q }); if (s.chat.length > 120) s.chat = s.chat.slice(-120); });
   update(s => { s.chat.push({ r: 'a', t: 'Thinking…', src: 'UpAiry coach' }); });
   const msg = S.chat[S.chat.length - 1];
   const history = S.chat.slice(0, -2).slice(-12).map(m => ({ role: m.r === 'u' ? 'user' as const : 'assistant' as const, text: m.t }));
   const res = await askCoachServer(q, history, aiContext()).catch(() => ({ error: 'offline' } as { reply?: string; remaining?: number; error?: string }));
+  inFlight = false;
   const guide = localAnswer(q);
   if (res.reply) { msg.t = res.reply; msg.src = `UpAiry coach${res.remaining != null && res.remaining <= 5 ? ` · ${res.remaining} questions left today` : ''}`; }
   else if (res.error === 'daily_limit') { msg.t = "That's today's questions used up. The coach resets tomorrow. Meanwhile, here's what the guides say:\n\n" + guide.t; msg.src = guide.src; }
+  else if (res.error === 'busy') { msg.t = "The coach is very busy right now. Try again in a minute. Meanwhile, here's what the guides say:\n\n" + guide.t; msg.src = guide.src; }
+  else if (res.error === 'not_plus') { msg.t = "The AI coach is part of Potty Up. Meanwhile, here's what the built-in guides say:\n\n" + guide.t; msg.src = guide.src; }
   else { msg.t = "Couldn't reach the coach just now. Here's what the guides say:\n\n" + guide.t; msg.src = guide.src; }
   update(() => {});
 }
@@ -31,6 +41,7 @@ export default function Coach() {
   useApp();
   const [q, setQ] = useState('');
   const scroll = useRef<any>(null);
+  useEffect(() => { tidyChat(); }, []);
   useEffect(() => on('ask', (t: string) => { ask(t); setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 200); }), []);
   const send = (t: string) => { ask(t); setQ(''); setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 200); };
   const chat = S.chat.slice(-12);

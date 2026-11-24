@@ -6,7 +6,9 @@ import { T, Sub, Card, Row, Btn, Badge, SectionHead, toast } from '@/components/
 import Icon from '@/components/Icon';
 import { Designs, ProductCard, openShop } from '@/components/Shop';
 import { C, shadow } from '@/lib/theme';
-import { S, useApp, update, resetAll } from '@/lib/store';
+import { S, useApp, update, resetAll, sod } from '@/lib/store';
+import Constants from 'expo-constants';
+import { cancelAll } from '@/lib/notifications';
 import { item, M, quizScore } from '@/lib/logic';
 import { emit } from '@/lib/bus';
 import Logo from '@/components/Logo';
@@ -27,7 +29,9 @@ export default function Settings() {
   const free = S.account?.plan === 'free';
   const close = () => router.back();
   const open = (k: string) => { close(); setTimeout(() => emit(k), 350); };
-  const signOut = async () => { await backupNow().catch(() => false); close(); serverSignOut(); update(s => { s.account = null; }); toast('Signed out'); };
+  const signOut = async () => { await backupNow().catch(() => false); close(); cancelAll(); serverSignOut(); update(s => { s.account = null; }); toast('Signed out'); };
+  const clearSample = () => confirm('Clear the sample week?', 'This removes the example logs and check-ins so you can start fresh. Your child, method and settings stay.', () => { update(s => { s.events = []; s.checkins = {}; s.days = {}; s.steps = {}; s.pIdx = 0; s.pDay = 1; s.start = sod(Date.now()); s.spent = 0; s.sample = false; }); toast('Sample data cleared', 'Ready for real logs'); }, 'Clear');
+  const version = `${Constants.expoConfig?.version ?? '1.0.0'}`;
   const ago = (t: number) => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : new Date(t).toLocaleDateString(); };
   const toggleBackup = () => S.backup.on
     ? confirm('Turn off backup?', "This deletes the copy saved on your account. Your data stays on this phone, but it won't move to a new phone.", async () => { await turnOffBackup().catch(() => {}); toast('Backup off', 'Saved copy deleted'); }, 'Turn off')
@@ -72,19 +76,24 @@ export default function Settings() {
       </Card>
       <SectionHead title="Family" />
       <Card pad={4} style={{ paddingHorizontal: 18 }}>
-        <Row first icon="plus" tone="try" title="Add a child" sub="Each child gets their own program" onPress={() => toast('Multiple children: coming soon', 'On the roadmap')} />
-        <Row icon="users" tone="water" title="Invite a caregiver" sub="Partner or grandparent can log too" onPress={() => toast('Caregiver sharing: coming soon', 'On the roadmap')} />
-        <Row icon="share" title="Share an update" sub="Text-ready summary for daycare or grandparents" onPress={() => open('handoff')} />
+        <Row first icon="share" title="Share an update" sub="Text-ready summary for daycare or grandparents" onPress={() => open('handoff')} />
       </Card>
       <SectionHead title="App" />
       <Card pad={4} style={{ paddingHorizontal: 18 }}>
         <Row first icon="replay" tone="sun" title="How the app works" sub="Replay the intro" onPress={() => open('intro')} />
+        {S.sample ? <Row icon="trash" tone="sun" title="Clear the sample week" sub="Remove the example logs and start fresh" onPress={clearSample} /> : null}
         <Row icon="chat" tone="water" title="AI coach" sub="On · 20 questions a day" onPress={() => open('aiinfo')} />
         <Row icon="shield" tone="water" title="Back up to my account" sub={S.backup.on ? `On · saved ${S.backup.at ? ago(S.backup.at) : 'soon'} · restores on a new phone` : 'Off · data is only on this phone'} onPress={toggleBackup} right={<T w="s" size={13} color={S.backup.on ? C.brand : C.ink3}>{S.backup.on ? 'On' : 'Off'}</T>} />
         <Row icon="download" title="Export my data" sub="Save a copy as a file. No ads, no tracking." onPress={() => Share.share({ message: JSON.stringify({ exported: new Date().toISOString(), child: S.child, method: S.method, events: S.events, checkins: S.checkins, days: S.days }, null, 2) }).catch(() => {})} right={<Icon name="download" size={18} color={C.ink3} />} />
-        <Row icon="trash" tone="try" title="Delete my account and data" sub="Deletes your account, its backup, and everything on this phone" danger onPress={() => confirm('Delete your account?', 'This permanently deletes your account and its backup, and removes all logs and settings from this phone. It cannot be undone.', async () => { try { await deleteAccount(); close(); resetAll(); toast('Account deleted'); } catch (e) { toast((e as Error).message); } })} />
+        <Row icon="trash" tone="try" title="Delete my account and data" sub="Deletes your account, its backup, and everything on this phone" danger onPress={() => confirm('Delete your account?', 'This permanently deletes your account and its backup, and removes all logs and settings from this phone. It cannot be undone.', async () => { try { await deleteAccount(); close(); cancelAll(); resetAll(); toast('Account deleted'); } catch (e) { toast((e as Error).message); } })} />
       </Card>
-      <View style={{ alignItems: 'center', marginTop: 24, gap: 6 }}><Logo width={84} color="black" style={{ opacity: 0.35 }} /><Sub>Potty Up by UpAiry · version 1.0.0</Sub></View>
+      <SectionHead title="Help" />
+      <Card pad={4} style={{ paddingHorizontal: 18 }}>
+        <Row first icon="chat" title="Help and contact" sub="Sign-in, reminders, subscription, deleting your account" onPress={() => openShop('https://upairy.com/pages/potty-up-support')} />
+        <Row icon="shield" title="Privacy policy" onPress={() => openShop('https://upairy.com/pages/potty-up-privacy')} />
+        <Row icon="book" title="Terms of use" onPress={() => openShop('https://upairy.com/pages/potty-up-terms')} />
+      </Card>
+      <View style={{ alignItems: 'center', marginTop: 24, gap: 6 }}><Logo width={84} color="black" style={{ opacity: 0.35 }} /><Sub>Potty Up by UpAiry · version {version}</Sub><Sub style={{ fontSize: 12 }}>General guidance, not medical advice.</Sub></View>
     </ScrollView>
   );
 }
