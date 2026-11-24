@@ -40,24 +40,24 @@ export default function Settings() {
       </Card>
       <View style={{ borderRadius: 22, padding: 18, backgroundColor: C.brand, marginBottom: 12 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}><Logo width={96} color="white" /><T w="s" size={20} color="#fff" style={{ lineHeight: 24 }}>Plus</T></View>
-          {!free ? <Badge tone="white" label="Member" /> : null}
+          <View><T w="b" size={24} color="#fff">Potty Up</T><View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><T size={12} color="rgba(255,255,255,.8)">by</T><Logo width={56} color="white" /></View></View>
+          {!free ? <Badge tone="white" label="Unlocked" /> : null}
         </View>
         {free ? <>
-          <T size={14} color="rgba(255,255,255,.9)" style={{ marginTop: 8, marginBottom: 14 }}>UpAiry Plus comes with an UpAiry membership: the full program, smart reminders, the AI coach, songs, and member perks. Already a member? Make sure you signed in with the email you used at checkout.</T>
-          <Btn kind="white" title="Check my membership" onPress={async () => { const p = await refreshPlan(true).catch(() => null); toast(p?.plan === 'plus' ? 'UpAiry Plus is active' : 'No membership found on ' + (S.account?.id ?? 'this email'), p?.plan === 'plus' ? 'Welcome, member' : 'Use the email from your upairy.com checkout'); }} />
+          <T size={14} color="rgba(255,255,255,.9)" style={{ marginTop: 8, marginBottom: 14 }}>You're on the free version. The full Potty Up adds the day-by-day program, smart reminders, the AI coach, songs and free UpAiry gear. Bought it on upairy.com? Make sure you signed in with the email you used at checkout.</T>
+          <Btn kind="white" title="Check my purchase" onPress={async () => { const p = await refreshPlan(true).catch(() => null); toast(p?.plan === 'plus' ? 'Potty Up is unlocked' : 'No Potty Up purchase on ' + (S.account?.id ?? 'this email'), p?.plan === 'plus' ? 'Everything is ready' : 'Use the email from your upairy.com checkout'); }} />
         </> : <>
           <T size={14} color="rgba(255,255,255,.9)" style={{ marginTop: 8, marginBottom: 14 }}>The full program, smart reminders, the AI coach, songs, and real UpAiry gear as you go.</T>
           {([[30, 'Free 5-pack of training pants'], [60, 'Free waterproof bed mat']] as const).map(([n, t]) => <View key={t} style={{ marginBottom: 12 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><T w="s" size={13} color="#fff">{t}</T><T size={13} color="#fff">{d >= n ? 'Unlocked' : `Day ${d} of ${n}`}</T></View>
             <Meter pct={d / n * 100} color="#fff" track="rgba(255,255,255,.2)" style={{ marginTop: 6 }} />
           </View>)}
-          <T size={13} color="rgba(255,255,255,.85)">Plus 15% off everything at upairy.com while you're a member.</T>
-          <T size={13} color="rgba(255,255,255,.85)" style={{ marginTop: 10 }}>Manage or cancel your membership from your account on upairy.com.</T>
+          <T size={13} color="rgba(255,255,255,.85)">Plus 15% off everything at upairy.com while you have Potty Up.</T>
+          <T size={13} color="rgba(255,255,255,.85)" style={{ marginTop: 10 }}>Manage or cancel Potty Up from your account on upairy.com.</T>
         </>}
       </View>
       <Card pad={4} style={{ paddingHorizontal: 18 }}>
-        <Row first icon="users" tone="water" title={S.account?.id ?? 'Not signed in'} sub={free ? 'Free UpAiry account' : 'UpAiry Plus member'} right={<Pressable onPress={signOut} style={{ paddingVertical: 7, paddingHorizontal: 12, borderRadius: 10, backgroundColor: C.sunk }}><T w="s" size={13}>Sign out</T></Pressable>} />
+        <Row first icon="users" tone="water" title={S.account?.id ?? 'Not signed in'} sub={free ? 'Free version' : 'Potty Up unlocked'} right={<Pressable onPress={signOut} style={{ paddingVertical: 7, paddingHorizontal: 12, borderRadius: 10, backgroundColor: C.sunk }}><T w="s" size={13}>Sign out</T></Pressable>} />
       </Card>
       <View onLayout={e => { shopY.current = e.nativeEvent.layout.y; }}><SectionHead title="Shop UpAiry" right="upairy.com" onRight={() => openShop('https://upairy.com')} /></View>
       <Designs />
@@ -82,7 +82,7 @@ export default function Settings() {
         <Row icon="shield" title="Your data" sub="Stored only on this phone. No ads, no tracking." onPress={() => Share.share({ message: JSON.stringify({ exported: new Date().toISOString(), child: S.child, method: S.method, events: S.events, checkins: S.checkins, days: S.days }, null, 2) }).catch(() => {})} right={<Icon name="download" size={18} color={C.ink3} />} />
         <Row icon="trash" tone="try" title="Delete my account and data" sub="Deletes your UpAiry account and everything on this phone" danger onPress={() => confirm('Delete your account?', 'This permanently deletes your UpAiry account and removes all logs and settings from this phone. It cannot be undone.', async () => { try { await deleteAccount(); close(); resetAll(); toast('Account deleted'); } catch (e) { toast((e as Error).message); } })} />
       </Card>
-      <View style={{ alignItems: 'center', marginTop: 24, gap: 6 }}><Logo width={84} color="black" style={{ opacity: 0.35 }} /><Sub>UpAiry Potty · version 1.0.0</Sub></View>
+      <View style={{ alignItems: 'center', marginTop: 24, gap: 6 }}><Logo width={84} color="black" style={{ opacity: 0.35 }} /><Sub>Potty Up by UpAiry · version 1.0.0</Sub></View>
     </ScrollView>
   );
 }

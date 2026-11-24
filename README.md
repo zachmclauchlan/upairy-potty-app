@@ -1,8 +1,8 @@
 <p align="center"><img src="app/assets/brand/logo-green.png" alt="UpAiry" width="220"></p>
 
-# UpAiry Potty
+# Potty Up
 
-A potty training app for parents of toddlers, made by **UpAiry**, the makers of reusable potty training underwear ([upairy.com](https://upairy.com)). This README explains what the app does, how it works, what's finished and what's still to connect.
+**Potty Up: Potty Training** is a potty training app for parents of toddlers, made by **UpAiry**, the makers of reusable potty training underwear ([upairy.com](https://upairy.com)). This README explains what the app does, how it works, what's finished and what's still to connect.
 
 ## TL;DR
 - **Personal program:** 3-day intensive, bare bottom at home, gentle, or nights, chosen from a readiness quiz and moved on by a daily check-in
@@ -16,9 +16,11 @@ A potty training app for parents of toddlers, made by **UpAiry**, the makers of 
 - **Kid zone:** stars, sticker chart, rewards the parent sets, kid mode, a sit timer, 20 original potty songs
 - **Progress:** what the app has learned about the child, success trends, accident times, a full history calendar
 - **Handover:** a one-tap update for grandparents or daycare
-- **UpAiry built in:** order sign-in unlocks UpAiry Plus, perks (free pants at day 30, bed mat at day 60), and a shop matched to each program step
+- **Potty Up is sold on upairy.com:** a product in the Shopify cart, billed by Loop (7-day trial). Signing in with the checkout email unlocks the full app, plus free gear (pants at day 30, bed mat at day 60) and a shop matched to each program step
 - **Private:** child data stays on the phone, with no ads or tracking
 - **Platforms:** iPhone and Android (Expo / React Native), plus a web preview
+
+Store name, subtitle, keywords and description: see [STORE_LISTING.md](STORE_LISTING.md).
 
 ## Try it
 
@@ -28,7 +30,7 @@ A potty training app for parents of toddlers, made by **UpAiry**, the makers of 
 | **Android phone** | [Latest test build (APK)](https://expo.dev/artifacts/eas/Nv3qnsBj60mCOpJeDf90km4ybbawVfUz42IqMVDC300.apk) | Download on the phone and allow "install from unknown sources". Full app with reminders. |
 | **iPhone** | Coming via TestFlight | Waiting on Apple developer approval. |
 
-**Sign-in is in test mode:** any email or order number works. Choose **Explore with a sample week** during setup to see the app full of example data.
+**Sign-in:** enter your email and type the 6-digit code you are emailed. Choose **Explore with a sample week** during setup to see the app full of example data. (The web and Android test builds above are older and still accept any email, until the next build.)
 
 ## Contents
 1. The daily loop · 2. Getting started · 3. Programs · 4. Smart timer · 5. Logging · 6. Notifications · 7. Night training · 8. Coach and AI · 9. Kid zone · 10. Progress · 11. Settings and UpAiry · 12. Privacy · 13. Built vs. to do · 14. Technical overview · 15. Running it yourself
@@ -62,10 +64,10 @@ A three-tile strip at the top of the Today screen (Morning, Through the day, Eve
 ## 2. Getting started
 
 ### Sign-in (first screen)
-- **Find your UpAiry order** by the email used to order, or by order number + last name + ZIP/postcode. This links the parent to their UpAiry purchase and unlocks **UpAiry Plus**, which is included with an order.
-- **Other ways in:** email me a sign-in code, sign in with a password, or create a free account (opens upairy.com).
-- **FAQ** on the screen: where to find the order number, bought from a shop or Amazon, email doesn't match, is my child's data shared.
-- *Current state:* QA mode, so any input is accepted. Production will check orders against Shopify.
+- **Email + 6-digit code.** UpAiry's own accounts (Supabase), no passwords. The same button creates a free account for new parents.
+- **Unlocking Potty Up:** after sign-in, the server asks Loop whether that email has an active Potty Up subscription. If it does, the full app unlocks. This is rechecked every 6 hours, so cancellations take effect.
+- **No buy button in the app** (Apple's rules for apps that unlock a web purchase). Parents buy Potty Up on upairy.com.
+- **FAQ** on the screen: why a code, didn't get the code, bought Potty Up but it says free, is my child's data shared.
 
 ### Setup (about a minute)
 1. Child's name, age range, and the words they use for wee and poo. These are shared with caregivers so everyone says the same thing.
@@ -214,12 +216,12 @@ Short articles: holding in poo, when it goes backwards, daycare and grandparents
 ## 11. Settings (tap the child's name, top right of every screen)
 
 - **Child profile:** name, age and words, all editable.
-- **UpAiry Plus:**
-  - Trial or member status.
-  - Perk progress: **a free 5-pack of training pants at day 30** and **a free waterproof bed mat at day 60**.
-  - 15% off at upairy.com while a member.
-  - Manage subscription.
-  - Free accounts see "Link my order" instead.
+- **Potty Up card:**
+  - "Unlocked" or "free version".
+  - Gear progress: **a free 5-pack of training pants at day 30** and **a free waterproof bed mat at day 60**.
+  - 15% off at upairy.com while they have Potty Up.
+  - Manage or cancel on upairy.com.
+  - Free accounts see "Check my purchase" instead.
 - **Account:** the linked email or order, and sign out.
 - **Shop UpAiry:** the 9 print designs (Trucks, Planes, Safari, Puppies, Unicorn, Whale, Bears, Ladybug, Space) and kits, each opening upairy.com: 10-pack, Daytime Kit, Nighttime Kit, bed mat + wash bag, wet bags, kids' soap.
 - **Training:** method, readiness check, potty timing and quiet hours, reminders.
@@ -237,7 +239,7 @@ A text-ready handover for grandparents or daycare, sent through the phone's shar
 
 ## 12. Privacy and data
 - **The child's data stays on the phone.** No account is needed for child data, and there are no ads or tracking.
-- The UpAiry account holds only the parent's email and order.
+- The UpAiry account holds only the parent's email and whether they have Potty Up.
 - The AI coach receives an anonymous summary only (section 8).
 - Export everything (share as a file) or delete everything from Settings.
 

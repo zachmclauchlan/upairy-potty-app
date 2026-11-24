@@ -1,6 +1,6 @@
 // Sign in with email + a 6-digit code (UpAiry's own accounts, via Supabase).
-// After sign-in we check for an active UpAiry membership (a Loop subscription on that email).
-// No "buy membership" button or link here: App Store rules for apps that unlock web purchases.
+// After sign-in we check whether the parent has Potty Up (sold on upairy.com, billed by Loop, matched by email).
+// No "buy" button or link here: App Store rules for apps that unlock web purchases.
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,8 +15,8 @@ type Step = 'email' | 'code' | 'done';
 const FAQ = [
   ['Why a code instead of a password?', 'Nothing to remember or reset. We email you a 6-digit code each time you sign in on a new phone.'],
   ["I didn't get the code", 'Check your spam or promotions folder, make sure the email is spelled right, then tap "Send a new code".'],
-  ["I'm a member but it says free", 'Sign in with the same email you used at checkout on upairy.com. Membership is linked to that email.'],
-  ["Is my child's data shared?", "No. Your child's logs stay on this phone. Your account only holds your email and membership."],
+  ["I bought Potty Up but it says free", 'Sign in with the same email you used at checkout on upairy.com. Potty Up is linked to that email.'],
+  ["Is my child's data shared?", "No. Your child's logs stay on this phone. Your account only holds your email and whether you have Potty Up."],
 ];
 
 export default function Auth() {
@@ -43,12 +43,12 @@ export default function Auth() {
     const plus = m?.plan === 'plus';
     body = <>
       <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginTop: 30 }}><Icon name="check" size={36} color={C.brand} stroke={2.4} /></View>
-      <T w="b" size={28} style={{ textAlign: 'center', marginTop: 20 }}>{plus ? 'UpAiry Plus is active' : "You're signed in"}</T>
+      <T w="b" size={28} style={{ textAlign: 'center', marginTop: 20 }}>{plus ? 'Potty Up is unlocked' : "You're signed in"}</T>
       <Sub style={{ textAlign: 'center', marginTop: 8, marginBottom: 20, fontSize: 15 }}>{plus
-        ? `Your membership on ${email.trim()} is linked.`
-        : `Signed in as ${email.trim()}. ${m?.error === 'not_configured' ? 'Membership checking is still being set up.' : "We didn't find an UpAiry membership on this email. If you have one, sign in with the email you used at checkout."}`}</Sub>
+        ? `Linked to ${email.trim()}. Everything is ready to go.`
+        : `Signed in as ${email.trim()}. ${m?.error === 'not_configured' ? 'Checking purchases is still being set up.' : "You're on the free version. If you bought Potty Up on upairy.com, sign in with the email you used at checkout."}`}</Sub>
       <Card pad={4} style={{ paddingHorizontal: 18 }}>
-        {(plus ? ['The full day-by-day program', 'Smart reminders and the AI coach', 'Potty songs, kid mode and rewards', 'Member perks from UpAiry'] : ['Logging, timer and history', 'Readiness check and built-in guides', 'Your data stays on this phone'])
+        {(plus ? ['The full day-by-day program', 'Smart reminders and the AI coach', 'Potty songs, kid mode and rewards', 'Free UpAiry gear as you go'] : ['Logging, timer and history', 'Readiness check and built-in guides', 'Your data stays on this phone'])
           .map((x, i) => <Row key={x} first={i === 0} title={x} icon="check" />)}
       </Card>
       <View style={{ flex: 1, minHeight: 30 }} />
@@ -65,8 +65,9 @@ export default function Auth() {
     </>;
   } else {
     body = <>
-      <Logo width={132} />
-      {H('Sign in to UpAiry', "Enter your email and we'll send you a code. Members: use the email you checked out with on upairy.com.")}
+      <Logo width={96} />
+      <T w="b" size={34} color={C.brand} style={{ marginTop: 18 }}>Potty Up</T>
+      {H('Sign in', "Enter your email and we'll send you a code. Bought Potty Up on upairy.com? Use the email you checked out with.")}
       <Input label="Email" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboardType="email-address" autoCapitalize="none" autoComplete="email" textContentType="emailAddress" />
       {err ? <Tip icon="info" tone="sun">{err}</Tip> : null}
       <Btn title={busy ? 'Sending…' : 'Email me a code'} onPress={onSend} disabled={busy || !validEmail} />

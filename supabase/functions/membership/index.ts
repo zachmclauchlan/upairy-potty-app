@@ -1,11 +1,11 @@
-// Is this parent an UpAiry Plus member?
-// Membership is sold on upairy.com as a Loop subscription. We ask Loop's Admin API for the
-// subscriptions on the parent's own verified sign-in email, and count them as a member when one is
-// ACTIVE and contains the membership product. Read-only on Loop and Shopify.
+// Does this parent have Potty Up?
+// Potty Up is sold on upairy.com as a product in the cart, billed as a Loop subscription. We ask Loop's Admin API for the
+// subscriptions on the parent's own verified sign-in email, and unlock the app when one is
+// ACTIVE and contains the Potty Up product. Read-only on Loop and Shopify.
 //
 // Secrets (Supabase → Edge Functions → Secrets):
 //   LOOP_API_TOKEN          Loop → Settings → API tokens and webhooks (scope: Read subscription contracts)
-//   MEMBERSHIP_PRODUCT_ID   Shopify product ID of "UpAiry Plus Membership" (number or gid://shopify/Product/…)
+//   MEMBERSHIP_PRODUCT_ID   Shopify product ID of the "Potty Up" app product (number or gid://shopify/Product/…)
 //   SHOPIFY_STORE_DOMAIN, SHOPIFY_ADMIN_TOKEN   optional, only to show the parent's latest order
 // A manual "gift" plan in the database (e.g. for Amazon buyers) is kept regardless.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
@@ -40,7 +40,7 @@ function isMembership(sub: LoopSub) {
   const wanted = numericId(Deno.env.get('MEMBERSHIP_PRODUCT_ID'));
   return (sub.lines ?? []).some(l => wanted
     ? numericId(l.productShopifyId) === wanted
-    : /upairy plus|membership/i.test(`${l.productTitle ?? ''} ${l.sellingPlanGroupName ?? ''} ${l.name ?? ''}`));
+    : /potty ?up|upairy plus|membership/i.test(`${l.productTitle ?? ''} ${l.sellingPlanGroupName ?? ''} ${l.name ?? ''}`));
 }
 
 /** Optional: the parent's latest Shopify order, to show in the app. */

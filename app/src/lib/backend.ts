@@ -39,7 +39,7 @@ export async function verifyCode(email: string, code: string) {
 
 export type Membership = { plan: 'plus' | 'free'; member: boolean; gift?: boolean; order?: string | null; next_billing?: string | null; cancelling?: boolean; error?: string };
 
-/** Ask the server whether this parent has an active UpAiry membership (a Loop subscription on their email). */
+/** Ask the server whether this parent has Potty Up (an active Loop subscription on their email). */
 export async function checkMembership(): Promise<Membership> {
   const { data, error } = await supabase.functions.invoke('membership', { body: {} });
   if (error) {
@@ -93,6 +93,6 @@ function friendly(err: { message?: string; code?: string; status?: number }, ste
   if (code === 'email_address_not_authorized') return "We can't send to that address yet. Email sign-in is still being set up.";
   if (code.startsWith('over_') || m.includes('rate') || m.includes('seconds')) return 'Please wait a minute before asking for another code.';
   if (step === 'verify' && (code === 'otp_expired' || m.includes('expired') || m.includes('invalid'))) return "That code didn't work or has expired. Check it, or send a new one.";
-  if (err.status === 0 || m.includes('fetch') || m.includes('network')) return "Can't reach UpAiry. Check your internet connection.";
+  if (err.status === 0 || m.includes('fetch') || m.includes('network')) return "Can't connect. Check your internet connection.";
   return step === 'send' ? "We couldn't send a code just now. Try again in a minute." : "We couldn't sign you in just now. Try again.";
 }

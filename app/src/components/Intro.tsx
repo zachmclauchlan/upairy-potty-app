@@ -29,7 +29,7 @@ const slides = (): Slide[] => {
       ['chat', 'water', 'Coach', 'Refusing to sit, accidents, holding poo: steps and the words to say.'],
       ['star', 'sun', 'Kid zone', 'Stars, stickers, rewards you choose, potty songs and kid mode.'],
       ['chart', 'ok', 'Progress', 'What the app has learned, and every day logged.'],
-      ['users', 'ok', `Tap ${nm}'s name`, 'Settings, reminders, UpAiry Plus and the shop.']] },
+      ['users', 'ok', `Tap ${nm}'s name`, 'Settings, reminders, your Potty Up account and the shop.']] },
   ];
 };
 
