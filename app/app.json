@@ -15,7 +15,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#3E7F33",
+        "backgroundColor": "#CFEAC4",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -57,7 +57,8 @@
           "icon": "./assets/notification-icon.png"
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "expo-iap"
     ],
     "scheme": "upairypotty",
     "experiments": {
