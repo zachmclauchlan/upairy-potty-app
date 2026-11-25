@@ -19,6 +19,9 @@ import { ensureSession, refreshPlan, signOut } from '@/lib/backend';
 import { startBackup, backupNow } from '@/lib/backup';
 import { initNotifications, handleResponse, reschedule, cancelAll, Notifications } from '@/lib/notifications';
 import { on } from '@/lib/bus';
+import { touch, reportError, watchErrors } from '@/lib/pulse';
+
+watchErrors();
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -54,7 +57,8 @@ export default function Root() {
         if (st === 'signed-out') return toSignIn();
         if (st !== 'ok') return;   // offline: keep going with the last known plan
         const p = await refreshPlan().catch(() => null);
-        if (p && p.plan !== 'plus') toSignIn('Your Potty Up subscription is not active');
+        if (p && p.plan !== 'plus') return toSignIn('Your Potty Up subscription is not active');
+        touch();   // usage numbers: this account opened the app today
       }).catch(() => {});
     };
     check();
@@ -95,6 +99,7 @@ export default function Root() {
 
 /** If any screen crashes, show a friendly retry instead of a blank screen. Data is safe on the phone. */
 export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Promise<void> }) {
+  useEffect(() => { reportError(error, 'screen', true); }, [error]);
   return (
     <View style={{ flex: 1, backgroundColor: C.bg, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
       <T w="b" size={22} style={{ textAlign: 'center' }}>Something went wrong</T>

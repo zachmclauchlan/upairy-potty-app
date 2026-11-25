@@ -1,3 +1,4 @@
+// CURRENTLY SWITCHED OFF (see APPLE_ENABLED below).
 // Potty Up as an Apple subscription, for parents who find the app on the App Store and have no
 // upairy.com order. iPhone only. The price, billing period and free trial all come from the App Store,
 // so they are set in App Store Connect, not here.
@@ -9,6 +10,13 @@
 import { Platform } from 'react-native';
 import { supabase, SIGNIN_KEY } from './backend';
 import { writeItem } from './storage';
+
+/**
+ * Switched off: Potty Up unlocks with an upairy.com order only, and the app shows no Apple option.
+ * Everything below still works, so setting this to true (plus an active Paid Apps agreement and the
+ * subscription in App Store Connect) brings the "Subscribe with Apple" option back on iPhone.
+ */
+export const APPLE_ENABLED: boolean = false;
 
 /** The subscription's Product ID in App Store Connect. */
 export const APPLE_SKU = 'com.upairy.potty.monthly';
@@ -27,7 +35,7 @@ function iap(): Iap | null {
 }
 /** Local design preview only (web dev server with the `potty-dev-apple` flag set): shows the Apple option with a sample offer. Never true in a real build. */
 const devPreview = () => __DEV__ && Platform.OS === 'web' && !!(globalThis as any).localStorage?.getItem('potty-dev-apple');
-export const appleAvailable = () => !!iap() || devPreview();
+export const appleAvailable = () => APPLE_ENABLED && (!!iap() || devPreview());
 
 let connected: Promise<unknown> | null = null;
 async function connect(): Promise<Iap> {

@@ -16,6 +16,7 @@ import { METHODS, QUIZ, WHERE, toneOf, type MethodKey } from '@/lib/content';
 import { quizScore, recommend, startIndex } from '@/lib/logic';
 import Logo from './Logo';
 import { permission } from '@/lib/notifications';
+import { touch } from '@/lib/pulse';
 import { reviewsFor, type Review } from '@/lib/reviews';
 
 export function QuizRows({ quiz, set }: { quiz: Record<number, number>; set: (i: number, v: number) => void }) {
@@ -187,6 +188,7 @@ export default function Onboarding() {
       s.start = d1; s.stageStart = d1; s.repeats = []; s.coursePause = null; s.gateSnooze = 0; s.courseV = 1;
       s.onboarded = true;
     });
+    touch(true);   // usage numbers: setup finished
     await permission(true).catch(() => false); // ask for notifications once, right after setup
   };
 

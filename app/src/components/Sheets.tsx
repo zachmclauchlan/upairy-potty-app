@@ -12,6 +12,7 @@ import { addEvent, logPotty } from '@/lib/actions';
 import { previewReminder, permission, reschedule } from '@/lib/notifications';
 import { on, emit } from '@/lib/bus';
 import { COACH_NAME } from '@/lib/coach';
+import { maybeAskForRating } from '@/lib/rate';
 import { useSong, PlayBar, Lyrics, lineAt } from './SongPlayer';
 import { COURSES } from '@/lib/courseContent';
 import { inPrep, setStart, goToStage, today as todayDay } from '@/lib/course';
@@ -74,7 +75,7 @@ function LogSheet({ open, close }: { open: boolean; close: () => void }) {
     const undo = () => { S.events = S.events.filter(x => x.id !== e.id); commit(); };
     if (!before && after.gap.ok) toast(`Got ${S.child.name}'s rhythm: about every ${after.gap.v} min`, 'The timer now uses it', undo);
     else toast(o === 'success' ? 'Logged. Nice one!' : o === 'accident' ? "Accident logged. That's how they learn." : 'Logged: sat, nothing came', undefined, undo);
-    if (o === 'success') setTimeout(() => emit('celebrate'), 300);
+    if (o === 'success') { setTimeout(() => emit('celebrate'), 300); setTimeout(() => { maybeAskForRating(); }, 6000); }
   };
   return (
     <Sheet open={open} onClose={close} title="Log potty" left={<SheetLink label="Cancel" onPress={close} />} right={<SheetLink label="Save" color={C.brand} onPress={save} />}>

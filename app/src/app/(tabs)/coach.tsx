@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { T, Sub, Chip, IconBtn } from '@/components/ui';
+import { T, Sub, Btn, Chip, IconBtn, Sheet, Tip } from '@/components/ui';
 import Icon from '@/components/Icon';
 import { BW, C, F, outline, shadow } from '@/lib/theme';
 import { S, update, useApp } from '@/lib/store';
@@ -21,6 +21,13 @@ let inFlight = false;
 function tidyChat() {
   const last = S.chat[S.chat.length - 1];
   if (!inFlight && last?.r === 'a' && last.t === THINKING) update(() => { last.t = "That answer didn't finish. Please ask again."; });
+}
+
+/** Answer from the guides built into the app, without contacting the AI service. */
+function askGuides(q: string) {
+  q = q.trim(); if (!q) return;
+  const guide = localAnswer(q);
+  update(s => { s.chat.push({ r: 'u', t: q }); s.chat.push({ r: 'a', t: guide.t, src: guide.src }); if (s.chat.length > 120) s.chat = s.chat.slice(-120); });
 }
 
 async function ask(q: string) {
@@ -69,8 +76,16 @@ export default function Coach() {
   const input = useRef<any>(null);
   const toEnd = () => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 120);
   useEffect(() => { tidyChat(); }, []);
-  useEffect(() => on('ask', (t: string) => { ask(t); toEnd(); }), []);
-  const send = (t: string) => { if (!t.trim()) return; ask(t); setQ(''); toEnd(); };
+  // Before the first question goes to the AI service, ask the parent once. The question waits here meanwhile.
+  const [waiting, setWaiting] = useState<string | null>(null);
+  const go = (t: string) => { if (S.aiOk) ask(t); else setWaiting(t); toEnd(); };
+  const answer = (ok: boolean) => {
+    const t = waiting; setWaiting(null);
+    if (ok) update(s => { s.aiOk = true; });
+    if (t) { if (ok) ask(t); else askGuides(t); toEnd(); }
+  };
+  useEffect(() => on('ask', (t: string) => go(t)), []);
+  const send = (t: string) => { if (!t.trim()) return; go(t); setQ(''); };
   const empty = S.chat.length === 0;
   const busy = S.chat[S.chat.length - 1]?.t === THINKING;
 
@@ -114,6 +129,17 @@ export default function Coach() {
           <Icon name="send" color={q.trim() && !busy ? '#fff' : C.ink} />
         </Pressable>
       </View>
+      <Sheet open={waiting !== null} onClose={() => answer(false)} title={`Before you ask ${COACH_NAME}`}>
+        <Sub style={{ fontSize: 14, marginBottom: 12 }}>{`${COACH_NAME}'s answers are written by an AI service, Claude, made by Anthropic. To answer, the app sends it your question along with a short summary.`}</Sub>
+        <Tip icon="shield" tone="water">
+          <T w="s" size={14} color={C.waterInk}>What is sent</T>
+          <T size={13} color={C.waterInk}>Your questions, your child's age range, the program step you're on, your setup quiz answers, and summary numbers like today's wins and the usual gap between wees.</T>
+          <T w="s" size={14} color={C.waterInk} style={{ marginTop: 8 }}>What the app never adds</T>
+          <T size={13} color={C.waterInk}>Your child's name, your email, photos or notes.</T>
+        </Tip>
+        <Btn title={`OK, ask ${COACH_NAME}`} onPress={() => answer(true)} />
+        <Btn kind="text" title="No thanks, use the built-in guides" onPress={() => answer(false)} />
+      </Sheet>
     </KeyboardAvoidingView>
   );
 }
