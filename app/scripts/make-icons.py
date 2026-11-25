@@ -1,5 +1,9 @@
-"""Builds every app icon from the UpAiry wordmark (assets/brand/upairy-wordmark.png).
-Run: python scripts/make-icons.py   (from the app folder)"""
+"""Builds the UpAiry wordmark images (splash, notification icon, in-app logos) from assets/brand/upairy-wordmark.png.
+Run: python scripts/make-icons.py   (from the app folder)
+
+The app icon itself is NOT made here. icon.png, android-icon-foreground.png, android-icon-monochrome.png and
+favicon.png are screenshots of assets/brand/app-icon.html (the "Potty Up" lettering with a sticker star, on light
+green), and android-icon-background.png is that same light green, #CFEAC4."""
 from pathlib import Path
 from PIL import Image, ImageOps
 
@@ -32,12 +36,6 @@ def place(canvas, layer, width_frac, y_frac=0.5):
 white = ink((255, 255, 255, 255))
 green = ink(GREEN)
 
-# iOS / general app icon: white wordmark on green
-place(Image.new("RGBA", (1024, 1024), GREEN), white, 0.78).convert("RGB").save(A / "icon.png")
-# Android adaptive icon layers: keep the mark inside the safe zone (about the middle 60%)
-Image.new("RGBA", (512, 512), GREEN).save(A / "android-icon-background.png")
-place(Image.new("RGBA", (512, 512), (0, 0, 0, 0)), white, 0.56).save(A / "android-icon-foreground.png")
-place(Image.new("RGBA", (432, 432), (0, 0, 0, 0)), white, 0.56).save(A / "android-icon-monochrome.png")
 # Splash: green wordmark on the cream background (background colour set in app.json)
 place(Image.new("RGBA", (1024, 1024), (0, 0, 0, 0)), green, 0.72).save(A / "splash-icon.png")
 
@@ -48,8 +46,6 @@ u = mark.crop((0, 0, gap, mark.height))
 u = u.crop(u.getbbox())
 # Android notification icon: white on transparent, 96px
 place(Image.new("RGBA", (96, 96), (0, 0, 0, 0)), ink((255, 255, 255, 255), u), 0.6).save(A / "notification-icon.png")
-# Browser favicon: white U on green
-place(Image.new("RGBA", (48, 48), GREEN), ink((255, 255, 255, 255), u), 0.55).save(A / "favicon.png")
 # In-app logo: the wordmark cropped tight on a transparent background, in black, white and brand green
 for name, color in (("logo-black", (22, 24, 27, 255)), ("logo-white", (255, 255, 255, 255)), ("logo-green", GREEN)):
     m = ink(color)

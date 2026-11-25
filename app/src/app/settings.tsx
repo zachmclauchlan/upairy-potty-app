@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Alert, Platform, Pressable, ScrollView, Share, View } from 'react-native';
+import { Alert, Linking, Platform, Pressable, ScrollView, Share, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { T, Sub, Card, Row, Btn, Badge, Chip, IconBtn, SectionHead, toast } from '@/components/ui';
@@ -14,6 +14,7 @@ import { emit } from '@/lib/bus';
 import Logo from '@/components/Logo';
 import { deleteAccount, refreshPlan, signOut as serverSignOut } from '@/lib/backend';
 import { backupNow, turnOffBackup, turnOnBackup } from '@/lib/backup';
+import { APPLE_MANAGE_URL } from '@/lib/apple';
 
 function confirm(title: string, msg: string, ok: () => void, okLabel = 'Delete') {
   if (Platform.OS === 'web') { if (globalThis.confirm?.(`${title}\n\n${msg}`)) ok(); return; }
@@ -27,6 +28,7 @@ export default function Settings() {
   const scroll = useRef<any>(null); const shopY = useRef(0);
   useEffect(() => { if (focus === 'shop') setTimeout(() => scroll.current?.scrollTo({ y: shopY.current - 20, animated: true }), 350); }, [focus]);
   const free = S.account?.plan === 'free';
+  const apple = !!S.account?.apple;   // Potty Up is an Apple subscription, managed in the Apple ID, not on upairy.com
   // Opened straight from a link or a page reload there is nothing to go back to: go to Today instead.
   const close = () => router.canGoBack() ? router.back() : router.replace('/');
   const open = (k: string) => { close(); setTimeout(() => emit(k), 350); };
@@ -59,11 +61,13 @@ export default function Settings() {
         </> : <>
           <T size={14} color="#fff" style={{ marginTop: 8, marginBottom: 12 }}>The full program, smart reminders, the AI coach, songs, kid mode and rewards.</T>
           <T size={13} color="#fff">15% off everything at upairy.com while you have Potty Up.</T>
-          <T size={13} color="#fff" style={{ marginTop: 8 }}>Manage or cancel Potty Up from your account on upairy.com.</T>
+          {apple
+            ? <Pressable onPress={() => Linking.openURL(APPLE_MANAGE_URL).catch(() => {})} accessibilityRole="link" hitSlop={8} style={{ marginTop: 8 }}><T w="s" size={13} color="#fff" style={{ textDecorationLine: 'underline' }}>Manage or cancel in your Apple subscriptions</T></Pressable>
+            : <T size={13} color="#fff" style={{ marginTop: 8 }}>Manage or cancel Potty Up from your account on upairy.com.</T>}
         </>}
       </View>
       <Card pad={4} style={{ paddingHorizontal: 16 }}>
-        <Row first icon="users" tone="water" title={S.account?.id ?? 'Not signed in'} sub={free ? 'Free version' : 'Potty Up unlocked'} right={<Chip label="Sign out" onPress={signOut} />} />
+        <Row first icon="users" tone="water" title={apple ? 'Apple subscription' : S.account?.id ?? 'Not signed in'} sub={free ? 'Free version' : apple ? 'Potty Up unlocked · get back in with Restore purchase' : 'Potty Up unlocked'} right={<Chip label="Sign out" onPress={signOut} />} />
       </Card>
       <View onLayout={e => { shopY.current = e.nativeEvent.layout.y; }}><SectionHead title="Shop UpAiry" right="upairy.com" onRight={() => openShop('https://upairy.com')} /></View>
       <Designs />
@@ -96,7 +100,7 @@ export default function Settings() {
         <Row icon="chat" tone="water" title="Lara, your AI coach" sub="On · 20 questions a day" onPress={() => open('aiinfo')} />
         <Row icon="shield" tone="water" title="Back up to my account" sub={S.backup.on ? `On · saved ${S.backup.at ? ago(S.backup.at) : 'soon'} · restores on a new phone` : 'Off · data is only on this phone'} onPress={toggleBackup} right={<T w="s" size={13} color={S.backup.on ? C.brandInk : C.ink3}>{S.backup.on ? 'On' : 'Off'}</T>} />
         <Row icon="download" title="Export my data" sub="Save a copy as a file. No ads, no tracking." onPress={() => Share.share({ message: JSON.stringify({ exported: new Date().toISOString(), child: S.child, method: S.method, events: S.events, checkins: S.checkins, days: S.days }, null, 2) }).catch(() => {})} right={<Icon name="download" size={18} color={C.ink3} />} />
-        <Row icon="trash" tone="try" title="Delete my account and data" sub="Deletes your account, its backup, and everything on this phone" danger onPress={() => confirm('Delete your account?', 'This permanently deletes your account and its backup, and removes all logs and settings from this phone. It cannot be undone.', async () => { try { await deleteAccount(); close(); cancelAll(); resetAll(); toast('Account deleted'); } catch (e) { toast((e as Error).message); } })} />
+        <Row icon="trash" tone="try" title="Delete my account and data" sub="Deletes your account, its backup, and everything on this phone" danger onPress={() => confirm('Delete your account?', 'This permanently deletes your account and its backup, and removes all logs and settings from this phone. It cannot be undone.' + (apple ? ' It does not cancel your Apple subscription: cancel that in your Apple ID settings.' : ''), async () => { try { await deleteAccount(); close(); cancelAll(); resetAll(); toast('Account deleted'); } catch (e) { toast((e as Error).message); } })} />
       </Card>
       <SectionHead title="Help" />
       <Card pad={4} style={{ paddingHorizontal: 16 }}>

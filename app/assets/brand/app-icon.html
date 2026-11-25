@@ -1,0 +1,48 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Potty Up app icon</title>
+<!--
+  The source drawing for the app icon: "Potty Up" in the app's Chewy lettering with a white sticker star,
+  on light green. Open with ?v=icon (full icon), ?v=fg (artwork only, for Android's foreground layer),
+  ?v=mono (one-colour version for Android themed icons) or ?v=fav (just the star, for the browser tab).
+  The PNGs in assets/ are screenshots of this page: see scripts/make-icons.py for which files.
+-->
+<style>
+  @font-face { font-family: Chewy; src: url('../../node_modules/@expo-google-fonts/chewy/400Regular/Chewy_400Regular.ttf'); }
+  html, body { margin: 0; background: transparent; }
+  svg { display: block; width: 100vw; height: 100vw; }
+</style>
+<svg id="art" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <path id="star" class="shape" stroke-width="1.5" stroke-linejoin="round" d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"/>
+  </defs>
+  <rect id="bg" width="1024" height="1024" fill="#CFEAC4"/>
+  <g id="all">
+    <g id="words" font-family="Chewy" font-size="330" text-anchor="middle" stroke-linejoin="round">
+      <text class="shadow" x="512" y="470" transform="translate(0 16)">Potty</text><text class="top" x="512" y="470">Potty</text>
+      <text class="shadow" x="420" y="790" transform="translate(0 16)">Up</text><text class="top" x="420" y="790">Up</text>
+    </g>
+    <use id="pot" href="#star" transform="rotate(12 755 685) translate(610 540) scale(12.08)"/>
+  </g>
+</svg>
+<style id="look">
+  svg { --ink: #1F1B16; --star: #FFFFFF; }
+  .shadow { fill: var(--ink); stroke: var(--ink); stroke-width: 44px; }
+  .top { fill: #FFFFFF; }
+  .shape { fill: var(--star); stroke: var(--ink); }
+</style>
+<script>
+  const v = new URLSearchParams(location.search).get('v') || 'icon';
+  const $ = (id) => document.getElementById(id);
+  // ?ink= and ?star= try other colours without editing the file (hex without the #).
+  for (const k of ['ink', 'star']) { const c = new URLSearchParams(location.search).get(k); if (c) $('art').style.setProperty('--' + k, '#' + c); }
+  if (v !== 'icon') $('bg').remove();
+  // Android crops the outer third of its foreground layer, so the artwork sits in the middle 62%.
+  if (v === 'fg' || v === 'mono') $('all').setAttribute('transform', 'translate(512 512) scale(0.62) translate(-512 -512)');
+  if (v === 'mono') $('look').textContent = '.shadow{display:none}.top{fill:#fff}.shape{fill:#fff;stroke:#fff}';
+  if (v === 'fav') {
+    $('words').remove();
+    $('pot').setAttribute('transform', 'rotate(12 512 512) translate(92 100) scale(35)');
+    $('art').insertAdjacentHTML('afterbegin', '<rect width="1024" height="1024" rx="200" fill="#CFEAC4"/>');
+  }
+</script>

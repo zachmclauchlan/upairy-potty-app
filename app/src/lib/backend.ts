@@ -4,6 +4,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { readItem, writeItem, removeItem } from './storage';
 import { S, commit } from './store';
+import { restoreApple } from './apple';
 
 export const SUPABASE_URL = 'https://dkbvdewzbfkirkfdngms.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_ydtFpRZTypBqKroh_D_W4Q_bMoWyBWV';
@@ -40,18 +41,23 @@ export async function signInWithOrder(email: string, order: string) {
   writeItem(SIGNIN_KEY, JSON.stringify({ email: email.trim().toLowerCase(), order: order.trim() }));
 }
 
-const SIGNIN_KEY = 'potty-up-signin';
+export const SIGNIN_KEY = 'potty-up-signin';
 
 /**
  * Keep the parent signed in, always. Called on launch and whenever the app comes back to the foreground.
  * - A saved sign-in is refreshed automatically by Supabase.
- * - If it's gone (expired, revoked, reinstalled storage), quietly sign in again with the saved email and order.
+ * - If it's gone (expired, revoked, reinstalled storage), quietly sign in again with the saved email and order,
+ *   or with the Apple subscription on this phone's Apple ID.
  * - No internet: stay in the app. Only a definite "that order doesn't match" signs the parent out.
  */
 export async function ensureSession(): Promise<'ok' | 'offline' | 'signed-out'> {
   const st = await sessionState();
   if (st !== 'none') return st;
   const saved = (() => { try { return JSON.parse(readItem(SIGNIN_KEY) || 'null'); } catch { return null; } })();
+  if (saved?.apple) {
+    try { return (await restoreApple()) ? 'ok' : 'signed-out'; }
+    catch (e) { return (e as any).code === 'expired' ? 'signed-out' : 'offline'; }
+  }
   if (!saved?.email || !saved?.order) return 'signed-out';
   try { await signInWithOrder(saved.email, saved.order); return 'ok'; }
   catch (e) { return (e as any).code === 'no_match' ? 'signed-out' : 'offline'; }
@@ -77,7 +83,15 @@ export async function refreshPlan(force = false): Promise<Plan | null> {
   const read = () => supabase.from('profiles').select('plan, plus_until, order_name, email, plan_checked_at').eq('id', sess.session!.user.id).maybeSingle();
   let { data } = await read();
   if (!data) return null;
-  if (force || !data.plan_checked_at || Date.now() - new Date(data.plan_checked_at).getTime() > RECHECK_MS) {
+  const lapsed = !!data.plus_until && new Date(data.plus_until).getTime() <= Date.now();
+  if (S.account?.apple) {
+    // An Apple subscription renews on Apple's side: when the paid-up date has passed (or it's been a while),
+    // hand the server Apple's newest receipt so it can move the date on.
+    if (force || lapsed || !data.plan_checked_at || Date.now() - new Date(data.plan_checked_at).getTime() > RECHECK_MS) {
+      await restoreApple().catch(() => null);
+      data = (await read()).data ?? data;
+    }
+  } else if (force || !data.plan_checked_at || Date.now() - new Date(data.plan_checked_at).getTime() > RECHECK_MS) {
     await checkMembership().catch(() => null);
     data = (await read()).data ?? data;
   }

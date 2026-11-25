@@ -1,16 +1,18 @@
 // Sign in with the email from an upairy.com order plus its order number, last name or postcode. No password, no emailed code.
 // The server checks the order belongs to that email (in Loop), then we check for an active Potty Up
-// subscription on the same email. No "buy" button or link here: App Store rules for apps that unlock web purchases.
-import { useState } from 'react';
+// subscription on the same email. No "buy" button or link to the website here: App Store rules for apps that unlock web purchases.
+// On iPhone only, lower down with the questions, a parent with no order can subscribe through Apple instead (see lib/apple.ts).
+import { useEffect, useState } from 'react';
 import { Linking, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { T, Sub, Btn, Card, Input, Label, Row, Tip, toast } from './ui';
+import { T, Sub, Btn, Card, Input, Label, Link, Row, Tip, toast } from './ui';
 import Icon from './Icon';
 import Logo from './Logo';
 import { C, outline, shadow } from '@/lib/theme';
 import { signInWithOrder, checkMembership, signOut, type Membership } from '@/lib/backend';
 import { afterSignIn, fetchBackup, otherOwner } from '@/lib/backup';
 import { S } from '@/lib/store';
+import { appleAvailable, loadOffer, startApple, restoreApple, type AppleOffer, type AppleAccount } from '@/lib/apple';
 
 // "Help me log in": walks a parent to their order number, the way The Faith Made's sign-in help does.
 const SEARCH = 'UpAiry order';
@@ -31,6 +33,45 @@ const MORE = [
   ["Is my child's data shared?", "Never sold or shared for ads. Your child's logs live on this phone and, if backup is on, are saved privately to your account so they move to a new phone. You can turn backup off or delete everything in Settings."],
 ];
 
+const TERMS = 'https://upairy.com/pages/potty-up-terms', PRIVACY = 'https://upairy.com/pages/potty-up-privacy';
+
+/** iPhone only: subscribe through Apple, for parents with no upairy.com order. Sits with the questions, closed until tapped. */
+function AppleSub({ onIn }: { onIn: (a: AppleAccount) => void }) {
+  const [open, setOpen] = useState(false);
+  const [offer, setOffer] = useState<AppleOffer | null | undefined>(undefined);   // undefined = still loading
+  const [busy, setBusy] = useState<'buy' | 'restore' | null>(null); const [err, setErr] = useState('');
+  useEffect(() => { if (open && offer === undefined) loadOffer().then(setOffer); }, [open, offer]);
+  const run = (what: 'buy' | 'restore') => async () => {
+    setBusy(what); setErr('');
+    try {
+      const a = what === 'buy' ? await startApple() : await restoreApple(true);
+      if (a) onIn(a);
+      else if (what === 'restore') setErr('There is no active Potty Up subscription on this Apple ID.');
+    } catch (e) { setErr((e as Error).message); } finally { setBusy(null); }
+  };
+  const terms = offer ? (offer.trial ? `Free for ${offer.trial}, then ${offer.price} per ${offer.period}.` : `${offer.price} per ${offer.period}.`) : '';
+  return (
+    <View style={[{ paddingVertical: 14, paddingHorizontal: 16, borderRadius: 16, backgroundColor: C.surface }, outline]}>
+      <Pressable onPress={() => setOpen(!open)} accessibilityRole="button" accessibilityState={{ expanded: open }} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <T w="s" size={15} style={{ flex: 1 }}>No order? Subscribe with Apple</T>
+        <Icon name={open ? 'chevD' : 'chevR'} size={16} color={C.ink2} />
+      </Pressable>
+      {open ? <View style={{ marginTop: 8 }}>
+        {offer === undefined ? <Sub>Loading…</Sub> : offer === null ? <Sub>{"The App Store isn't answering right now. Close this and try again in a minute."}</Sub> : <>
+          <Sub style={{ lineHeight: 20 }}>{`Potty Up, billed through your Apple ID. ${terms} It renews automatically until you cancel, which you can do any time in your Apple ID settings.`}</Sub>
+          <Btn small title={busy === 'buy' ? 'Opening…' : offer.trial ? 'Start free trial' : 'Subscribe'} onPress={run('buy')} disabled={!!busy} style={{ marginTop: 12 }} />
+        </>}
+        {err ? <Sub style={{ marginTop: 12, color: C.accInk }}>{err}</Sub> : null}
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginTop: 14 }}>
+          <Link label={busy === 'restore' ? 'Checking…' : 'Restore purchase'} onPress={busy ? undefined : run('restore')} color={C.brandInk} />
+          <Link label="Terms" onPress={() => Linking.openURL(TERMS).catch(() => {})} />
+          <Link label="Privacy" onPress={() => Linking.openURL(PRIVACY).catch(() => {})} />
+        </View>
+      </View> : null}
+    </View>
+  );
+}
+
 export default function Auth() {
   const ins = useSafeAreaInsets();
   const [done, setDone] = useState(false);
@@ -39,6 +80,7 @@ export default function Auth() {
   const [m, setM] = useState<Membership | null>(null);
   const [saved, setSaved] = useState<number | null>(null);
   const [other, setOther] = useState<string | null>(null);
+  const [apple, setApple] = useState<AppleAccount | null>(null);   // signed in through an Apple subscription
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const validOrder = order.replace(/\D/g, '').length >= 3 || order.replace(/[^\p{L}]/gu, '').length >= 2; // order number, postcode or last name
 
@@ -62,10 +104,21 @@ export default function Auth() {
       setDone(true);
     } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
+  // Subscribed or restored through Apple: already signed in, so go straight to the "You're in" screen.
+  const onApple = async (a: AppleAccount) => {
+    setApple(a);
+    const b = await fetchBackup().catch(() => null);
+    setSaved(b && (b.data as any)?.onboarded ? b.at : null);
+    setOther(otherOwner(a.id));
+    setDone(true);
+  };
   const finish = async (choice: 'replace' | 'keep' = 'replace') => {
     setBusy(true);
-    const id = email.trim().toLowerCase();
-    const restored = await afterSignIn(id, { id, plan: m?.plan ?? 'free', since: Date.now(), order: order.trim(), plusUntil: null }, choice).catch(() => null);
+    const id = apple ? apple.id : email.trim().toLowerCase();
+    const account = apple
+      ? { id, plan: 'plus' as const, since: Date.now(), order: null, plusUntil: apple.plusUntil, apple: true }
+      : { id, plan: m?.plan ?? 'free', since: Date.now(), order: order.trim(), plusUntil: null };
+    const restored = await afterSignIn(id, account, choice).catch(() => null);
     if (restored) toast('Your data is back', 'Restored from ' + new Date(restored).toLocaleDateString());
   };
 
@@ -74,14 +127,14 @@ export default function Auth() {
     body = <>
       <View style={[{ width: 72, height: 72, borderRadius: 36, backgroundColor: C.brandSoft, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginTop: 32 }, shadow]}><Icon name="check" size={36} color={C.ink} stroke={2.4} /></View>
       <T w="fun" size={36} style={{ textAlign: 'center', marginTop: 20 }}>You're in</T>
-      <Sub style={{ textAlign: 'center', marginTop: 8, marginBottom: 20, fontSize: 15 }}>{`Potty Up is linked to ${email.trim()}. Everything is ready to go.`}</Sub>
+      <Sub style={{ textAlign: 'center', marginTop: 8, marginBottom: 20, fontSize: 15 }}>{apple ? 'Your Apple subscription is active. Everything is ready to go.' : `Potty Up is linked to ${email.trim()}. Everything is ready to go.`}</Sub>
       <Card pad={4} style={{ paddingHorizontal: 16 }}>
         {['The full day-by-day program', 'Smart reminders and the AI coach', 'Potty songs, kid mode and rewards', '15% off at upairy.com']
           .map((x, i) => <Row key={x} first={i === 0} title={x} icon="check" />)}
       </Card>
       <View style={{ flex: 1, minHeight: 30 }} />
       {saved ? <Tip icon="check" tone="ok">{`We found your saved data from ${new Date(saved).toLocaleDateString()}. It will be restored to this phone.`}</Tip> : null}
-      {other ? <Tip icon="info" tone="sun">{`This phone has ${S.child.name || 'a child'}'s logs from another account (${other}). ${saved ? 'Restoring your data will replace them.' : 'Starting fresh will remove them from this phone.'}${S.backup.on && S.backup.at ? '' : ' They are not backed up.'}`}</Tip> : null}
+      {other ? <Tip icon="info" tone="sun">{`This phone has ${S.child.name || 'a child'}'s logs from another account (${other.startsWith('apple-') ? 'an Apple subscription' : other}). ${saved ? 'Restoring your data will replace them.' : 'Starting fresh will remove them from this phone.'}${S.backup.on && S.backup.at ? '' : ' They are not backed up.'}`}</Tip> : null}
       <Btn title={busy ? 'Loading…' : other ? (saved ? 'Restore my data' : 'Start fresh') : saved ? 'Continue' : 'Set up your child'} onPress={() => finish('replace')} disabled={busy} />
       {other ? <Btn kind="text" title={`Keep ${S.child.name || 'these'} logs on this phone`} onPress={() => finish('keep')} disabled={busy} /> : null}
     </>;
@@ -149,6 +202,7 @@ export default function Auth() {
             </View>
             {on ? <Sub style={{ marginTop: 8, lineHeight: 20 }}>{a}</Sub> : null}
           </Pressable>); })}
+        {appleAvailable() ? <AppleSub onIn={onApple} /> : null}
       </View>
       <Pressable onPress={() => Linking.openURL(CONTACT).catch(() => {})} accessibilityRole="link" style={{ marginTop: 24, alignItems: 'center' }}>
         <T w="s" size={14} color={C.brandInk} style={{ textAlign: 'center' }}>Can't sign in? Contact us and we'll find your order</T>
