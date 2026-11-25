@@ -38,6 +38,10 @@ export interface State {
   profile?: { temperament: string | null; harder: string[]; team: string[] };
   /** Page colour picked in Settings. Paper when not set. */
   theme?: ThemeKey;
+  /** The parent agreed to their questions going to the AI service behind the coach. Asked once, before the first question. */
+  aiOk?: boolean;
+  /** When the app asked for a store rating (it only asks once). */
+  rateAsked?: number;
   /** true while the demo "sample week" logs are loaded */
   sample?: boolean;
 }

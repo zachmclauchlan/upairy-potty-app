@@ -1,7 +1,7 @@
 // Sign in with the email from an upairy.com order plus its order number, last name or postcode. No password, no emailed code.
 // The server checks the order belongs to that email (in Loop), then we check for an active Potty Up
 // subscription on the same email. No "buy" button or link to the website here: App Store rules for apps that unlock web purchases.
-// On iPhone only, lower down with the questions, a parent with no order can subscribe through Apple instead (see lib/apple.ts).
+// The Apple subscription option (AppleSub below) is switched off for now: see APPLE_ENABLED in lib/apple.ts.
 import { useEffect, useState } from 'react';
 import { Linking, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
