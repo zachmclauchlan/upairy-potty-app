@@ -78,7 +78,9 @@ export default function Coach() {
   useEffect(() => { tidyChat(); }, []);
   // Before the first question goes to the AI service, ask the parent once. The question waits here meanwhile.
   const [waiting, setWaiting] = useState<string | null>(null);
-  const go = (t: string) => { if (S.aiOk) ask(t); else setWaiting(t); toEnd(); };
+  // Without an account the coach answers from the guides built into the app; the AI service needs a sign-in.
+  const guest = !!S.account?.guest;
+  const go = (t: string) => { if (guest) askGuides(t); else if (S.aiOk) ask(t); else setWaiting(t); toEnd(); };
   const answer = (ok: boolean) => {
     const t = waiting; setWaiting(null);
     if (ok) update(s => { s.aiOk = true; });
@@ -96,7 +98,7 @@ export default function Coach() {
         <Avatar size={44} />
         <View style={{ flex: 1 }}>
           <T w="fun" size={24}>{COACH_NAME}</T>
-          <Sub>{COACH_TAG} · AI</Sub>
+          <Sub>{guest ? `${COACH_TAG} · Guides` : `${COACH_TAG} · AI`}</Sub>
         </View>
         <Pressable onPress={() => emit('guides')} accessibilityLabel="Guides" style={[{ height: 40, paddingHorizontal: 14, borderRadius: 20, backgroundColor: C.surface, flexDirection: 'row', alignItems: 'center', gap: 6 }, shadow]}>
           <Icon name="book" size={16} color={C.ink} /><T w="s" size={13}>Guides</T>
@@ -118,7 +120,7 @@ export default function Coach() {
           <Chip label="Ask something else" onPress={() => input.current?.focus()} />
           <Chip label="New conversation" onPress={() => update(s => { s.chat = []; })} />
         </View> : null}
-        <Sub style={{ textAlign: 'center', fontSize: 12, marginTop: 8 }}>{COACH_NAME} is an AI coach. General guidance, not medical advice.</Sub>
+        <Sub style={{ textAlign: 'center', fontSize: 12, marginTop: 8 }}>{guest ? `${COACH_NAME} answers from the built-in guides. General guidance, not medical advice.` : `${COACH_NAME} is an AI coach. General guidance, not medical advice.`}</Sub>
       </ScrollView>
 
       {/* composer */}

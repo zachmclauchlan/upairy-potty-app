@@ -15,7 +15,7 @@ const TOUCH_EVERY = 4 * 3600 * 1000;
 /** Tell the server this account is in use. Pass force right after setup finishes so that is recorded straight away. */
 export function touch(force = false) {
   try {
-    if (!S.account) return;
+    if (!S.account || S.account.guest) return;
     const last = Number(readItem(TOUCH_KEY) || 0);
     if (!force && Date.now() - last < TOUCH_EVERY) return;
     writeItem(TOUCH_KEY, String(Date.now()));

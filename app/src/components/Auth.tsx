@@ -1,4 +1,9 @@
-// Sign in with the email from an upairy.com order plus its order number, last name or postcode. No password, no emailed code.
+// The first screen: a welcome with "Get started", which lets anyone into the app without an account (a guest:
+// everything on the phone works, nothing is saved to an account, and the coach answers from the built-in guides).
+// The order sign-in is one tap away for parents who have an upairy.com order.
+// (The order-number-only version of this screen is kept on the `order-only-signin` branch.)
+//
+// Order sign-in: the email from an upairy.com order plus its order number, last name or postcode. No password, no emailed code.
 // The server checks the order belongs to that email (in Loop), then we check for an active Potty Up
 // subscription on the same email. No "buy" button or link to the website here: App Store rules for apps that unlock web purchases.
 // The Apple subscription option (AppleSub below) is switched off for now: see APPLE_ENABLED in lib/apple.ts.
@@ -11,7 +16,7 @@ import Logo from './Logo';
 import { C, outline, shadow } from '@/lib/theme';
 import { signInWithOrder, checkMembership, signOut, type Membership } from '@/lib/backend';
 import { afterSignIn, fetchBackup, otherOwner } from '@/lib/backup';
-import { S } from '@/lib/store';
+import { S, update } from '@/lib/store';
 import { appleAvailable, loadOffer, startApple, restoreApple, type AppleOffer, type AppleAccount } from '@/lib/apple';
 
 // "Help me log in": walks a parent to their order number, the way The Faith Made's sign-in help does.
@@ -81,6 +86,9 @@ export default function Auth() {
   const [saved, setSaved] = useState<number | null>(null);
   const [other, setOther] = useState<string | null>(null);
   const [apple, setApple] = useState<AppleAccount | null>(null);   // signed in through an Apple subscription
+  const [mode, setMode] = useState<'welcome' | 'order'>('welcome');
+  // Straight in, no account: setup starts right away (or the app opens, if this phone already has a child set up).
+  const start = () => update(s => { s.account = { id: 'guest', plan: 'plus', since: Date.now(), guest: true }; });
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const validOrder = order.replace(/\D/g, '').length >= 3 || order.replace(/[^\p{L}]/gu, '').length >= 2; // order number, postcode or last name
 
@@ -138,8 +146,26 @@ export default function Auth() {
       <Btn title={busy ? 'Loading…' : other ? (saved ? 'Restore my data' : 'Start fresh') : saved ? 'Continue' : 'Set up your child'} onPress={() => finish('replace')} disabled={busy} />
       {other ? <Btn kind="text" title={`Keep ${S.child.name || 'these'} logs on this phone`} onPress={() => finish('keep')} disabled={busy} /> : null}
     </>;
+  } else if (mode === 'welcome') {
+    body = <>
+      <Logo width={96} />
+      <T w="fun" size={52} color={C.brand} style={{ marginTop: 16 }}>Potty Up</T>
+      <T w="fun" size={28} style={{ marginTop: 12 }}>Potty training, one day at a time</T>
+      <Sub style={{ fontSize: 15, marginTop: 8, marginBottom: 24 }}>Answer a few questions about your child and get a plan to follow from day one.</Sub>
+      <Card pad={4} style={{ paddingHorizontal: 16 }}>
+        <Row first icon="route" title="A plan for each day" sub="Short lessons and clear steps to tick off" />
+        <Row icon="clock" tone="water" title="Know when to offer the potty" sub="A timer that learns your child's rhythm" />
+        <Row icon="star" tone="sun" title="Fun for your child" sub="Stickers, songs and rewards" />
+      </Card>
+      <View style={{ flex: 1, minHeight: 24 }} />
+      <Btn title="Get started" onPress={start} />
+      <Btn kind="text" title="I have an UpAiry order: sign in" onPress={() => setMode('order')} />
+    </>;
   } else {
     body = <>
+      <Pressable onPress={() => { setMode('welcome'); setErr(''); }} accessibilityRole="button" hitSlop={8} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 16, alignSelf: 'flex-start' }}>
+        <Icon name="chevL" size={16} color={C.ink2} /><T w="m" size={14} color={C.ink2}>Back</T>
+      </Pressable>
       <Logo width={96} />
       <T w="fun" size={44} color={C.brand} style={{ marginTop: 16 }}>Potty Up</T>
       <T w="fun" size={28} style={{ marginTop: 20 }}>Sign in</T>
