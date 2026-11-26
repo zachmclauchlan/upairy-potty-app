@@ -13,6 +13,9 @@ import { emit } from '@/lib/bus';
 import { tourRef } from '@/lib/tour';
 import SongMenu from '@/components/SongMenu';
 
+// Earned stickers sit on raised, coloured tiles, like stickers stuck on a chart.
+const TILES = [C.surface, C.brandSoft, C.waterSoft, C.sunSoft, C.mealSoft];
+
 export default function Kid() {
   useApp();
   const [menu, setMenu] = useState(false);
@@ -36,7 +39,7 @@ export default function Kid() {
       <View ref={tourRef('kid-stickers')} collapsable={false}><Card>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Label>Sticker chart{page > 1 ? ` · page ${page}` : ''}</Label><Sub>{filled}/30</Sub></View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
-          {[...Array(30)].map((_, i) => <View key={i} style={[{ width: '14.2%', aspectRatio: 1, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }, i < filled ? { backgroundColor: C.surface, ...outline } : { borderWidth: 2, borderStyle: 'dashed', borderColor: C.line }]}>{i < filled ? <Sticker i={i + (page - 1) * 30} /> : null}</View>)}
+          {[...Array(30)].map((_, i) => <View key={i} style={[{ width: '14.2%', aspectRatio: 1, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }, i < filled ? { backgroundColor: TILES[i % TILES.length], ...shadow } : { borderWidth: 2, borderStyle: 'dashed', borderColor: C.line }]}>{i < filled ? <Sticker i={i + (page - 1) * 30} /> : null}</View>)}
         </View>
         <Sub style={{ marginTop: 12 }}>A new sticker for every success on the potty</Sub>
       </Card></View>
