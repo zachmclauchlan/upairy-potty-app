@@ -1,19 +1,27 @@
 // Log buttons on the lock-screen timer (widgets/PottyTimer). Each is a link that opens the app:
 //   upairypotty://?log=wee&k=<the countdown it belongs to>
 // The app logs it the moment it opens, the same way the reminder buttons do.
+// The x on the timer is a link too (?lock=off): it switches the lock-screen timer off.
 import { Platform } from 'react-native';
 import * as Linking from 'expo-linking';
 import { S, update } from './store';
 import { logPotty } from './actions';
 import { emit } from './bus';
 import { toast } from '@/components/ui';
+import { syncLockTimer } from './lockTimer';
 
 function handle(url: string | null | undefined) {
   if (!url || !S.account || !S.onboarded) return;
   const q = url.indexOf('?');
   if (q < 0) return;
-  let what: string | null, k: string | null;
-  try { const p = new URLSearchParams(url.slice(q + 1).split('#')[0]); what = p.get('log'); k = p.get('k'); } catch { return; }
+  let what: string | null, k: string | null, lock: string | null;
+  try { const p = new URLSearchParams(url.slice(q + 1).split('#')[0]); what = p.get('log'); k = p.get('k'); lock = p.get('lock'); } catch { return; }
+  // The little x on the lock-screen timer: switch it off until the parent turns it back on in Potty timing.
+  if (lock === 'off') {
+    if (S.lockTimer !== false) { update(s => { s.lockTimer = false; }); toast('Lock-screen timer off', 'Turn it back on in Potty timing'); }
+    syncLockTimer();
+    return;
+  }
   if (!what || !k) return;
   // One tap, one log: the app can be handed the same link again (for example when it restarts).
   const key = `${k}:${what}`;
