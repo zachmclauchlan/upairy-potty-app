@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Potty Up: Today screen, three directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600&family=Figtree:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #e9e7e2; color: #1f1b16; font-family: Figtree, system-ui, sans-serif; padding: 32px 24px 64px; }
+  .intro { max-width: 1240px; margin: 0 auto 32px; }
+  .intro h1 { font-size: 22px; font-weight: 600; }
+  .intro p { font-size: 14px; color: #5e554a; margin-top: 4px; max-width: 720px; line-height: 20px; }
+  .board { display: flex; gap: 40px; justify-content: center; align-items: flex-start; flex-wrap: wrap; max-width: 1240px; margin: 0 auto; }
+  .col { width: 375px; }
+  .col h2 { font-size: 16px; font-weight: 600; }
+  .col .why { font-size: 13px; line-height: 18px; color: #5e554a; margin: 4px 0 16px; min-height: 72px; }
+  .phone { width: 375px; border-radius: 36px; overflow: hidden; border: 1px solid rgba(31,27,22,.14); box-shadow: 0 8px 24px rgba(0,0,0,.08); position: relative; }
+  .num { font-variant-numeric: tabular-nums; }
+  svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  .tabs { display: flex; padding: 8px 8px 20px; }
+  .tabs div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; }
+  .tabs svg.i { width: 22px; height: 22px; }
+
+  /* ───────── A · Fridge door ───────── */
+  .a { background: #f7f4ee; color: #1f1b16; font-family: Figtree, sans-serif; --ink2: #5e554a; --ink3: #7b7266; --line: rgba(31,27,22,.1); --card: #fdfbf7; --raise: #efe9df; --green: #3e7f33; --greenInk: #2b5c23; }
+  .a .pad { padding: 20px 20px 24px; }
+  .a .top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 16px; }
+  .a .date { font-size: 13px; color: var(--ink2); }
+  .a .title { font-size: 28px; font-weight: 500; line-height: 32px; margin-top: 2px; }
+  .a .chip { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px 0 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; font-weight: 500; background: var(--card); }
+  .a .icb { width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); display: grid; place-items: center; }
+  .a .seg { display: flex; background: var(--raise); border-radius: 10px; padding: 2px; margin-bottom: 16px; }
+  .a .seg div { flex: 1; height: 32px; display: flex; gap: 8px; align-items: center; justify-content: center; font-size: 14px; color: var(--ink2); border-radius: 8px; }
+  .a .seg .on { background: var(--card); color: inherit; font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+  .a .steps { display: flex; margin-bottom: 16px; }
+  .a .step { flex: 1; position: relative; padding-top: 24px; font-size: 13px; }
+  .a .step::before { content: ""; position: absolute; top: 7px; left: 0; right: 0; height: 2px; background: var(--line); }
+  .a .step.done::before, .a .step.now::before { background: var(--green); }
+  .a .step .dot { position: absolute; top: 0; left: 0; width: 16px; height: 16px; border-radius: 8px; background: #f7f4ee; border: 2px solid rgba(31,27,22,.22); display: grid; place-items: center; }
+  .a .step.done .dot { background: var(--green); border-color: var(--green); color: #fff; }
+  .a .step.done .dot svg { width: 10px; height: 10px; stroke-width: 3; }
+  .a .step.now .dot { border-color: var(--green); }
+  .a .step.now .dot::after { content: ""; width: 6px; height: 6px; border-radius: 3px; background: var(--green); }
+  .a .step b { display: block; font-weight: 500; }
+  .a .step span { color: var(--ink2); font-size: 12px; }
+  .a .step.now b { color: var(--greenInk); }
+  .a .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; margin-bottom: 12px; }
+  .a .cardhead { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+  .a .cardhead b { font-weight: 500; }
+  .a .links { display: flex; gap: 16px; color: var(--ink2); font-size: 13px; }
+  .a .links span { display: flex; gap: 4px; align-items: center; }
+  .a .links svg.i { width: 14px; height: 14px; }
+  .a .dial { width: 224px; height: 224px; margin: 16px auto 12px; position: relative; }
+  .a .dial svg { width: 224px; height: 224px; }
+  .a .dial .mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .a .dial .big { font-size: 64px; line-height: 64px; font-weight: 500; letter-spacing: -0.02em; }
+  .a .dial .unit { font-size: 13px; color: var(--ink2); margin-top: 4px; }
+  .a .note { display: flex; gap: 8px; font-size: 13px; line-height: 18px; color: var(--ink2); justify-content: center; text-align: left; margin-bottom: 16px; }
+  .a .note svg.i { width: 16px; height: 16px; margin-top: 1px; }
+  .a .primary { width: 100%; height: 52px; border-radius: 12px; background: var(--green); color: #fff; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .a .quick { display: flex; gap: 8px; margin-top: 8px; }
+  .a .quick button { flex: 1; height: 60px; border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 500; }
+  .a .quick svg.i { color: var(--ink2); }
+  .a .stats { display: flex; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 0; margin-bottom: 24px; }
+  .a .stats div { flex: 1; text-align: center; border-left: 1px solid var(--line); }
+  .a .stats div:first-child { border: 0; }
+  .a .stats b { display: block; font-size: 22px; line-height: 28px; font-weight: 500; }
+  .a .stats span { font-size: 12px; color: var(--ink2); }
+  .a .sec { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; font-size: 13px; color: var(--ink2); }
+  .a .sec b { font-size: 16px; font-weight: 500; color: #1f1b16; }
+  .a .check { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 14px; line-height: 20px; }
+  .a .check:first-of-type { border: 0; padding-top: 0; }
+  .a .box { width: 20px; height: 20px; border: 1.5px solid rgba(31,27,22,.28); border-radius: 6px; flex: none; }
+  .a .link { color: var(--greenInk); font-weight: 500; font-size: 14px; margin-top: 4px; display: inline-block; }
+  .a .log { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .a .log:first-child { border: 0; }
+  .a .log time { width: 44px; color: var(--ink3); font-size: 13px; }
+  .a .log i { width: 8px; height: 8px; border-radius: 4px; flex: none; }
+  .a .log small { color: var(--ink2); font-size: 12px; margin-left: auto; }
+  .a .tabs { background: var(--card); border-top: 1px solid var(--line); color: var(--ink3); }
+  .a .tabs .on { color: var(--green); font-weight: 500; }
+
+  /* ───────── B · Picture book ───────── */
+  .b { background: #f6f1e7; color: #221d16; font-family: "Instrument Sans", sans-serif; --ink2: #5e554a; --ink3: #7b7266; --line: rgba(34,29,22,.14); --green: #3e7f33; --serif: Fraunces, Georgia, serif; }
+  .b .pad { padding: 24px 24px 24px; }
+  .b .top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--ink2); }
+  .b .top .r { display: flex; gap: 16px; align-items: center; color: #221d16; }
+  .b .top .who { display: flex; gap: 4px; align-items: center; font-weight: 500; font-size: 14px; }
+  .b .title { font-family: var(--serif); font-size: 40px; line-height: 44px; font-weight: 400; letter-spacing: -0.02em; margin: 12px 0 16px; }
+  .b .tabsw { display: flex; gap: 24px; border-bottom: 1px solid var(--line); margin-bottom: 20px; font-size: 14px; color: var(--ink2); }
+  .b .tabsw div { padding-bottom: 10px; display: flex; gap: 8px; align-items: center; }
+  .b .tabsw .on { color: #221d16; font-weight: 500; box-shadow: 0 2px 0 #221d16; }
+  .b .day { font-size: 14px; line-height: 22px; color: var(--ink2); margin-bottom: 8px; }
+  .b .day b { color: #221d16; font-weight: 500; }
+  .b .day s { text-decoration: none; }
+  .b .day .now { color: #221d16; font-weight: 500; text-decoration: underline; text-decoration-color: var(--green); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  .b .ring { width: 264px; height: 264px; margin: 16px auto 16px; position: relative; }
+  .b .ring svg { width: 264px; height: 264px; }
+  .b .ring .mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .b .ring .lab { font-size: 13px; color: var(--ink2); }
+  .b .ring .big { font-family: var(--serif); font-size: 104px; line-height: 104px; font-weight: 400; letter-spacing: -0.03em; }
+  .b .ring .unit { font-size: 14px; color: var(--ink2); }
+  .b .note { text-align: center; font-size: 13px; line-height: 20px; color: var(--ink2); margin-bottom: 20px; }
+  .b .note a { color: #221d16; text-decoration: underline; text-underline-offset: 3px; }
+  .b .primary { width: 100%; height: 56px; border-radius: 28px; background: #221d16; color: #f6f1e7; font-size: 16px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .b .quick { display: flex; margin-top: 16px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .b .quick button { flex: 1; height: 48px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; border-left: 1px solid var(--line); }
+  .b .quick button:first-child { border: 0; }
+  .b .quick svg.i { width: 16px; height: 16px; color: var(--ink2); }
+  .b h3 { font-family: var(--serif); font-size: 22px; line-height: 28px; font-weight: 400; margin: 32px 0 4px; }
+  .b .sub { font-size: 13px; color: var(--ink2); margin-bottom: 12px; }
+  .b .tally { display: flex; gap: 24px; align-items: baseline; }
+  .b .tally div { font-size: 13px; color: var(--ink2); }
+  .b .tally b { display: block; font-family: var(--serif); font-size: 32px; line-height: 36px; font-weight: 400; color: #221d16; }
+  .b .check { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 15px; line-height: 22px; }
+  .b .box { width: 20px; height: 20px; border: 1.5px solid #221d16; border-radius: 10px; flex: none; margin-top: 1px; }
+  .b .link { font-size: 14px; text-decoration: underline; text-underline-offset: 3px; display: inline-block; padding-top: 12px; border-top: 1px solid var(--line); width: 100%; }
+  .b .log { display: flex; gap: 16px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 15px; align-items: baseline; }
+  .b .log time { width: 48px; font-size: 13px; color: var(--ink3); }
+  .b .log small { display: block; font-size: 13px; color: var(--ink2); }
+  .b .tabs { border-top: 1px solid var(--line); color: var(--ink3); padding-top: 12px; }
+  .b .tabs .on { color: #221d16; font-weight: 500; }
+
+  /* ───────── C · Green room ───────── */
+  .c { background: #fafaf8; color: #171717; font-family: Figtree, sans-serif; --ink2: #525252; --ink3: #737373; --line: rgba(23,23,23,.09); --green: #3e7f33; --greenDeep: #2b5c23; --disp: "Bricolage Grotesque", Figtree, sans-serif; }
+  .c .hero { background: var(--green); color: #fff; padding: 20px 20px 24px; border-radius: 0 0 28px 28px; }
+  .c .top { display: flex; justify-content: space-between; align-items: center; }
+  .c .top .l { font-family: var(--disp); font-size: 20px; font-weight: 600; }
+  .c .top .r { display: flex; gap: 8px; }
+  .c .pill { height: 36px; border-radius: 18px; background: rgba(255,255,255,.16); display: flex; align-items: center; gap: 6px; padding: 0 12px; font-size: 14px; font-weight: 500; }
+  .c .pill.sq { width: 36px; padding: 0; justify-content: center; }
+  .c .pill.on { background: #fff; color: var(--greenDeep); }
+  .c .lab { font-size: 14px; opacity: .85; margin-top: 28px; }
+  .c .count { display: flex; align-items: baseline; gap: 8px; }
+  .c .count b { font-family: var(--disp); font-size: 112px; line-height: 104px; font-weight: 600; letter-spacing: -0.03em; }
+  .c .count span { font-family: var(--disp); font-size: 28px; font-weight: 500; }
+  .c .count em { font-style: normal; margin-left: auto; font-size: 14px; opacity: .85; text-align: right; line-height: 20px; }
+  .c .bar { display: flex; gap: 3px; margin: 16px 0 8px; }
+  .c .bar i { flex: 1; height: 10px; border-radius: 2px; background: rgba(255,255,255,.25); }
+  .c .bar i.f { background: #fff; }
+  .c .hint { font-size: 13px; line-height: 18px; opacity: .85; margin-bottom: 20px; }
+  .c .primary { width: 100%; height: 56px; border-radius: 16px; background: #fff; color: var(--greenDeep); font-family: var(--disp); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .c .under { display: flex; justify-content: center; gap: 24px; margin-top: 16px; font-size: 14px; font-weight: 500; }
+  .c .under span { display: flex; gap: 6px; align-items: center; }
+  .c .under svg.i { width: 16px; height: 16px; }
+  .c .pad { padding: 16px 20px 24px; }
+  .c .quick { display: flex; gap: 8px; margin-bottom: 24px; }
+  .c .quick button { flex: 1; height: 72px; border-radius: 16px; background: #f0f0ec; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 500; }
+  .c .quick svg.i { width: 22px; height: 22px; }
+  .c h3 { font-family: var(--disp); font-size: 20px; font-weight: 600; line-height: 24px; display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .c h3 small { font-family: Figtree, sans-serif; font-size: 13px; font-weight: 400; color: var(--ink2); }
+  .c .steps { display: flex; gap: 4px; margin-bottom: 24px; }
+  .c .steps div { flex: 1; border-top: 4px solid rgba(23,23,23,.12); padding-top: 8px; font-size: 13px; font-weight: 500; }
+  .c .steps small { display: block; font-weight: 400; color: var(--ink2); font-size: 12px; }
+  .c .steps .done { border-color: var(--green); color: var(--ink2); }
+  .c .steps .now { border-color: var(--green); }
+  .c .stats { display: flex; gap: 8px; margin-bottom: 24px; }
+  .c .stats div { flex: 1; font-size: 12px; color: var(--ink2); }
+  .c .stats b { display: block; font-family: var(--disp); font-size: 32px; line-height: 36px; font-weight: 600; color: #171717; }
+  .c .stats .g b { color: var(--green); }
+  .c .list { border: 1px solid var(--line); border-radius: 16px; background: #fff; padding: 4px 16px; margin-bottom: 24px; }
+  .c .check { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 14px; line-height: 20px; }
+  .c .check:first-child, .c .log:first-child { border: 0; }
+  .c .box { width: 22px; height: 22px; border: 2px solid rgba(23,23,23,.25); border-radius: 7px; flex: none; }
+  .c .log { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); font-size: 14px; font-weight: 500; }
+  .c .log svg.i { color: var(--ink2); }
+  .c .log time { margin-left: auto; font-weight: 400; color: var(--ink3); font-size: 13px; }
+  .c .tabs { background: #fff; border-top: 1px solid var(--line); color: var(--ink3); }
+  .c .tabs .on { color: var(--green); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="intro">
+  <h1>Potty Up: Today screen, three directions</h1>
+  <p>Same content and features as the app today, restyled three ways. Pick one (or mix parts, like "A with the big number from C") and I'll carry it through the whole app.</p>
+</div>
+
+<div class="board">
+
+<!-- ═════════ A ═════════ -->
+<div class="col">
+  <h2>A · Fridge door</h2>
+  <p class="why">The paper chart and kitchen timer on a family fridge. Warm paper, flat hairline cards, one green. The timer is a dial with minute ticks, the day is a line you move along, the log reads like a logbook.</p>
+  <div class="phone a">
+    <div class="pad">
+      <div class="top">
+        <div><div class="date">Wednesday 25 November</div><div class="title">Mia's day</div></div>
+        <div style="display:flex;gap:8px"><div class="icb"><svg class="i" data-i="share"></svg></div><div class="chip">Mia <svg class="i" data-i="chevR" style="width:14px;height:14px;color:var(--ink3)"></svg></div></div>
+      </div>
+      <div class="seg"><div class="on"><svg class="i" data-i="sun"></svg>Daytime</div><div><svg class="i" data-i="moon"></svg>Night</div></div>
+      <div class="steps">
+        <div class="step done"><div class="dot"><svg class="i" data-i="check"></svg></div><b>Morning</b><span>Wake-up logged</span></div>
+        <div class="step now"><div class="dot"></div><b>Through the day</b><span>2 logged so far</span></div>
+        <div class="step"><div class="dot"></div><b>Evening</b><span>20-second check-in</span></div>
+      </div>
+      <div class="card">
+        <div class="cardhead"><b>Next potty try</b><div class="links"><span><svg class="i" data-i="pause"></svg>Pause</span><span>Learned timing<svg class="i" data-i="chevD"></svg></span></div></div>
+        <div class="dial"><svg id="dialA" viewBox="0 0 224 224"></svg><div class="mid"><div class="big num">16</div><div class="unit">min · around 11:36 AM</div></div></div>
+        <div class="note"><svg class="i" data-i="replay"></svg><span>Missed one or didn't log it? No problem</span></div>
+        <button class="primary"><svg class="i" data-i="plus"></svg>Log potty</button>
+        <div class="quick">
+          <button><svg class="i" data-i="cup"></svg>Drink</button><button><svg class="i" data-i="meal"></svg>Meal</button><button><svg class="i" data-i="sunrise"></svg>Woke up</button><button><svg class="i" data-i="hour"></svg>Sit timer</button>
+        </div>
+      </div>
+      <div class="stats num">
+        <div><b>2</b><span>On potty</span></div><div><b>0</b><span>Accidents</span></div><div><b>0</b><span>Told you</span></div><div><b>100%</b><span>Success</span></div>
+      </div>
+      <div class="sec"><b>Day 5 · First outing</b><span class="num">0 of 4</span></div>
+      <div class="card">
+        <div class="check"><div class="box"></div>Loose trousers for the outing</div>
+        <div class="check"><div class="box"></div>A wee right before a 20-minute walk</div>
+        <div class="check"><div class="box"></div>Bring a travel potty, spare clothes and a wet bag</div>
+        <span class="link">Open today's lesson</span>
+      </div>
+      <div class="sec" style="margin-top:24px"><b>Timeline</b><span>4 logged</span></div>
+      <div class="card" style="padding:6px 20px;margin-bottom:0">
+        <div class="log"><time class="num">8:24</time><i style="background:#3e7f33"></i>Wee on the potty<small>You offered</small></div>
+        <div class="log"><time class="num">7:36</time><i style="background:#7559a8"></i>Meal</div>
+        <div class="log"><time class="num">7:12</time><i style="background:#3e7f33"></i>Wee on the potty<small>You offered</small></div>
+        <div class="log"><time class="num">6:48</time><i style="background:#c79a1e"></i>Woke up</div>
+      </div>
+    </div>
+    <div class="tabs"><div class="on"><svg class="i" data-i="home"></svg>Today</div><div><svg class="i" data-i="route"></svg>Program</div><div><svg class="i" data-i="chat"></svg>Coach</div><div><svg class="i" data-i="star"></svg>Kid zone</div><div><svg class="i" data-i="chart"></svg>Progress</div></div>
+  </div>
+</div>
+
+<!-- ═════════ B ═════════ -->
+<div class="col">
+  <h2>B · Picture book</h2>
+  <p class="why">A bedtime story book. Cream pages, a serif for titles and the big number, no cards at all, just ruled lines. Ink-black button, green only on the ring. The furthest from how apps usually look.</p>
+  <div class="phone b">
+    <div class="pad">
+      <div class="top"><span>Wednesday 25 November</span><div class="r"><svg class="i" data-i="share"></svg><span class="who">Mia <svg class="i" data-i="chevR" style="width:14px;height:14px"></svg></span></div></div>
+      <div class="title">Mia's day</div>
+      <div class="tabsw"><div class="on"><svg class="i" data-i="sun"></svg>Daytime</div><div><svg class="i" data-i="moon"></svg>Night</div></div>
+      <p class="day">Morning is done. <span class="now">Through the day</span>, 2 logged so far. Then a 20-second check-in this evening.</p>
+      <div class="ring">
+        <svg viewBox="0 0 264 264"><circle cx="132" cy="132" r="124" fill="none" stroke="rgba(34,29,22,.14)" stroke-width="2"/><circle id="arcB" cx="132" cy="132" r="124" fill="none" stroke="#3e7f33" stroke-width="6" stroke-linecap="round" transform="rotate(-90 132 132)"/><circle id="dotB" r="9" fill="#3e7f33" stroke="#f6f1e7" stroke-width="3"/></svg>
+        <div class="mid"><div class="lab">Next potty try in</div><div class="big num">16</div><div class="unit">minutes, around 11:36 AM</div></div>
+      </div>
+      <p class="note">Missed one or didn't log it? No problem<br><a>Pause</a> &nbsp;·&nbsp; <a>Learned timing</a></p>
+      <button class="primary"><svg class="i" data-i="plus"></svg>Log potty</button>
+      <div class="quick"><button><svg class="i" data-i="cup"></svg>Drink</button><button><svg class="i" data-i="meal"></svg>Meal</button><button><svg class="i" data-i="sunrise"></svg>Woke</button><button><svg class="i" data-i="hour"></svg>Sit</button></div>
+
+      <h3>So far today</h3>
+      <div class="tally num" style="margin-top:8px"><div><b>2</b>on potty</div><div><b>0</b>accidents</div><div><b>100%</b>success</div></div>
+
+      <h3>Day 5 · First outing</h3>
+      <p class="sub">0 of 4 done</p>
+      <div class="check"><div class="box"></div>Loose trousers for the outing</div>
+      <div class="check"><div class="box"></div>A wee right before a 20-minute walk</div>
+      <div class="check"><div class="box"></div>Bring a travel potty, spare clothes and a wet bag</div>
+      <span class="link">Open today's lesson</span>
+
+      <h3>Timeline</h3>
+      <p class="sub">4 logged</p>
+      <div class="log"><time class="num">8:24</time><div>Wee on the potty<small>You offered</small></div></div>
+      <div class="log"><time class="num">7:36</time><div>Meal</div></div>
+      <div class="log"><time class="num">7:12</time><div>Wee on the potty<small>You offered</small></div></div>
+      <div class="log"><time class="num">6:48</time><div>Woke up</div></div>
+    </div>
+    <div class="tabs"><div class="on"><svg class="i" data-i="home"></svg>Today</div><div><svg class="i" data-i="route"></svg>Program</div><div><svg class="i" data-i="chat"></svg>Coach</div><div><svg class="i" data-i="star"></svg>Kid zone</div><div><svg class="i" data-i="chart"></svg>Progress</div></div>
+  </div>
+</div>
+
+<!-- ═════════ C ═════════ -->
+<div class="col">
+  <h2>C · Green room</h2>
+  <p class="why">Built for a glance with a toddler on your hip. The countdown owns the top of the screen in UpAiry green with a huge number and one big button. Everything else is plain white below. Loudest and most branded.</p>
+  <div class="phone c">
+    <div class="hero">
+      <div class="top"><div class="l">Mia's day</div><div class="r"><div class="pill sq on"><svg class="i" data-i="sun"></svg></div><div class="pill sq"><svg class="i" data-i="moon"></svg></div><div class="pill sq"><svg class="i" data-i="share"></svg></div><div class="pill">Mia</div></div></div>
+      <div class="lab">Next potty try in</div>
+      <div class="count"><b class="num">16</b><span>min</span><em>around<br>11:36 AM</em></div>
+      <div class="bar" id="barC"></div>
+      <div class="hint">Missed one or didn't log it? No problem</div>
+      <button class="primary"><svg class="i" data-i="plus" style="stroke-width:2.2"></svg>Log potty</button>
+      <div class="under"><span><svg class="i" data-i="pause"></svg>Pause</span><span>Learned timing<svg class="i" data-i="chevD"></svg></span></div>
+    </div>
+    <div class="pad">
+      <div class="quick"><button><svg class="i" data-i="cup"></svg>Drink</button><button><svg class="i" data-i="meal"></svg>Meal</button><button><svg class="i" data-i="sunrise"></svg>Woke up</button><button><svg class="i" data-i="hour"></svg>Sit timer</button></div>
+      <div class="steps"><div class="done">Morning<small>Wake-up logged</small></div><div class="now">Through the day<small>2 logged so far</small></div><div>Evening<small>20-second check-in</small></div></div>
+      <div class="stats num"><div class="g"><b>2</b>On potty</div><div><b>0</b>Accidents</div><div><b>0</b>Told you</div><div><b>100%</b>Success</div></div>
+      <h3>Day 5 · First outing <small class="num">0 of 4</small></h3>
+      <div class="list">
+        <div class="check"><div class="box"></div>Loose trousers for the outing</div>
+        <div class="check"><div class="box"></div>A wee right before a 20-minute walk</div>
+        <div class="check"><div class="box"></div>Bring a travel potty, spare clothes and a wet bag</div>
+      </div>
+      <h3>Timeline <small>4 logged</small></h3>
+      <div class="list" style="margin-bottom:0">
+        <div class="log"><svg class="i" data-i="drop"></svg>Wee on the potty<time class="num">8:24 AM</time></div>
+        <div class="log"><svg class="i" data-i="meal"></svg>Meal<time class="num">7:36 AM</time></div>
+        <div class="log"><svg class="i" data-i="drop"></svg>Wee on the potty<time class="num">7:12 AM</time></div>
+        <div class="log"><svg class="i" data-i="sunrise"></svg>Woke up<time class="num">6:48 AM</time></div>
+      </div>
+    </div>
+    <div class="tabs"><div class="on"><svg class="i" data-i="home"></svg>Today</div><div><svg class="i" data-i="route"></svg>Program</div><div><svg class="i" data-i="chat"></svg>Coach</div><div><svg class="i" data-i="star"></svg>Kid zone</div><div><svg class="i" data-i="chart"></svg>Progress</div></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// Icons: the app's own line set (src/components/Icon.tsx).
+const P = {
+  drop: '<path d="M12 3.2c3.2 3.9 6.2 7.2 6.2 10.8a6.2 6.2 0 0 1-12.4 0c0-3.6 3-6.9 6.2-10.8z"/>',
+  cup: '<path d="M6 4h12l-1.4 14.6a2 2 0 0 1-2 1.9H9.4a2 2 0 0 1-2-1.9z"/><path d="M6.6 9.5h10.8"/>',
+  meal: '<path d="M7 3v7m-2.2-7v4.6a2.2 2.2 0 0 0 4.4 0V3M7 10.5V21"/><path d="M17.5 21V3c-2 1.2-3 3.5-3 6.5 0 2 1 3 3 3"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
+  moon: '<path d="M19.5 14.6A8 8 0 1 1 9.4 4.5a6.4 6.4 0 0 0 10.1 10.1z"/>',
+  sunrise: '<path d="M5 18a7 7 0 0 1 14 0"/><path d="M3 21h18M12 3v5m-3-2 3-3 3 3"/>',
+  check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  hour: '<path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/>',
+  share: '<path d="M12 15V3.5m0 0L8 7.5m4-4 4 4"/><path d="M7 11H5.5A1.5 1.5 0 0 0 4 12.5v6A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-6a1.5 1.5 0 0 0-1.5-1.5H17"/>',
+  home: '<path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19z"/>',
+  chart: '<path d="M4 20h16"/><rect x="5.5" y="11" width="3" height="6" rx="1"/><rect x="10.5" y="6" width="3" height="11" rx="1"/><rect x="15.5" y="13.5" width="3" height="3.5" rx="1"/>',
+  route: '<circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/>',
+  chevR: '<path d="m9 5 7 7-7 7"/>',
+  chevD: '<path d="m6 9 6 6 6-6"/>',
+  replay: '<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/>',
+  pause: '<rect x="6.5" y="5" width="3.5" height="14" rx="1"/><rect x="14" y="5" width="3.5" height="14" rx="1"/>',
+  star: '<path d="M12 3.2l2.7 5.5 6 .9-4.4 4.2 1 6-5.3-2.8-5.3 2.8 1-6L3.3 9.6l6-.9z"/>',
+  chat: '<path d="M4 18.5V7a2.5 2.5 0 0 1 2.5-2.5h11A2.5 2.5 0 0 1 20 7v7a2.5 2.5 0 0 1-2.5 2.5H8z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/>',
+};
+document.querySelectorAll('svg[data-i]').forEach(s => { s.setAttribute('viewBox', '0 0 24 24'); s.innerHTML = P[s.dataset.i] || ''; });
+
+const LEFT = 16 / 45; // 16 of 45 minutes left
+
+// A: kitchen-timer dial, one tick per minute of the gap, green for the minutes still to go
+(() => {
+  const N = 45, c = 112, out = [];
+  for (let k = 0; k < N; k++) {
+    const a = (k / N) * 2 * Math.PI - Math.PI / 2, on = k < Math.round(LEFT * N), long = k % 5 === 0;
+    const r1 = 106, r0 = long ? 88 : 94;
+    out.push(`<line x1="${c + r0 * Math.cos(a)}" y1="${c + r0 * Math.sin(a)}" x2="${c + r1 * Math.cos(a)}" y2="${c + r1 * Math.sin(a)}" stroke="${on ? '#3e7f33' : 'rgba(31,27,22,.16)'}" stroke-width="${on ? 3 : 2}" stroke-linecap="round"/>`);
+  }
+  document.getElementById('dialA').innerHTML = out.join('');
+})();
+
+// B: thin ring with a bead at the end of the arc
+(() => {
+  const r = 124, C = 2 * Math.PI * r, arc = document.getElementById('arcB'), dot = document.getElementById('dotB');
+  arc.setAttribute('stroke-dasharray', C); arc.setAttribute('stroke-dashoffset', C * (1 - LEFT));
+  const a = LEFT * 2 * Math.PI - Math.PI / 2;
+  dot.setAttribute('cx', 132 + r * Math.cos(a)); dot.setAttribute('cy', 132 + r * Math.sin(a));
+})();
+
+// C: segmented bar that empties
+document.getElementById('barC').innerHTML = Array.from({ length: 24 }, (_, k) => `<i class="${k < Math.round(LEFT * 24) ? 'f' : ''}"></i>`).join('');
+</script>
+</body>
+</html>

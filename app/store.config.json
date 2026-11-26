@@ -1,0 +1,71 @@
+{
+  "configVersion": 0,
+  "apple": {
+    "version": "1.0",
+    "release": {
+      "automaticRelease": true
+    },
+    "info": {
+      "en-US": {
+        "title": "Potty Up: Potty Training Coach",
+        "subtitle": "Day-by-day plan and reminders",
+        "description": "Potty Up walks you through potty training one day at a time, so you always know what to do next.\n\nPick the method that suits your family, and Potty Up turns it into a simple daily plan: what to try today, when to offer the potty, and when your child is ready for the next stage.\n\nA PLAN FOR EVERY DAY\n• Choose your method, including a 3-day intensive\n• One short lesson each day, with clear steps to tick off\n• A quick evening check-in that tells you whether to move on or stay a little longer\n• A readiness check before you start\n\nKNOW WHEN TO OFFER THE POTTY\n• A timer that counts down to the next try\n• It learns your child's own rhythm from your logs, like the usual gap between wees and how soon after a drink\n• Gentle reminders, with quiet hours for naps and bedtime\n• One-tap logging for wees, poos, accidents, drinks, meals and wake-ups\n\nASK LARA, YOUR POTTY COACH\n• Ask anything, any time: refusing to sit, accidents, poo worries, regression, daycare\n• Answers shaped by your child's age, stage and recent days\n• Built-in guides for the most common situations\n\nMADE FUN FOR KIDS\n• A sticker chart that fills up with every success\n• Stars to save and spend on rewards you choose\n• 20 potty songs with sing-along lyrics, and a sit timer with music\n• Kid mode, so little hands can only tap the fun parts\n\nSEE THE PROGRESS\n• Success rate by day, accidents, dry nights and how often your child tells you first\n• A night mode for going nappy-free at night\n• A ready-to-send update for daycare or grandparents\n\nYOURS, AND PRIVATE\n• No ads and no tracking\n• Your child's logs stay on your phone, with an optional private backup to your account so they move to a new phone\n• Export or delete everything at any time\n\nGETTING STARTED\nTap Get started and set up your child in two minutes. No account needed.\nHave an UpAiry Potty Up membership? Sign in with the email from your order plus your order number, postcode or last name to add Lara's AI answers and a private backup. No password needed.\n\nPotty Up gives general guidance, not medical advice.\n\nTerms of use: https://upairy.com/pages/potty-up-terms\nPrivacy policy: https://upairy.com/pages/potty-up-privacy",
+        "keywords": [
+          "toddler",
+          "toilet",
+          "timer",
+          "chart",
+          "sticker",
+          "reward",
+          "nappy",
+          "diaper",
+          "pee",
+          "poo",
+          "tracker",
+          "reminder",
+          "parent",
+          "log",
+          "kids"
+        ],
+        "promoText": "A calm, step-by-step way through potty training: a plan for each day, a timer that learns your child's rhythm, and a coach to ask when it gets messy.",
+        "supportUrl": "https://upairy.com/pages/potty-up-support",
+        "marketingUrl": "https://upairy.com",
+        "privacyPolicyUrl": "https://upairy.com/pages/potty-up-privacy"
+      }
+    },
+    "advisory": {
+      "ageRatingOverride": "NONE",
+      "alcoholTobaccoOrDrugUseOrReferences": "NONE",
+      "contests": "NONE",
+      "gambling": false,
+      "gamblingSimulated": "NONE",
+      "horrorOrFearThemes": "NONE",
+      "kidsAgeBand": null,
+      "koreaAgeRatingOverride": "NONE",
+      "lootBox": false,
+      "matureOrSuggestiveThemes": "NONE",
+      "medicalOrTreatmentInformation": "NONE",
+      "profanityOrCrudeHumor": "NONE",
+      "sexualContentGraphicAndNudity": "NONE",
+      "sexualContentOrNudity": "NONE",
+      "unrestrictedWebAccess": false,
+      "violenceCartoonOrFantasy": "NONE",
+      "violenceRealistic": "NONE",
+      "violenceRealisticProlongedGraphicOrSadistic": "NONE",
+      "advertising": false,
+      "ageAssurance": false,
+      "ageRatingOverrideV2": "NONE",
+      "developerAgeRatingInfoUrl": null,
+      "gunsOrOtherWeapons": "NONE",
+      "healthOrWellnessTopics": false,
+      "messagingAndChat": false,
+      "parentalControls": false,
+      "userGeneratedContent": false
+    },
+    "copyright": "2026 UpAiry Limited",
+    "categories": [
+      "HEALTH_AND_FITNESS",
+      "LIFESTYLE"
+    ]
+  }
+}
