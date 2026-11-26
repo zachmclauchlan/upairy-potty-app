@@ -19,9 +19,12 @@ import { ensureSession, refreshPlan, signOut } from '@/lib/backend';
 import { startBackup, backupNow } from '@/lib/backup';
 import { initNotifications, handleResponse, reschedule, cancelAll, Notifications } from '@/lib/notifications';
 import { on } from '@/lib/bus';
+import { sampleWeek } from '@/lib/logic';
 import { touch, reportError, watchErrors } from '@/lib/pulse';
 
 watchErrors();
+// Local design preview only (never in a real build): lets the store-screenshot script fill the app with the sample week.
+if (__DEV__ && Platform.OS === 'web') (globalThis as any).__pottyDemo = () => update(s => { sampleWeek(s); s.sample = false; });
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -52,7 +55,7 @@ export default function Root() {
     const toSignIn = (why?: string) => { cancelAll(); signOut(); update(s => { s.account = null; }); if (why) toast(why, 'Sign in again once your subscription is active'); };
     const check = () => {
       if (__DEV__ && Platform.OS === 'web' && (globalThis as any).localStorage?.getItem('potty-dev-preview')) return; // local design preview only
-      if (!S.account) return;
+      if (!S.account || S.account.guest) return;   // no account to check when using the app without signing in
       ensureSession().then(async st => {
         if (st === 'signed-out') return toSignIn();
         if (st !== 'ok') return;   // offline: keep going with the last known plan

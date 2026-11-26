@@ -28,11 +28,14 @@ export default function Settings() {
   const scroll = useRef<any>(null); const shopY = useRef(0);
   useEffect(() => { if (focus === 'shop') setTimeout(() => scroll.current?.scrollTo({ y: shopY.current - 20, animated: true }), 350); }, [focus]);
   const free = S.account?.plan === 'free';
+  const guest = !!S.account?.guest;   // using the app without signing in
   const apple = !!S.account?.apple;   // Potty Up is an Apple subscription, managed in the Apple ID, not on upairy.com
   // Opened straight from a link or a page reload there is nothing to go back to: go to Today instead.
   const close = () => router.canGoBack() ? router.back() : router.replace('/');
   const open = (k: string) => { close(); setTimeout(() => emit(k), 350); };
   const signOut = async () => { await backupNow().catch(() => false); close(); cancelAll(); serverSignOut(); update(s => { s.account = null; }); toast('Signed out'); };
+  // Not signed in: back to the welcome screen, where the order sign-in is. The child's data stays on the phone.
+  const toSignIn = () => { close(); update(s => { s.account = null; }); };
   const clearSample = () => confirm('Clear the sample week?', 'This removes the example logs and check-ins so you can start fresh. Your child, method and settings stay.', () => { update(s => { s.events = []; s.checkins = {}; s.days = {}; s.steps = {}; s.pIdx = 0; s.pDay = 1; s.start = sod(Date.now()); s.spent = 0; s.sample = false; }); toast('Sample data cleared', 'Ready for real logs'); }, 'Clear');
   const version = `${Constants.expoConfig?.version ?? '1.0.0'}`;
   const ago = (t: number) => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : new Date(t).toLocaleDateString(); };
@@ -60,14 +63,14 @@ export default function Settings() {
           <Btn kind="white" title="Check my purchase" onPress={async () => { const p = await refreshPlan(true).catch(() => null); toast(p?.plan === 'plus' ? 'Potty Up is unlocked' : 'No Potty Up purchase on ' + (S.account?.id ?? 'this email'), p?.plan === 'plus' ? 'Everything is ready' : 'Use the email from your upairy.com checkout'); }} />
         </> : <>
           <T size={14} color="#fff" style={{ marginTop: 8, marginBottom: 12 }}>The full program, smart reminders, the AI coach, songs, kid mode and rewards.</T>
-          <T size={13} color="#fff">15% off everything at upairy.com while you have Potty Up.</T>
-          {apple
+          {guest ? null : <T size={13} color="#fff">15% off everything at upairy.com while you have Potty Up.</T>}
+          {guest ? null : apple
             ? <Pressable onPress={() => Linking.openURL(APPLE_MANAGE_URL).catch(() => {})} accessibilityRole="link" hitSlop={8} style={{ marginTop: 8 }}><T w="s" size={13} color="#fff" style={{ textDecorationLine: 'underline' }}>Manage or cancel in your Apple subscriptions</T></Pressable>
             : <T size={13} color="#fff" style={{ marginTop: 8 }}>Manage or cancel Potty Up from your account on upairy.com.</T>}
         </>}
       </View>
       <Card pad={4} style={{ paddingHorizontal: 16 }}>
-        <Row first icon="users" tone="water" title={apple ? 'Apple subscription' : S.account?.id ?? 'Not signed in'} sub={free ? 'Free version' : apple ? 'Potty Up unlocked · get back in with Restore purchase' : 'Potty Up unlocked'} right={<Chip label="Sign out" onPress={signOut} />} />
+        <Row first icon="users" tone="water" title={guest ? 'Not signed in' : apple ? 'Apple subscription' : S.account?.id ?? 'Not signed in'} sub={guest ? 'Have an UpAiry order? Sign in to back up your data' : free ? 'Free version' : apple ? 'Potty Up unlocked · get back in with Restore purchase' : 'Potty Up unlocked'} right={<Chip label={guest ? 'Sign in' : 'Sign out'} onPress={guest ? toSignIn : signOut} />} />
       </Card>
       <View onLayout={e => { shopY.current = e.nativeEvent.layout.y; }}><SectionHead title="Shop UpAiry" right="upairy.com" onRight={() => openShop('https://upairy.com')} /></View>
       <Designs />
@@ -97,10 +100,11 @@ export default function Settings() {
       <Card pad={4} style={{ paddingHorizontal: 16 }}>
         <Row first icon="replay" tone="sun" title="How the app works" sub="Replay the intro" onPress={() => open('intro')} />
         {S.sample ? <Row icon="trash" tone="sun" title="Clear the sample week" sub="Remove the example logs and start fresh" onPress={clearSample} /> : null}
-        <Row icon="chat" tone="water" title="Lara, your AI coach" sub="On · 20 questions a day" onPress={() => open('aiinfo')} />
-        <Row icon="shield" tone="water" title="Back up to my account" sub={S.backup.on ? `On · saved ${S.backup.at ? ago(S.backup.at) : 'soon'} · restores on a new phone` : 'Off · data is only on this phone'} onPress={toggleBackup} right={<T w="s" size={13} color={S.backup.on ? C.brandInk : C.ink3}>{S.backup.on ? 'On' : 'Off'}</T>} />
+        <Row icon="chat" tone="water" title={guest ? 'Lara, your potty coach' : 'Lara, your AI coach'} sub={guest ? 'Answers from the built-in guides' : 'On · 20 questions a day'} onPress={() => open('aiinfo')} />
+        {guest ? null : <Row icon="shield" tone="water" title="Back up to my account" sub={S.backup.on ? `On · saved ${S.backup.at ? ago(S.backup.at) : 'soon'} · restores on a new phone` : 'Off · data is only on this phone'} onPress={toggleBackup} right={<T w="s" size={13} color={S.backup.on ? C.brandInk : C.ink3}>{S.backup.on ? 'On' : 'Off'}</T>} />}
         <Row icon="download" title="Export my data" sub="Save a copy as a file. No ads, no tracking." onPress={() => Share.share({ message: JSON.stringify({ exported: new Date().toISOString(), child: S.child, method: S.method, events: S.events, checkins: S.checkins, days: S.days }, null, 2) }).catch(() => {})} right={<Icon name="download" size={18} color={C.ink3} />} />
-        <Row icon="trash" tone="try" title="Delete my account and data" sub="Deletes your account, its backup, and everything on this phone" danger onPress={() => confirm('Delete your account?', 'This permanently deletes your account and its backup, and removes all logs and settings from this phone. It cannot be undone.' + (apple ? ' It does not cancel your Apple subscription: cancel that in your Apple ID settings.' : ''), async () => { try { await deleteAccount(); close(); cancelAll(); resetAll(); toast('Account deleted'); } catch (e) { toast((e as Error).message); } })} />
+        {guest ? <Row icon="trash" tone="try" title="Delete my data" sub="Removes everything from this phone" danger onPress={() => confirm('Delete everything?', 'This removes all logs and settings from this phone. It cannot be undone.', () => { close(); cancelAll(); resetAll(); toast('Data deleted'); })} /> :
+        <Row icon="trash" tone="try" title="Delete my account and data" sub="Deletes your account, its backup, and everything on this phone" danger onPress={() => confirm('Delete your account?', 'This permanently deletes your account and its backup, and removes all logs and settings from this phone. It cannot be undone.' + (apple ? ' It does not cancel your Apple subscription: cancel that in your Apple ID settings.' : ''), async () => { try { await deleteAccount(); close(); cancelAll(); resetAll(); toast('Account deleted'); } catch (e) { toast((e as Error).message); } })} />}
       </Card>
       <SectionHead title="Help" />
       <Card pad={4} style={{ paddingHorizontal: 16 }}>
