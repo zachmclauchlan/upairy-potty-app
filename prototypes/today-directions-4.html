@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Potty Up: Today screen, sticker style without the yellow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #e9e7e2; color: #1f1b16; font-family: Figtree, system-ui, sans-serif; padding: 32px 24px 64px; }
+  .intro { max-width: 1700px; margin: 0 auto 32px; }
+  .intro h1 { font-size: 22px; font-weight: 600; }
+  .intro p { font-size: 14px; color: #5e554a; margin-top: 4px; max-width: 760px; line-height: 20px; }
+  .board { display: flex; gap: 40px; justify-content: center; align-items: flex-start; flex-wrap: wrap; max-width: 1700px; margin: 0 auto; }
+  .col { width: 375px; }
+  .col h2 { font-size: 16px; font-weight: 600; }
+  .col .why { font-size: 13px; line-height: 18px; color: #5e554a; margin: 4px 0 16px; min-height: 54px; }
+  .phone { width: 375px; border-radius: 36px; overflow: hidden; border: 1px solid rgba(31,27,22,.14); box-shadow: 0 8px 24px rgba(0,0,0,.08); font-family: Figtree, sans-serif; background: var(--bg); color: var(--ink);
+    --ink: #1f1b16; --ink2: #5a5142; --ink3: #7b7266; --green: #3e7f33; --chewy: Chewy, cursive;
+    --blue: #cfe3ff; --pink: #ffd3d8; --mint: #cfeac4; --peach: #ffd9b8; --lilac: #e2d6f7; }
+  .num { font-variant-numeric: tabular-nums; }
+  svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+  .pad { padding: 20px 20px 24px; }
+  .top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 16px; }
+  .date { font-size: 13px; color: var(--ink2); }
+  .title { font-family: var(--chewy); font-size: 40px; line-height: 44px; font-weight: 400; margin-top: 2px; }
+  .title svg { width: 28px; height: 28px; vertical-align: -2px; margin-left: 4px; }
+  .r { display: flex; gap: 8px; align-items: center; }
+  .chip, .icb, .card, .list, .quick button, .primary, .seg, .slot.got { border: 2px solid var(--ink); box-shadow: 0 3px 0 var(--ink); background: #fff; }
+  .chip, .icb { height: 36px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; }
+  .chip { padding: 0 12px; } .icb { width: 36px; }
+  .seg { display: flex; border-radius: 20px; padding: 3px; margin-bottom: 16px; }
+  .seg div { flex: 1; height: 32px; display: flex; gap: 8px; align-items: center; justify-content: center; font-size: 14px; color: var(--ink2); border-radius: 14px; }
+  .seg .on { background: var(--hi); color: var(--ink); font-weight: 500; }
+  .steps { display: flex; gap: 4px; margin-bottom: 20px; }
+  .steps div { flex: 1; border-top: 4px solid rgba(31,27,22,.16); padding-top: 8px; font-size: 13px; font-weight: 500; }
+  .steps small { display: block; font-weight: 400; color: var(--ink2); font-size: 12px; }
+  .steps .done { border-color: var(--green); color: var(--ink2); }
+  .steps .now { border-color: var(--green); }
+  .card { border-radius: 20px; padding: 16px 20px 20px; margin-bottom: 12px; }
+  .head { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600; }
+  .links { display: flex; gap: 16px; font-size: 13px; font-weight: 400; }
+  .links span { display: flex; gap: 4px; align-items: center; }
+  .links svg.i { width: 14px; height: 14px; }
+  .count { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+  .count b { font-family: var(--chewy); font-weight: 400; font-size: 96px; line-height: 88px; }
+  .count span { font-family: var(--chewy); font-size: 28px; }
+  .ruler { position: relative; display: flex; align-items: flex-end; justify-content: space-between; height: 32px; margin-top: 20px; }
+  .ruler i { width: 3px; height: 12px; border-radius: 1.5px; background: var(--ink); opacity: .22; }
+  .ruler i.t { height: 22px; } .ruler i.f { opacity: 1; background: var(--green); }
+  .ruler .nowm { position: absolute; top: 0; width: 3px; height: 32px; background: var(--ink); border-radius: 1.5px; }
+  .ruler .nowm::before { content: ""; position: absolute; width: 14px; height: 14px; border-radius: 7px; left: -7.5px; top: -10px; background: var(--hi); border: 2px solid var(--ink); }
+  .ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink3); margin: 6px 0 16px; }
+  .ends b { color: #2b5c23; font-weight: 600; }
+  .primary { width: 100%; height: 56px; border-radius: 28px; background: var(--green); color: #fff; font-family: var(--chewy); font-size: 22px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .quick { display: flex; gap: 8px; margin: 16px 0 20px; }
+  .quick button { flex: 1; height: 68px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 500; }
+  .quick svg.i { width: 22px; height: 22px; }
+  .quick button:nth-child(1) { background: var(--blue); } .quick button:nth-child(2) { background: var(--pink); }
+  .quick button:nth-child(3) { background: var(--peach); } .quick button:nth-child(4) { background: var(--mint); }
+  .strip { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+  .slot { width: 44px; height: 44px; border-radius: 14px; border: 2px dashed rgba(31,27,22,.35); display: grid; place-items: center; }
+  .slot svg { width: 28px; height: 28px; }
+  .strip p { margin-left: auto; font-size: 12px; color: var(--ink2); text-align: right; line-height: 16px; }
+  .strip p b { display: block; font-family: var(--chewy); font-size: 20px; font-weight: 400; color: var(--ink); line-height: 22px; }
+  .sec { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; font-size: 13px; color: var(--ink2); }
+  .sec b { font-family: var(--chewy); font-size: 22px; font-weight: 400; color: var(--ink); }
+  .list { border-radius: 20px; padding: 4px 16px; margin-bottom: 24px; }
+  .list:last-child { margin-bottom: 0; }
+  .check, .log { display: flex; gap: 12px; padding: 12px 0; border-top: 1.5px dashed rgba(31,27,22,.3); font-size: 14px; line-height: 20px; align-items: center; }
+  .check:first-child, .log:first-child { border: 0; }
+  .box { width: 22px; height: 22px; border: 2px solid var(--ink); border-radius: 8px; flex: none; }
+  .log small { color: var(--ink2); font-size: 12px; margin-left: auto; }
+  .log span.st { width: 28px; height: 28px; border-radius: 14px; border: 2px solid var(--ink); display: grid; place-items: center; flex: none; }
+  .log span.st svg.i { width: 15px; height: 15px; }
+  .tabs { display: flex; padding: 8px 8px 20px; background: #fff; border-top: 2px solid var(--ink); color: var(--ink3); }
+  .tabs div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; }
+  .tabs svg.i { width: 22px; height: 22px; }
+  .tabs .on { color: var(--ink); font-weight: 600; }
+
+  /* the only things that differ between the four */
+  .o { --bg: #f7f4ee; --hi: #cfeac4; --star: #ffb59e; }
+  .p { --bg: #ffffff; --hi: #cfeac4; --star: #cfe3ff; }
+  .q { --bg: #eaf2fb; --hi: #ffd3d8; --star: #ffd3d8; }
+  .s { --bg: #e9f4e4; --hi: #ffd9b8; --star: #ffd9b8; }
+</style>
+</head>
+<body>
+<div class="intro">
+  <h1>Potty Up: sticker style, no yellow</h1>
+  <p>One design, four colourings. It's the sticker look (ink outlines, Chewy lettering), with I's "Next potty try" ruler and M's coloured quick logs, sticker strip and timeline. The yellow page and yellow highlights are gone. The only things that change between the four are the page colour and the highlight colour.</p>
+</div>
+<div class="board" id="board"></div>
+
+<script>
+const VARIANTS = [
+  ['o', 'O · Paper', 'Warm off-white page, soft green as the highlight. The stickers supply the colour. Closest to M, minus the yellow.'],
+  ['p', 'P · White', 'Plain white page, so the ink outlines and the pastel stickers do all the work. The crispest of the four.'],
+  ['q', 'Q · Sky', 'Pale blue page with pink as the highlight. Reads the most "kids", and the green button stands out hardest here.'],
+  ['s', 'S · Mint', 'Pale UpAiry green page with peach as the highlight. The most on-brand, a little less contrast for the green button.'],
+];
+
+const phone = k => `
+  <div class="phone ${k}">
+    <div class="pad">
+      <div class="top"><div><div class="date">Wednesday 25 November</div><div class="title">Mia's day<svg viewBox="0 0 24 24" data-st="star" data-c="var(--star)"></svg></div></div><div class="r"><div class="icb"><svg class="i" data-i="share"></svg></div><div class="chip">Mia</div></div></div>
+      <div class="seg"><div class="on"><svg class="i" data-i="sun"></svg>Daytime</div><div><svg class="i" data-i="moon"></svg>Night</div></div>
+      <div class="steps"><div class="done">Morning<small>Wake-up logged</small></div><div class="now">Through the day<small>2 logged so far</small></div><div>Evening<small>20-second check-in</small></div></div>
+      <div class="card">
+        <div class="head"><span>Next potty try in</span><div class="links"><span><svg class="i" data-i="pause"></svg>Pause</span><span>Learned timing<svg class="i" data-i="chevD"></svg></span></div></div>
+        <div class="count"><b class="num">16</b><span>min</span></div>
+        <div class="ruler"></div>
+        <div class="ends num"><span>10:51 last try</span><span>now 11:20</span><b>11:36 next</b></div>
+        <button class="primary"><svg class="i" data-i="plus" style="stroke-width:2.4"></svg>Log potty</button>
+      </div>
+      <div class="quick"><button><svg class="i" data-i="cup"></svg>Drink</button><button><svg class="i" data-i="meal"></svg>Meal</button><button><svg class="i" data-i="sunrise"></svg>Woke up</button><button><svg class="i" data-i="hour"></svg>Sit timer</button></div>
+      <div class="strip"><div class="slot got"><svg viewBox="0 0 24 24" data-st="star" data-c="var(--star)"></svg></div><div class="slot got"><svg viewBox="0 0 24 24" data-st="heart" data-c="#ff8fa0"></svg></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><p><b>2 stickers today</b>0 accidents · 100%</p></div>
+      <div class="sec"><b>Day 5 · First outing</b><span class="num">0 of 4</span></div>
+      <div class="list"><div class="check"><div class="box"></div>Loose trousers for the outing</div><div class="check"><div class="box"></div>A wee right before a 20-minute walk</div><div class="check"><div class="box"></div>Bring a travel potty, spare clothes and a wet bag</div></div>
+      <div class="sec"><b>Timeline</b><span>4 logged</span></div>
+      <div class="list"><div class="log"><span class="st" style="background:var(--mint)"><svg class="i" data-i="drop"></svg></span>Wee on the potty<small class="num">8:24 AM</small></div><div class="log"><span class="st" style="background:var(--pink)"><svg class="i" data-i="meal"></svg></span>Meal<small class="num">7:36 AM</small></div><div class="log"><span class="st" style="background:var(--mint)"><svg class="i" data-i="drop"></svg></span>Wee on the potty<small class="num">7:12 AM</small></div><div class="log"><span class="st" style="background:var(--peach)"><svg class="i" data-i="sunrise"></svg></span>Woke up<small class="num">6:48 AM</small></div></div>
+    </div>
+    <div class="tabs"><div class="on"><svg class="i" data-i="home"></svg>Today</div><div><svg class="i" data-i="route"></svg>Program</div><div><svg class="i" data-i="chat"></svg>Coach</div><div><svg class="i" data-i="star"></svg>Kid zone</div><div><svg class="i" data-i="chart"></svg>Progress</div></div>
+  </div>`;
+
+document.getElementById('board').innerHTML = VARIANTS.map(([k, name, why]) => `<div class="col"><h2>${name}</h2><p class="why">${why}</p>${phone(k)}</div>`).join('');
+
+// Icons: the app's own line set (src/components/Icon.tsx).
+const P = {
+  drop: '<path d="M12 3.2c3.2 3.9 6.2 7.2 6.2 10.8a6.2 6.2 0 0 1-12.4 0c0-3.6 3-6.9 6.2-10.8z"/>',
+  cup: '<path d="M6 4h12l-1.4 14.6a2 2 0 0 1-2 1.9H9.4a2 2 0 0 1-2-1.9z"/><path d="M6.6 9.5h10.8"/>',
+  meal: '<path d="M7 3v7m-2.2-7v4.6a2.2 2.2 0 0 0 4.4 0V3M7 10.5V21"/><path d="M17.5 21V3c-2 1.2-3 3.5-3 6.5 0 2 1 3 3 3"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
+  moon: '<path d="M19.5 14.6A8 8 0 1 1 9.4 4.5a6.4 6.4 0 0 0 10.1 10.1z"/>',
+  sunrise: '<path d="M5 18a7 7 0 0 1 14 0"/><path d="M3 21h18M12 3v5m-3-2 3-3 3 3"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  hour: '<path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/>',
+  share: '<path d="M12 15V3.5m0 0L8 7.5m4-4 4 4"/><path d="M7 11H5.5A1.5 1.5 0 0 0 4 12.5v6A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-6a1.5 1.5 0 0 0-1.5-1.5H17"/>',
+  home: '<path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19z"/>',
+  chart: '<path d="M4 20h16"/><rect x="5.5" y="11" width="3" height="6" rx="1"/><rect x="10.5" y="6" width="3" height="11" rx="1"/><rect x="15.5" y="13.5" width="3" height="3.5" rx="1"/>',
+  route: '<circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/>',
+  chevD: '<path d="m6 9 6 6 6-6"/>',
+  pause: '<rect x="6.5" y="5" width="3.5" height="14" rx="1"/><rect x="14" y="5" width="3.5" height="14" rx="1"/>',
+  star: '<path d="M12 3.2l2.7 5.5 6 .9-4.4 4.2 1 6-5.3-2.8-5.3 2.8 1-6L3.3 9.6l6-.9z"/>',
+  chat: '<path d="M4 18.5V7a2.5 2.5 0 0 1 2.5-2.5h11A2.5 2.5 0 0 1 20 7v7a2.5 2.5 0 0 1-2.5 2.5H8z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/>',
+};
+document.querySelectorAll('svg[data-i]').forEach(s => { s.setAttribute('viewBox', '0 0 24 24'); s.innerHTML = P[s.dataset.i] || ''; });
+
+// Stickers: the shapes the kid zone already draws, with an ink outline.
+const ST = {
+  star: 'M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z',
+  heart: 'M12 21s-8-4.7-8-10.7A4.6 4.6 0 0 1 12 7.6a4.6 4.6 0 0 1 8 2.7C20 16.3 12 21 12 21z',
+};
+document.querySelectorAll('svg[data-st]').forEach(s => { s.innerHTML = `<path d="${ST[s.dataset.st]}" style="fill:${s.dataset.c}" stroke="#1f1b16" stroke-width="1.5" stroke-linejoin="round"/>`; });
+
+const N = 45, GONE = 29; // 29 of 45 minutes gone, 16 to go
+document.querySelectorAll('.ruler').forEach(el => {
+  el.innerHTML = Array.from({ length: N + 1 }, (_, k) => `<i class="${k % 5 === 0 ? 't' : ''} ${k >= GONE ? 'f' : ''}"></i>`).join('')
+    + `<span class="nowm" style="left:calc(${GONE / N * 100}% - 1.5px)"></span>`;
+});
+</script>
+</body>
+</html>

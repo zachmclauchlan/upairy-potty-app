@@ -13,3 +13,6 @@ web-build/
 .env*.local
 *.log
 songs-audio/
+
+# review login for the app stores: never commit
+store-assets/app-review-login.txt

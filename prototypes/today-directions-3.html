@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Potty Up: Today screen, round three</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600&family=Chewy&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #e9e7e2; color: #1f1b16; font-family: Figtree, system-ui, sans-serif; padding: 32px 24px 64px; }
+  .intro { max-width: 1240px; margin: 0 auto 32px; }
+  .intro h1 { font-size: 22px; font-weight: 600; }
+  .intro p { font-size: 14px; color: #5e554a; margin-top: 4px; max-width: 760px; line-height: 20px; }
+  .board { display: flex; gap: 40px; justify-content: center; align-items: flex-start; flex-wrap: wrap; max-width: 1240px; margin: 0 auto; }
+  .col { width: 375px; }
+  .col h2 { font-size: 16px; font-weight: 600; }
+  .col h2 small { font-size: 12px; font-weight: 500; color: #5e554a; border: 1px solid rgba(31,27,22,.18); border-radius: 6px; padding: 2px 6px; margin-left: 6px; }
+  .col .why { font-size: 13px; line-height: 18px; color: #5e554a; margin: 4px 0 16px; min-height: 72px; }
+  .phone { width: 375px; border-radius: 36px; overflow: hidden; border: 1px solid rgba(31,27,22,.14); box-shadow: 0 8px 24px rgba(0,0,0,.08); font-family: Figtree, sans-serif; background: var(--bg); color: var(--ink);
+    --bg: #f7f4ee; --ink: #1f1b16; --ink2: #5e554a; --ink3: #7b7266; --line: rgba(31,27,22,.1); --line2: rgba(31,27,22,.14); --line3: rgba(31,27,22,.28); --card: #fdfbf7; --raise: #efe9df; --green: #3e7f33; --greenInk: #2b5c23; --yellow: #ffd55a;
+    --chewy: Chewy, cursive; --disp: "Bricolage Grotesque", Figtree, sans-serif; }
+  .num { font-variant-numeric: tabular-nums; }
+  svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+  /* shared pieces */
+  .pad { padding: 20px 20px 24px; }
+  .top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 16px; }
+  .date { font-size: 13px; color: var(--ink2); }
+  .title { font-size: 28px; font-weight: 500; line-height: 32px; margin-top: 2px; }
+  .r { display: flex; gap: 8px; align-items: center; }
+  .chip, .icb { height: 36px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; font-weight: 500; }
+  .chip { padding: 0 12px; } .icb { width: 36px; }
+  .seg { display: flex; background: var(--raise); border-radius: 10px; padding: 2px; margin-bottom: 16px; }
+  .seg div { flex: 1; height: 32px; display: flex; gap: 8px; align-items: center; justify-content: center; font-size: 14px; color: var(--ink2); border-radius: 8px; }
+  .seg .on { background: var(--card); color: var(--ink); font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+  .steps { display: flex; gap: 4px; margin-bottom: 20px; }
+  .steps div { flex: 1; border-top: 3px solid var(--line2); padding-top: 8px; font-size: 13px; font-weight: 500; }
+  .steps small { display: block; font-weight: 400; color: var(--ink2); font-size: 12px; }
+  .steps .done { border-color: var(--green); color: var(--ink2); }
+  .steps .now { border-color: var(--green); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; margin-bottom: 12px; }
+  .head { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+  .links { display: flex; gap: 16px; font-size: 13px; }
+  .links span { display: flex; gap: 4px; align-items: center; }
+  .links svg.i { width: 14px; height: 14px; }
+  .count { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+  .count b { font-size: 80px; line-height: 80px; font-weight: 500; letter-spacing: -0.03em; }
+  .count span { font-size: 20px; }
+  .count em { font-style: normal; margin-left: auto; font-size: 13px; line-height: 18px; text-align: right; }
+  .ruler { position: relative; display: flex; align-items: flex-end; justify-content: space-between; height: 28px; margin-top: 20px; }
+  .ruler i { width: 2px; height: 10px; border-radius: 1px; background: var(--tick, var(--line3)); }
+  .ruler i.t { height: 18px; } .ruler i.f { background: var(--tickOn, var(--green)); }
+  .ruler .nowm { position: absolute; top: 0; width: 2px; height: 28px; background: var(--now, var(--ink)); border-radius: 1px; }
+  .ruler .nowm::before { content: ""; position: absolute; top: -4px; left: -3px; width: 8px; height: 8px; border-radius: 4px; background: var(--now, var(--ink)); }
+  .ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink3); margin: 6px 0 16px; }
+  .ends b { color: var(--greenInk); font-weight: 500; }
+  .primary { width: 100%; height: 52px; border-radius: 12px; background: var(--green); color: #fff; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .quick { display: flex; gap: 8px; }
+  .quick button { flex: 1; height: 60px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 500; }
+  .quick svg.i { color: var(--ink2); }
+  .stats { display: flex; margin: 20px 0 24px; }
+  .stats div { flex: 1; font-size: 12px; color: var(--ink2); }
+  .stats b { display: block; font-size: 28px; line-height: 32px; font-weight: 500; color: var(--ink); }
+  .sec { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; font-size: 13px; color: var(--ink2); }
+  .sec b { font-size: 16px; font-weight: 500; color: var(--ink); }
+  .list { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 4px 16px; margin-bottom: 24px; }
+  .list:last-child { margin-bottom: 0; }
+  .check, .log { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 14px; line-height: 20px; align-items: center; }
+  .check:first-child, .log:first-child { border: 0; }
+  .box { width: 20px; height: 20px; border: 1.5px solid var(--line3); border-radius: 6px; flex: none; }
+  .log time { width: 40px; color: var(--ink3); font-size: 13px; }
+  .log i { width: 8px; height: 8px; border-radius: 4px; flex: none; }
+  .log small { color: var(--ink2); font-size: 12px; margin-left: auto; }
+  .tabs { display: flex; padding: 8px 8px 20px; background: var(--card); border-top: 1px solid var(--line); color: var(--ink3); }
+  .tabs div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; }
+  .tabs svg.i { width: 22px; height: 22px; }
+  .tabs .on { color: var(--green); font-weight: 500; }
+  .hint { font-size: 13px; color: var(--ink2); }
+
+  /* sticker kit (from G): ink outlines, hard little shadow, Chewy */
+  .ink .chip, .ink .icb, .ink .card, .ink .list, .ink .quick button, .ink .primary, .ink .seg, .ink .tile { border: 2px solid #1f1b16; box-shadow: 0 3px 0 #1f1b16; }
+  .ink .chip, .ink .icb { border-radius: 18px; background: #fff; }
+  .ink .seg { border-radius: 20px; padding: 3px; background: #fff; }
+  .ink .seg div { border-radius: 14px; }
+  .ink .seg .on { background: var(--yellow); box-shadow: none; }
+  .ink .card, .ink .list { border-radius: 20px; background: #fff; }
+  .ink .title { font-family: var(--chewy); font-size: 40px; line-height: 44px; font-weight: 400; }
+  .ink .primary { height: 56px; border-radius: 28px; font-family: var(--chewy); font-size: 22px; font-weight: 400; }
+  .ink .quick button { border-radius: 20px; height: 68px; background: #fff; }
+  .ink .quick svg.i { color: var(--ink); width: 22px; height: 22px; }
+  .ink .sec b { font-family: var(--chewy); font-size: 22px; font-weight: 400; }
+  .ink .check, .ink .log { border-top: 1.5px dashed rgba(31,27,22,.3); }
+  .ink .box { border: 2px solid #1f1b16; border-radius: 8px; width: 22px; height: 22px; }
+  .ink .tabs { border-top: 2px solid #1f1b16; background: #fff; }
+  .ink .tabs .on { color: #1f1b16; font-weight: 600; }
+  .ink .steps div { border-top-width: 4px; }
+  .tiles { display: flex; gap: 8px; margin: 16px 0 24px; }
+  .tile { flex: 1; border-radius: 18px; background: #fff; padding: 8px 0; text-align: center; font-size: 12px; }
+  .tile b { display: block; font-family: var(--chewy); font-size: 28px; line-height: 32px; font-weight: 400; }
+  .tile.y { background: var(--yellow); }
+
+  /* ───────── I · Sticker logbook (G × E) ───────── */
+  .pi { --bg: #fff6dc; }
+  .pi .count b { font-family: var(--chewy); font-weight: 400; font-size: 96px; line-height: 88px; letter-spacing: 0; }
+  .pi .count span { font-family: var(--chewy); font-size: 28px; }
+  .pi .count em { color: var(--ink2); }
+  .pi .ruler { height: 32px; --tick: #1f1b16; --now: #1f1b16; }
+  .pi .ruler i { width: 3px; height: 12px; opacity: .25; } .pi .ruler i.t { height: 22px; } .pi .ruler i.f { opacity: 1; }
+  .pi .ruler .nowm { width: 3px; height: 32px; }
+  .pi .ruler .nowm::before { width: 14px; height: 14px; border-radius: 7px; left: -7.5px; top: -10px; background: var(--yellow); border: 2px solid #1f1b16; }
+  .pi .quick { margin-top: 12px; }
+
+  /* ───────── J · Sticker green room (G × C) ───────── */
+  .pj { --bg: #fff6dc; }
+  .pj .hero { background: var(--green); color: #fff; padding: 20px 20px 28px; border-bottom: 2px solid #1f1b16; border-radius: 0 0 32px 32px; }
+  .pj .hero .title { font-size: 32px; line-height: 36px; margin: 0; }
+  .pj .hero .top { align-items: center; margin-bottom: 20px; }
+  .pj .hero .chip, .pj .hero .icb { color: #1f1b16; }
+  .pj .hero .icb.on { background: var(--yellow); }
+  .pj .lab { font-size: 14px; opacity: .9; }
+  .pj .count { margin-top: 0; }
+  .pj .count b { font-family: var(--chewy); font-weight: 400; font-size: 128px; line-height: 116px; letter-spacing: 0; }
+  .pj .count span { font-family: var(--chewy); font-size: 32px; }
+  .pj .count em { opacity: .9; }
+  .pj .bar { display: flex; gap: 4px; margin: 12px 0 8px; }
+  .pj .bar i { flex: 1; height: 16px; border-radius: 5px; border: 2px solid #1f1b16; background: rgba(0,0,0,.18); }
+  .pj .bar i.f { background: var(--yellow); }
+  .pj .hero .hint { color: #fff; opacity: .9; margin-bottom: 20px; }
+  .pj .hero .primary { background: var(--yellow); color: #1f1b16; height: 60px; border-radius: 30px; font-size: 24px; }
+  .pj .under { display: flex; justify-content: center; gap: 24px; margin-top: 20px; font-size: 14px; font-weight: 500; }
+  .pj .under span { display: flex; gap: 6px; align-items: center; }
+  .pj .under svg.i { width: 16px; height: 16px; }
+  .pj .quick { margin-bottom: 20px; }
+
+  /* ───────── K · Logbook, green band (E × C, minimal) ───────── */
+  .pk { --bg: #fafaf8; --card: #fff; }
+  .pk .hero { background: var(--green); color: #fff; padding: 20px 20px 24px; --tick: rgba(255,255,255,.35); --tickOn: #fff; --now: #fff; }
+  .pk .htop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+  .pk .htop .l { font-family: var(--disp); font-size: 20px; font-weight: 600; }
+  .pk .htop .l small { display: block; font-family: Figtree, sans-serif; font-size: 13px; font-weight: 400; opacity: .85; }
+  .pk .pill { height: 36px; min-width: 36px; border-radius: 10px; background: rgba(255,255,255,.16); display: flex; align-items: center; justify-content: center; padding: 0 10px; font-size: 14px; font-weight: 500; }
+  .pk .pill.on { background: #fff; color: var(--greenInk); }
+  .pk .head .links { opacity: .9; }
+  .pk .count b { font-family: var(--disp); font-weight: 600; font-size: 104px; line-height: 96px; }
+  .pk .count span { font-family: var(--disp); font-weight: 500; font-size: 24px; }
+  .pk .ends { color: rgba(255,255,255,.8); } .pk .ends b { color: #fff; }
+  .pk .hero .primary { background: #fff; color: var(--greenInk); height: 56px; border-radius: 12px; font-family: var(--disp); font-size: 17px; }
+  .pk .quick { margin-bottom: 20px; }
+  .pk .sec b, .pk .stats b { font-family: var(--disp); font-weight: 600; }
+  .pk .sec b { font-size: 18px; }
+
+  /* ───────── L · Logbook with a wink (E + a little G) ───────── */
+  .pl .title { font-family: var(--chewy); font-size: 36px; line-height: 40px; font-weight: 400; }
+  .pl .count b { font-family: var(--chewy); font-weight: 400; font-size: 88px; letter-spacing: 0; }
+  .pl .count span { color: var(--ink2); }
+  .pl .ruler .nowm::before { width: 12px; height: 12px; border-radius: 6px; left: -5px; top: -8px; background: var(--yellow); border: 1.5px solid var(--ink); }
+  .pl .quick { margin-top: 8px; }
+  .pl .earned { display: flex; align-items: center; gap: 8px; margin: 16px 0 24px; padding: 12px 16px; border: 1px dashed var(--line3); border-radius: 16px; font-size: 13px; color: var(--ink2); }
+  .pl .earned svg { width: 28px; height: 28px; }
+  .pl .earned b { color: var(--ink); font-weight: 500; }
+  .pl .earned span { margin-left: auto; }
+  .pl .sec b { font-family: var(--chewy); font-size: 20px; font-weight: 400; }
+
+  /* ───────── M · Sticker sheet, full colour (louder G) ───────── */
+  .pm { --bg: #fff6dc; }
+  .pm .title svg { width: 28px; height: 28px; vertical-align: -2px; margin-left: 4px; }
+  .pm .card { text-align: center; padding-top: 16px; }
+  .pm .head { font-weight: 600; text-align: left; }
+  .pm .ringw { position: relative; width: 208px; height: 208px; margin: 12px auto; }
+  .pm .ringw > svg { width: 208px; height: 208px; overflow: visible; }
+  .pm .ringw .in { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .pm .ringw b { font-family: var(--chewy); font-size: 88px; line-height: 84px; font-weight: 400; }
+  .pm .ringw span { font-size: 13px; color: var(--ink2); }
+  .pm .card .hint { margin-bottom: 16px; }
+  .pm .quick { margin: 16px 0 20px; }
+  .pm .quick button:nth-child(1) { background: #cfe3ff; } .pm .quick button:nth-child(2) { background: #ffd3d8; }
+  .pm .quick button:nth-child(3) { background: #ffe08a; } .pm .quick button:nth-child(4) { background: #cfeac4; }
+  .pm .strip { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+  .pm .slot { width: 44px; height: 44px; border-radius: 14px; border: 2px dashed rgba(31,27,22,.35); display: grid; place-items: center; }
+  .pm .slot.got { border: 2px solid #1f1b16; background: #fff; box-shadow: 0 3px 0 #1f1b16; }
+  .pm .slot svg { width: 28px; height: 28px; }
+  .pm .strip p { margin-left: auto; font-size: 12px; color: var(--ink2); text-align: right; line-height: 16px; }
+  .pm .strip p b { display: block; font-family: var(--chewy); font-size: 20px; font-weight: 400; color: var(--ink); line-height: 22px; }
+  .pm .log span.st { width: 28px; height: 28px; border-radius: 14px; border: 2px solid #1f1b16; display: grid; place-items: center; flex: none; }
+  .pm .log span.st svg.i { width: 15px; height: 15px; }
+
+  /* ───────── N · Green room, bare (minimal C) ───────── */
+  .pn { --bg: #fff; --card: #fff; }
+  .pn .htop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+  .pn .htop .l { font-family: var(--disp); font-size: 20px; font-weight: 600; }
+  .pn .htop .l small { display: block; font-family: Figtree, sans-serif; font-size: 13px; font-weight: 400; color: var(--ink2); }
+  .pn .r { gap: 16px; font-size: 14px; font-weight: 500; }
+  .pn .r .off { color: var(--ink3); }
+  .pn .lab { font-size: 14px; color: var(--ink2); }
+  .pn .count { margin-top: 0; }
+  .pn .count b { font-family: var(--disp); font-weight: 600; font-size: 136px; line-height: 124px; color: var(--green); }
+  .pn .count span { font-family: var(--disp); font-weight: 500; font-size: 28px; color: var(--green); }
+  .pn .count em { color: var(--ink2); }
+  .pn .bar { display: flex; gap: 3px; margin: 12px 0 8px; }
+  .pn .bar i { flex: 1; height: 8px; border-radius: 2px; background: var(--line2); }
+  .pn .bar i.f { background: var(--green); }
+  .pn .hint { margin-bottom: 20px; }
+  .pn .primary { height: 56px; border-radius: 16px; font-family: var(--disp); font-size: 18px; }
+  .pn .under { display: flex; justify-content: center; gap: 24px; margin: 16px 0 24px; font-size: 14px; font-weight: 500; color: var(--ink2); }
+  .pn .under span { display: flex; gap: 6px; align-items: center; }
+  .pn .under svg.i { width: 16px; height: 16px; }
+  .pn .quick { gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+  .pn .quick button { border: 0; border-left: 1px solid var(--line); border-radius: 0; height: 64px; }
+  .pn .quick button:first-child { border: 0; }
+  .pn .sec b { font-family: var(--disp); font-weight: 600; font-size: 18px; }
+  .pn .stats b { font-family: var(--disp); font-weight: 600; }
+  .pn .list { border: 0; padding: 0; border-radius: 0; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<div class="intro">
+  <h1>Potty Up: Today screen, round three</h1>
+  <p>Six mixes of the three you liked: G (Sticker sheet), E (Logbook) and C (Green room). Same three typefaces throughout: Chewy for the fun lettering, Figtree for everything you read, Bricolage for C's big numbers. Ordered from most fun to most minimal.</p>
+</div>
+
+<div class="board">
+
+<!-- ═════════ M ═════════ -->
+<div class="col">
+  <h2>M · Sticker sheet, full colour <small>G, louder</small></h2>
+  <p class="why">G with the dial turned up. Each quick log gets its own sticker colour, a star rides the end of the timer ring, and today's successes show as real stickers in a strip that fills up. The most fun of the six.</p>
+  <div class="phone ink pm">
+    <div class="pad">
+      <div class="top"><div><div class="date">Wednesday 25 November</div><div class="title">Mia's day<svg viewBox="0 0 24 24" data-st="star" data-c="#ffd55a"></svg></div></div><div class="r"><div class="icb"><svg class="i" data-i="share"></svg></div><div class="chip">Mia</div></div></div>
+      <div data-p="seg"></div>
+      <div data-p="steps"></div>
+      <div class="card">
+        <div class="head"><span>Next potty try</span><div data-p="links"></div></div>
+        <div class="ringw"><svg viewBox="0 0 208 208"><circle cx="104" cy="104" r="100" fill="#fff" stroke="#1f1b16" stroke-width="2"/><circle cx="104" cy="104" r="78" fill="#fff6dc" stroke="#1f1b16" stroke-width="2"/><circle id="arcM" cx="104" cy="104" r="89" fill="none" stroke="#3e7f33" stroke-width="18" transform="rotate(-90 104 104)"/><g id="starM"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="#ffd55a" stroke="#1f1b16" stroke-width="1.3" stroke-linejoin="round" transform="translate(-19 -19) scale(1.6)"/></g></svg><div class="in"><b class="num">16</b><span>min · 11:36 AM</span></div></div>
+        <div class="hint">Missed one or didn't log it? No problem</div>
+        <button class="primary"><svg class="i" data-i="plus" style="stroke-width:2.4"></svg>Log potty</button>
+      </div>
+      <div data-p="quick"></div>
+      <div class="strip"><div class="slot got"><svg viewBox="0 0 24 24" data-st="star" data-c="#ffd55a"></svg></div><div class="slot got"><svg viewBox="0 0 24 24" data-st="heart" data-c="#ff8fa0"></svg></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><p><b>2 stickers today</b>0 accidents · 100%</p></div>
+      <div data-p="course"></div>
+      <div class="sec"><b>Timeline</b><span>4 logged</span></div>
+      <div class="list"><div class="log"><span class="st" style="background:#cfeac4"><svg class="i" data-i="drop"></svg></span>Wee on the potty<small class="num">8:24 AM</small></div><div class="log"><span class="st" style="background:#ffd3d8"><svg class="i" data-i="meal"></svg></span>Meal<small class="num">7:36 AM</small></div><div class="log"><span class="st" style="background:#cfeac4"><svg class="i" data-i="drop"></svg></span>Wee on the potty<small class="num">7:12 AM</small></div><div class="log"><span class="st" style="background:#ffe08a"><svg class="i" data-i="sunrise"></svg></span>Woke up<small class="num">6:48 AM</small></div></div>
+    </div>
+    <div data-p="tabs"></div>
+  </div>
+</div>
+
+<!-- ═════════ J ═════════ -->
+<div class="col">
+  <h2>J · Sticker green room <small>G × C</small></h2>
+  <p class="why">C's big green top and giant countdown, drawn in G's style. The number is in Chewy, the bar is chunky yellow blocks, and the Log potty button is a yellow sticker you can't miss. Fun and still fast to read.</p>
+  <div class="phone ink pj">
+    <div class="hero">
+      <div class="top"><div class="title">Mia's day</div><div class="r"><div class="icb on"><svg class="i" data-i="sun"></svg></div><div class="icb"><svg class="i" data-i="moon"></svg></div><div class="icb"><svg class="i" data-i="share"></svg></div><div class="chip">Mia</div></div></div>
+      <div class="lab">Next potty try in</div>
+      <div class="count"><b class="num">16</b><span>min</span><em>around<br>11:36 AM</em></div>
+      <div class="bar" data-bar="12"></div>
+      <div class="hint">Missed one or didn't log it? No problem</div>
+      <button class="primary"><svg class="i" data-i="plus" style="stroke-width:2.4"></svg>Log potty</button>
+      <div class="under"><span><svg class="i" data-i="pause"></svg>Pause</span><span>Learned timing<svg class="i" data-i="chevD"></svg></span></div>
+    </div>
+    <div class="pad" style="padding-top:20px">
+      <div data-p="quick"></div>
+      <div data-p="steps"></div>
+      <div class="tiles num" style="margin-top:0"><div class="tile y"><b>2</b>On potty</div><div class="tile"><b>0</b>Accidents</div><div class="tile"><b>0</b>Told you</div><div class="tile"><b>100%</b>Success</div></div>
+      <div data-p="course"></div>
+      <div data-p="timelineIcons"></div>
+    </div>
+    <div data-p="tabs"></div>
+  </div>
+</div>
+
+<!-- ═════════ I ═════════ -->
+<div class="col">
+  <h2>I · Sticker logbook <small>G × E</small></h2>
+  <p class="why">G's outlines and Chewy lettering with E's layout. The ring is gone: the number sits left and the gap between tries is a chunky ruler with a yellow bead for now. Fun on the surface, logbook underneath.</p>
+  <div class="phone ink pi">
+    <div class="pad">
+      <div class="top"><div><div class="date">Wednesday 25 November</div><div class="title">Mia's day</div></div><div class="r"><div class="icb"><svg class="i" data-i="share"></svg></div><div class="chip">Mia</div></div></div>
+      <div data-p="seg"></div>
+      <div data-p="steps"></div>
+      <div class="card">
+        <div class="head"><span style="font-weight:600">Next potty try in</span><div data-p="links"></div></div>
+        <div class="count"><b class="num">16</b><span>min</span></div>
+        <div class="ruler" data-ruler="now"></div>
+        <div class="ends num"><span>10:51 last try</span><span>now 11:20</span><b>11:36 next</b></div>
+        <button class="primary"><svg class="i" data-i="plus" style="stroke-width:2.4"></svg>Log potty</button>
+      </div>
+      <div data-p="quick"></div>
+      <div class="tiles num"><div class="tile y"><b>2</b>On potty</div><div class="tile"><b>0</b>Accidents</div><div class="tile"><b>0</b>Told you</div><div class="tile"><b>100%</b>Success</div></div>
+      <div data-p="course"></div>
+      <div data-p="timelineDots"></div>
+    </div>
+    <div data-p="tabs"></div>
+  </div>
+</div>
+
+<!-- ═════════ L ═════════ -->
+<div class="col">
+  <h2>L · Logbook with a wink <small>E + a little G</small></h2>
+  <p class="why">E almost untouched: paper, hairlines, the ruler. The fun is rationed to three places: the title and the number in Chewy, a yellow bead on the ruler, and today's stickers shown where the stats were. Calm for the parent, a hint of the kid.</p>
+  <div class="phone pl">
+    <div class="pad">
+      <div class="top"><div><div class="date">Wednesday 25 November</div><div class="title">Mia's day</div></div><div class="r"><div class="icb"><svg class="i" data-i="share"></svg></div><div class="chip">Mia <svg class="i" data-i="chevR" style="width:14px;height:14px;color:var(--ink3)"></svg></div></div></div>
+      <div data-p="seg"></div>
+      <div data-p="steps"></div>
+      <div class="card">
+        <div class="head" style="color:var(--ink2)"><span>Next potty try in</span><div data-p="links"></div></div>
+        <div class="count"><b class="num">16</b><span>min</span></div>
+        <div class="ruler" data-ruler="now"></div>
+        <div class="ends num"><span>10:51 last try</span><span>now 11:20</span><b>11:36 next</b></div>
+        <button class="primary"><svg class="i" data-i="plus"></svg>Log potty</button>
+        <div data-p="quick"></div>
+      </div>
+      <div class="earned"><svg viewBox="0 0 24 24" data-st="star" data-c="#ffd55a"></svg><svg viewBox="0 0 24 24" data-st="heart" data-c="#ff8fa0"></svg><b>2 on the potty</b><span class="num">0 accidents · 100%</span></div>
+      <div data-p="course"></div>
+      <div data-p="timelineDots"></div>
+    </div>
+    <div data-p="tabs"></div>
+  </div>
+</div>
+
+<!-- ═════════ K ═════════ -->
+<div class="col">
+  <h2>K · Logbook, green band <small>E × C</small></h2>
+  <p class="why">E's ruler and left-set number, moved into C's green top. No Chewy, no outlines, square-ish corners. You get C's "look here" colour and E's sense of where you are in the gap. Minimal but branded.</p>
+  <div class="phone pk">
+    <div class="hero">
+      <div class="htop"><div class="l">Mia's day<small>Wed 25 November</small></div><div class="r"><div class="pill on"><svg class="i" data-i="sun"></svg></div><div class="pill"><svg class="i" data-i="moon"></svg></div><div class="pill"><svg class="i" data-i="share"></svg></div><div class="pill">Mia</div></div></div>
+      <div class="head"><span>Next potty try in</span><div data-p="links"></div></div>
+      <div class="count"><b class="num">16</b><span>min</span></div>
+      <div class="ruler" data-ruler="now"></div>
+      <div class="ends num"><span>10:51 last try</span><span>now 11:20</span><b>11:36 next</b></div>
+      <button class="primary"><svg class="i" data-i="plus" style="stroke-width:2.2"></svg>Log potty</button>
+    </div>
+    <div class="pad" style="padding-top:16px">
+      <div data-p="quick"></div>
+      <div data-p="steps"></div>
+      <div class="stats num" style="margin-top:0"><div><b>2</b>On potty</div><div><b>0</b>Accidents</div><div><b>0</b>Told you</div><div><b>100%</b>Success</div></div>
+      <div data-p="course"></div>
+      <div data-p="timelineDots"></div>
+    </div>
+    <div data-p="tabs"></div>
+  </div>
+</div>
+
+<!-- ═════════ N ═════════ -->
+<div class="col">
+  <h2>N · Green room, bare <small>C, stripped</small></h2>
+  <p class="why">C with the block taken away. White page, no cards, just ruled lines, and the giant number itself is the green. One green button. The most minimal of the six, and the easiest to keep consistent across every screen.</p>
+  <div class="phone pn">
+    <div class="pad">
+      <div class="htop"><div class="l">Mia's day<small>Wednesday 25 November</small></div><div class="r"><svg class="i" data-i="sun"></svg><svg class="i off" data-i="moon"></svg><svg class="i" data-i="share"></svg><span>Mia</span></div></div>
+      <div class="lab">Next potty try in</div>
+      <div class="count"><b class="num">16</b><span>min</span><em>around<br>11:36 AM</em></div>
+      <div class="bar" data-bar="24"></div>
+      <div class="hint">Missed one or didn't log it? No problem</div>
+      <button class="primary"><svg class="i" data-i="plus" style="stroke-width:2.2"></svg>Log potty</button>
+      <div class="under"><span><svg class="i" data-i="pause"></svg>Pause</span><span>Learned timing<svg class="i" data-i="chevD"></svg></span></div>
+      <div data-p="quick"></div>
+      <div data-p="steps"></div>
+      <div class="stats num" style="margin-top:0"><div><b>2</b>On potty</div><div><b>0</b>Accidents</div><div><b>0</b>Told you</div><div><b>100%</b>Success</div></div>
+      <div data-p="course"></div>
+      <div data-p="timelineDots"></div>
+    </div>
+    <div data-p="tabs"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// Pieces every variant shares, so the differences you see are only style.
+const PARTS = {
+  seg: '<div class="seg"><div class="on"><svg class="i" data-i="sun"></svg>Daytime</div><div><svg class="i" data-i="moon"></svg>Night</div></div>',
+  steps: '<div class="steps"><div class="done">Morning<small>Wake-up logged</small></div><div class="now">Through the day<small>2 logged so far</small></div><div>Evening<small>20-second check-in</small></div></div>',
+  links: '<div class="links"><span><svg class="i" data-i="pause"></svg>Pause</span><span>Learned timing<svg class="i" data-i="chevD"></svg></span></div>',
+  quick: '<div class="quick"><button><svg class="i" data-i="cup"></svg>Drink</button><button><svg class="i" data-i="meal"></svg>Meal</button><button><svg class="i" data-i="sunrise"></svg>Woke up</button><button><svg class="i" data-i="hour"></svg>Sit timer</button></div>',
+  course: '<div class="sec"><b>Day 5 · First outing</b><span class="num">0 of 4</span></div><div class="list"><div class="check"><div class="box"></div>Loose trousers for the outing</div><div class="check"><div class="box"></div>A wee right before a 20-minute walk</div><div class="check"><div class="box"></div>Bring a travel potty, spare clothes and a wet bag</div></div>',
+  timelineDots: '<div class="sec"><b>Timeline</b><span>4 logged</span></div><div class="list"><div class="log"><time class="num">8:24</time><i style="background:#3e7f33"></i>Wee on the potty<small>You offered</small></div><div class="log"><time class="num">7:36</time><i style="background:#7559a8"></i>Meal</div><div class="log"><time class="num">7:12</time><i style="background:#3e7f33"></i>Wee on the potty<small>You offered</small></div><div class="log"><time class="num">6:48</time><i style="background:#c79a1e"></i>Woke up</div></div>',
+  timelineIcons: '<div class="sec"><b>Timeline</b><span>4 logged</span></div><div class="list"><div class="log"><svg class="i" data-i="drop"></svg>Wee on the potty<small class="num">8:24 AM</small></div><div class="log"><svg class="i" data-i="meal"></svg>Meal<small class="num">7:36 AM</small></div><div class="log"><svg class="i" data-i="drop"></svg>Wee on the potty<small class="num">7:12 AM</small></div><div class="log"><svg class="i" data-i="sunrise"></svg>Woke up<small class="num">6:48 AM</small></div></div>',
+  tabs: '<div class="tabs"><div class="on"><svg class="i" data-i="home"></svg>Today</div><div><svg class="i" data-i="route"></svg>Program</div><div><svg class="i" data-i="chat"></svg>Coach</div><div><svg class="i" data-i="star"></svg>Kid zone</div><div><svg class="i" data-i="chart"></svg>Progress</div></div>',
+};
+document.querySelectorAll('[data-p]').forEach(el => { el.outerHTML = PARTS[el.dataset.p]; });
+
+// Icons: the app's own line set (src/components/Icon.tsx).
+const P = {
+  drop: '<path d="M12 3.2c3.2 3.9 6.2 7.2 6.2 10.8a6.2 6.2 0 0 1-12.4 0c0-3.6 3-6.9 6.2-10.8z"/>',
+  cup: '<path d="M6 4h12l-1.4 14.6a2 2 0 0 1-2 1.9H9.4a2 2 0 0 1-2-1.9z"/><path d="M6.6 9.5h10.8"/>',
+  meal: '<path d="M7 3v7m-2.2-7v4.6a2.2 2.2 0 0 0 4.4 0V3M7 10.5V21"/><path d="M17.5 21V3c-2 1.2-3 3.5-3 6.5 0 2 1 3 3 3"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
+  moon: '<path d="M19.5 14.6A8 8 0 1 1 9.4 4.5a6.4 6.4 0 0 0 10.1 10.1z"/>',
+  sunrise: '<path d="M5 18a7 7 0 0 1 14 0"/><path d="M3 21h18M12 3v5m-3-2 3-3 3 3"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  hour: '<path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/>',
+  share: '<path d="M12 15V3.5m0 0L8 7.5m4-4 4 4"/><path d="M7 11H5.5A1.5 1.5 0 0 0 4 12.5v6A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-6a1.5 1.5 0 0 0-1.5-1.5H17"/>',
+  home: '<path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19z"/>',
+  chart: '<path d="M4 20h16"/><rect x="5.5" y="11" width="3" height="6" rx="1"/><rect x="10.5" y="6" width="3" height="11" rx="1"/><rect x="15.5" y="13.5" width="3" height="3.5" rx="1"/>',
+  route: '<circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/>',
+  chevR: '<path d="m9 5 7 7-7 7"/>',
+  chevD: '<path d="m6 9 6 6 6-6"/>',
+  pause: '<rect x="6.5" y="5" width="3.5" height="14" rx="1"/><rect x="14" y="5" width="3.5" height="14" rx="1"/>',
+  star: '<path d="M12 3.2l2.7 5.5 6 .9-4.4 4.2 1 6-5.3-2.8-5.3 2.8 1-6L3.3 9.6l6-.9z"/>',
+  chat: '<path d="M4 18.5V7a2.5 2.5 0 0 1 2.5-2.5h11A2.5 2.5 0 0 1 20 7v7a2.5 2.5 0 0 1-2.5 2.5H8z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/>',
+};
+document.querySelectorAll('svg[data-i]').forEach(s => { s.setAttribute('viewBox', '0 0 24 24'); s.innerHTML = P[s.dataset.i] || ''; });
+
+// Stickers: the shapes the kid zone already draws, with an ink outline.
+const ST = {
+  star: 'M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z',
+  heart: 'M12 21s-8-4.7-8-10.7A4.6 4.6 0 0 1 12 7.6a4.6 4.6 0 0 1 8 2.7C20 16.3 12 21 12 21z',
+};
+document.querySelectorAll('svg[data-st]').forEach(s => { s.innerHTML = `<path d="${ST[s.dataset.st]}" fill="${s.dataset.c}" stroke="#1f1b16" stroke-width="1.5" stroke-linejoin="round"/>`; });
+
+const N = 45, GONE = 29; // 29 of 45 minutes gone, 16 to go
+
+document.querySelectorAll('[data-ruler]').forEach(el => {
+  el.innerHTML = Array.from({ length: N + 1 }, (_, k) => `<i class="${k % 5 === 0 ? 't' : ''} ${k >= GONE ? 'f' : ''}"></i>`).join('')
+    + `<span class="nowm" style="left:calc(${GONE / N * 100}% - 1px)"></span>`;
+});
+document.querySelectorAll('[data-bar]').forEach(el => { const n = +el.dataset.bar; el.innerHTML = Array.from({ length: n }, (_, k) => `<i class="${k < Math.round((1 - GONE / N) * n) ? 'f' : ''}"></i>`).join(''); });
+
+// M: chunky ring with a star sticker at the end of the arc
+(() => {
+  const r = 89, C = 2 * Math.PI * r, left = 1 - GONE / N, a = document.getElementById('arcM');
+  a.setAttribute('stroke-dasharray', C); a.setAttribute('stroke-dashoffset', C * (1 - left));
+  const ang = left * 2 * Math.PI - Math.PI / 2;
+  document.getElementById('starM').setAttribute('transform', `translate(${104 + r * Math.cos(ang)} ${104 + r * Math.sin(ang)})`);
+})();
+</script>
+</body>
+</html>
