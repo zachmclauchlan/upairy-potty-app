@@ -21,8 +21,12 @@ import { initNotifications, handleResponse, reschedule, cancelAll, Notifications
 import { on } from '@/lib/bus';
 import { sampleWeek } from '@/lib/logic';
 import { touch, reportError, watchErrors } from '@/lib/pulse';
+import { syncLockTimer } from '@/lib/lockTimer';
 
 watchErrors();
+// Listen for taps on reminder buttons as soon as the app's code loads, not only once a screen is showing:
+// on iPhone a button can wake the app in the background just to log.
+if (Platform.OS !== 'web') { try { Notifications.addNotificationResponseReceivedListener(handleResponse); } catch { /* reminders unavailable */ } }
 // Local design preview only (never in a real build): lets the store-screenshot script fill the app with the sample week.
 if (__DEV__ && Platform.OS === 'web') (globalThis as any).__pottyDemo = () => update(s => { sampleWeek(s); s.sample = false; });
 
@@ -72,11 +76,11 @@ export default function Root() {
   useEffect(() => {
     const stop = startBackup();
     // Back in the app: rebuild reminders (time has passed, a pause may have ended, the timezone may have changed).
-    const sub = AppState.addEventListener('change', s => { if (s !== 'active') backupNow().catch(() => {}); else reschedule(); });
+    const sub = AppState.addEventListener('change', s => { if (s !== 'active') backupNow().catch(() => {}); else { reschedule(); syncLockTimer(); } });
     return () => { stop(); sub.remove(); };
   }, []);
   // rebuild reminders whenever logs or settings change
-  useEffect(() => { const t = setTimeout(() => reschedule(), 600); return () => clearTimeout(t); }, [st.events.length, st.pausedUntil, st.mode, st.interval, st.quietOn, st.quietStart, st.quietEnd, st.quietSkip, JSON.stringify(st.rem), st.pIdx, Object.keys(st.checkins).length, st.onboarded]);
+  useEffect(() => { const t = setTimeout(() => { reschedule(); syncLockTimer(); }, 600); return () => clearTimeout(t); }, [st.lockTimer, !!st.account, st.events.length, st.pausedUntil, st.mode, st.interval, st.quietOn, st.quietStart, st.quietEnd, st.quietSkip, JSON.stringify(st.rem), st.pIdx, Object.keys(st.checkins).length, st.onboarded]);
   // let sheets switch tabs
   useEffect(() => on('shop', () => router.push({ pathname: '/settings', params: { focus: 'shop' } })), []);
   useEffect(() => on('tab', (t: string) => router.navigate(t === 'program' ? '/program' : t === 'coach' ? '/coach' : '/')), []);

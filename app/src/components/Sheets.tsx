@@ -13,6 +13,7 @@ import { previewReminder, permission, reschedule } from '@/lib/notifications';
 import { on, emit } from '@/lib/bus';
 import { COACH_NAME } from '@/lib/coach';
 import { maybeAskForRating } from '@/lib/rate';
+import { lockTimerAvailable } from '@/lib/lockTimer';
 import { useSong, PlayBar, Lyrics, lineAt } from './SongPlayer';
 import { COURSES } from '@/lib/courseContent';
 import { inPrep, setStart, goToStage, today as todayDay } from '@/lib/course';
@@ -166,6 +167,9 @@ function TimerSheet({ open, close }: { open: boolean; close: () => void }) {
           <View style={{ paddingVertical: 12, borderTopWidth: 1, borderTopColor: C.line }}><T w="s" size={14}>Until</T><Chips style={{ marginTop: 8 }}>{[6, 6.5, 7, 7.5, 8].map(h => <Chip key={h} label={hm(h)} on={S.quietEnd === h} onPress={() => update(s => { s.quietEnd = h; })} />)}</Chips></View>
         </> : null}
       </Card>
+      {lockTimerAvailable() ? <Card pad={4} style={{ paddingHorizontal: 18 }}>
+        <Row first title="Timer on the lock screen" sub="See the countdown without unlocking your phone" onPress={() => update(s => { s.lockTimer = s.lockTimer === false; })} right={<Toggle on={S.lockTimer !== false} />} />
+      </Card> : null}
       <Tip icon="heart" tone="water"><T w="s" size={14} color={C.waterInk}>Missed a log? That's fine.</T><T size={13} color={C.waterInk}>If a try goes by without a log, the timer moves on to the next one instead of nagging. After two missed tries it stops reminding until you log again.</T></Tip>
       <Btn kind="ghost" icon="bolt" title="Preview a reminder" onPress={() => { close(); previewReminder(); }} />
     </Sheet>

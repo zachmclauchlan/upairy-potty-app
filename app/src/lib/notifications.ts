@@ -7,6 +7,7 @@ import { fmt, item, onDay, isPotty, predict, quietNow, timerState } from './logi
 import { logPotty, logQuick } from './actions';
 import { emit } from './bus';
 import { toast } from '@/components/ui';
+import { syncLockTimer } from './lockTimer';
 
 export const supported = true;
 
@@ -18,13 +19,16 @@ export async function initNotifications() {
     await Notifications.setNotificationChannelAsync('reminders', { name: 'Potty reminders', importance: Notifications.AndroidImportance.HIGH, vibrationPattern: [0, 200, 120, 200] });
   }
   // Buttons on the notification. Identifiers avoid ":" and "-" as the docs require.
+  // On iPhone the log buttons work without opening the app: one tap from the lock screen (or an Apple Watch) and it's logged.
+  // On Android a button tap still opens the app, which is what delivers the tap to us there.
+  const quick = { opensAppToForeground: Platform.OS !== 'ios' };
   await Notifications.setNotificationCategoryAsync('potty', [
-    { identifier: 'logwee', buttonTitle: 'Wee on the potty', options: { opensAppToForeground: true } },
-    { identifier: 'lognothing', buttonTitle: 'Sat, nothing came', options: { opensAppToForeground: true } },
-    { identifier: 'logaccident', buttonTitle: 'Accident', options: { opensAppToForeground: true } },
+    { identifier: 'logwee', buttonTitle: 'Wee on the potty', options: quick },
+    { identifier: 'lognothing', buttonTitle: 'Sat, nothing came', options: quick },
+    { identifier: 'logaccident', buttonTitle: 'Accident', options: quick },
   ]);
   await Notifications.setNotificationCategoryAsync('morning', [
-    { identifier: 'logwake', buttonTitle: 'Woke up now', options: { opensAppToForeground: true } },
+    { identifier: 'logwake', buttonTitle: 'Woke up now', options: quick },
   ]);
   await Notifications.setNotificationCategoryAsync('evening', [
     { identifier: 'opencheckin', buttonTitle: 'Check in', options: { opensAppToForeground: true } },
@@ -53,6 +57,9 @@ export function handleResponse(r: Notifications.NotificationResponse) {
     const day = Number((r.notification.request.content.data as any)?.day) || sod(Date.now());
     emit('checkin', day);
   }
+  // A log from a button may arrive with the app in the background, where no screen is watching for changes:
+  // rebuild the reminders and the lock-screen timer here so both follow the new log.
+  if (a === 'logwee' || a === 'lognothing' || a === 'logaccident' || a === 'logwake') setTimeout(() => { reschedule(); syncLockTimer(); }, 400);
   // so the same tap isn't handled again the next time the app starts
   Notifications.clearLastNotificationResponseAsync?.().catch(() => {});
 }
