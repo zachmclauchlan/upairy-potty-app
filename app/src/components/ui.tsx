@@ -5,6 +5,10 @@ import Icon, { IconName } from './Icon';
 import { BW, C, F, R, outline, shadow, TONES, Tone } from '@/lib/theme';
 import { registerScroller } from '@/lib/tour';
 
+/** Scroll views that hold a text box: swiping down on the page (or tapping away) puts the keyboard down.
+ *  alwaysBounceVertical lets short pages, which don't scroll, still catch the swipe on iPhone. */
+export const kbDismiss = { keyboardDismissMode: Platform.OS === 'ios' ? 'interactive' : 'on-drag', alwaysBounceVertical: true } as const;
+
 /* ---------- text ---------- */
 type W = 'r' | 'm' | 's' | 'b' | 'fun';
 // Android clips text whose line height is below the font's own height, so T always enforces a
@@ -169,7 +173,7 @@ export function Sheet({ open, onClose, title, left, right, children }: { open: b
               <View style={{ minWidth: 60, alignItems: 'flex-end' }}>{right ?? <Pressable onPress={onClose} hitSlop={10}><T w="s" color={C.ink2}>Done</T></Pressable>}</View>
             </View>
           ) : null}
-          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: ins.bottom + 24 }} keyboardShouldPersistTaps="handled">{children}</ScrollView>
+          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: ins.bottom + 24 }} keyboardShouldPersistTaps="handled" {...kbDismiss}>{children}</ScrollView>
         </View>
       </KeyboardAvoidingView>
     </Modal>

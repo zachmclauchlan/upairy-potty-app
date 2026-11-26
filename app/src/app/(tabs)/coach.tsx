@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { T, Sub, Btn, Chip, IconBtn, Sheet, Tip } from '@/components/ui';
+import { T, Sub, Btn, Chip, IconBtn, Sheet, Tip, kbDismiss } from '@/components/ui';
 import Icon from '@/components/Icon';
 import { BW, C, F, outline, shadow } from '@/lib/theme';
 import { S, update, useApp } from '@/lib/store';
@@ -107,7 +107,7 @@ export default function Coach() {
       </View>
 
       {/* conversation */}
-      <ScrollView ref={scroll} style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 20, gap: 12 }} keyboardShouldPersistTaps="handled" onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: false })}>
+      <ScrollView ref={scroll} style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 20, gap: 12 }} keyboardShouldPersistTaps="handled" {...kbDismiss} onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: false })}>
         <View ref={tourRef('lara-chat')} collapsable={false} style={{ gap: 12 }}>
         <Bubble r="a" t={greeting()} />
         {empty ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginLeft: 36 }}>
