@@ -96,6 +96,9 @@ export async function reschedule() {
         const due = p.due + k * p.gap * MIN, fire = due - S.rem.lead * MIN;
         if (quietNow(fire) || quietNow(due)) break;
         await at(fire, `${nm} may need to go soon`, `Good time to offer the potty, around ${fmt(due)}.`, 'potty');
+        // And one the moment the countdown reaches zero, so the phone buzzes and asks for a log
+        // (the lock-screen timer can't do that itself: it just sits at 0:00).
+        await at(due, `Potty time for ${nm}`, 'Offer the potty now, then tap a button to log how it went.', 'potty');
       }
     }
     // after-meal sit
