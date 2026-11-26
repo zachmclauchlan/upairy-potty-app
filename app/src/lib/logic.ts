@@ -131,7 +131,7 @@ export function learned() {
 }
 
 /* ---------- quiet hours and the forgiving timer ---------- */
-export function quietNow(t = Date.now()) { if (!S.quietOn) return false; const d = new Date(t), h = d.getHours() + d.getMinutes() / 60, a = S.quietStart, b = S.quietEnd; return a > b ? (h >= a || h < b) : (h >= a && h < b); }
+export function quietNow(t = Date.now()) { if (!S.quietOn || t < (S.quietSkip ?? 0)) return false; const d = new Date(t), h = d.getHours() + d.getMinutes() / 60, a = S.quietStart, b = S.quietEnd; return a > b ? (h >= a || h < b) : (h >= a && h < b); }
 export function quietEndTs(tomorrow = false) { const now = Date.now(); let t = atHour(sod(now), S.quietEnd); if (tomorrow || t <= now) t = atHour(addDays(sod(now), 1), S.quietEnd); return t; }
 
 export type TimerState =
@@ -168,7 +168,7 @@ export function timerState(now = Date.now()): TimerState | null {
     missed = Math.ceil((now - due - GRACE) / (gap * MIN)); due += missed * gap * MIN; total = gap * MIN;
     why = ['replay', now - anchor.ts > 3 * HR ? `Nothing logged for a while, that's okay. Next try around ${fmt(due)}` : `Missed one or didn't log it? No problem. Next try around ${fmt(due)}`];
   }
-  if (S.quietOn && due >= atHour(today, S.quietStart)) return { state: 'quiet-soon', until: quietEndTs(true) };
+  if (S.quietOn && due >= atHour(today, S.quietStart) && due >= (S.quietSkip ?? 0)) return { state: 'quiet-soon', until: quietEndTs(true) };
   return { state: 'run', due, gap, why, total, missed, learnedGap: src === 'learned' };
 }
 export function predict() { const p = timerState(); return p && p.state === 'run' ? p : null; }

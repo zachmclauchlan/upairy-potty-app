@@ -43,6 +43,8 @@ export interface State {
   aiOk?: boolean;
   /** When the app asked for a store rating (it only asks once). */
   rateAsked?: number;
+  /** The parent turned the timer on during quiet hours: quiet hours are ignored until this time (the end of that night). */
+  quietSkip?: number;
   /** true while the demo "sample week" logs are loaded */
   sample?: boolean;
 }

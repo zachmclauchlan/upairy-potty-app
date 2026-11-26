@@ -76,7 +76,7 @@ export default function Root() {
     return () => { stop(); sub.remove(); };
   }, []);
   // rebuild reminders whenever logs or settings change
-  useEffect(() => { const t = setTimeout(() => reschedule(), 600); return () => clearTimeout(t); }, [st.events.length, st.pausedUntil, st.mode, st.interval, st.quietOn, st.quietStart, st.quietEnd, JSON.stringify(st.rem), st.pIdx, Object.keys(st.checkins).length, st.onboarded]);
+  useEffect(() => { const t = setTimeout(() => reschedule(), 600); return () => clearTimeout(t); }, [st.events.length, st.pausedUntil, st.mode, st.interval, st.quietOn, st.quietStart, st.quietEnd, st.quietSkip, JSON.stringify(st.rem), st.pIdx, Object.keys(st.checkins).length, st.onboarded]);
   // let sheets switch tabs
   useEffect(() => on('shop', () => router.push({ pathname: '/settings', params: { focus: 'shop' } })), []);
   useEffect(() => on('tab', (t: string) => router.navigate(t === 'program' ? '/program' : t === 'coach' ? '/coach' : '/')), []);
