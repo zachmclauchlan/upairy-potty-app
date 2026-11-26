@@ -37,6 +37,10 @@ const PottyTimer = (props: PottyTimerProps) => {
       <Link label="Nothing" destination={to('nothing')} modifiers={btn(false)} />
       <Link label="Accident" destination={to('accident')} modifiers={btn(false)} />
       <Spacer />
+      {/* turns the lock-screen timer off for good (it can be switched back on in Potty timing) */}
+      <Link destination={`${props.link}?lock=off&k=${props.due}`} modifiers={[buttonStyle('plain')]}>
+        <Image systemName="xmark.circle.fill" color="#8E8E93" size={20} />
+      </Link>
     </HStack>
   );
   return {
