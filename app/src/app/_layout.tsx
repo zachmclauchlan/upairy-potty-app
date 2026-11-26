@@ -22,6 +22,7 @@ import { on } from '@/lib/bus';
 import { sampleWeek } from '@/lib/logic';
 import { touch, reportError, watchErrors } from '@/lib/pulse';
 import { syncLockTimer } from '@/lib/lockTimer';
+import { watchQuickLinks } from '@/lib/quickLog';
 
 watchErrors();
 // Listen for taps on reminder buttons as soon as the app's code loads, not only once a screen is showing:
@@ -79,6 +80,8 @@ export default function Root() {
     const sub = AppState.addEventListener('change', s => { if (s !== 'active') backupNow().catch(() => {}); else { reschedule(); syncLockTimer(); } });
     return () => { stop(); sub.remove(); };
   }, []);
+  // taps on the lock-screen timer's log buttons
+  useEffect(() => watchQuickLinks(), []);
   // rebuild reminders whenever logs or settings change
   useEffect(() => { const t = setTimeout(() => { reschedule(); syncLockTimer(); }, 600); return () => clearTimeout(t); }, [st.lockTimer, !!st.account, st.events.length, st.pausedUntil, st.mode, st.interval, st.quietOn, st.quietStart, st.quietEnd, st.quietSkip, JSON.stringify(st.rem), st.pIdx, Object.keys(st.checkins).length, st.onboarded]);
   // let sheets switch tabs

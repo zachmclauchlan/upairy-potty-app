@@ -45,6 +45,8 @@ export interface State {
   rateAsked?: number;
   /** The parent turned the timer on during quiet hours: quiet hours are ignored until this time (the end of that night). */
   quietSkip?: number;
+  /** The last lock-screen button tap that was logged, so it is never logged twice (see lib/quickLog.ts). */
+  lastQuick?: string;
   /** Show the timer on the iPhone lock screen. On unless switched off in Potty timing. */
   lockTimer?: boolean;
   /** true while the demo "sample week" logs are loaded */

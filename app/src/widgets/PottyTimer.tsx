@@ -1,11 +1,13 @@
 // The potty timer on the iPhone lock screen and in the Dynamic Island (a "Live Activity").
 // The countdown and the bar run on their own from the two times passed in, so they keep moving while the
 // app is closed. Started and updated from lib/lockTimer.ts.
+// The three buttons open the app and log straight away (see lib/quickLog.ts): iOS only lets a lock-screen
+// button run app code by opening the app, so the phone asks for Face ID first if it is locked.
 //
 // Everything inside the function runs in a separate little runtime in the widget extension: it can only
 // use the SwiftUI pieces imported here and its props. No hooks, no app state, nothing from outside the function.
-import { HStack, Image, ProgressView, Spacer, Text, VStack } from '@expo/ui/swift-ui';
-import { font, monospacedDigit, padding, tint } from '@expo/ui/swift-ui/modifiers';
+import { HStack, Image, Link, ProgressView, Spacer, Text, VStack } from '@expo/ui/swift-ui';
+import { buttonStyle, font, monospacedDigit, padding, tint } from '@expo/ui/swift-ui/modifiers';
 import { createLiveActivity } from 'expo-widgets';
 
 export type PottyTimerProps = {
@@ -16,12 +18,16 @@ export type PottyTimerProps = {
   /** when this countdown started and when the try is due, in milliseconds */
   start: number;
   due: number;
+  /** the app's own link address, e.g. "upairypotty://" */
+  link: string;
 };
 
 const PottyTimer = (props: PottyTimerProps) => {
   'widget';
   const green = '#3E7F33';
   const range = { lower: new Date(props.start), upper: new Date(props.due) };
+  // k marks which countdown the tap belongs to, so the same tap is never logged twice.
+  const to = (what: string) => `${props.link}?log=${what}&k=${props.due}`;
   return {
     banner: (
       <VStack modifiers={[padding({ all: 16 })]}>
@@ -36,6 +42,12 @@ const PottyTimer = (props: PottyTimerProps) => {
           <Spacer />
         </HStack>
         <ProgressView timerInterval={range} countsDown={false} modifiers={[tint(green)]} />
+        <HStack>
+          <Link label="Wee" destination={to('wee')} modifiers={[buttonStyle('borderedProminent'), tint(green), font({ size: 15, weight: 'semibold' })]} />
+          <Link label="Poo" destination={to('poo')} modifiers={[buttonStyle('bordered'), tint(green), font({ size: 15, weight: 'semibold' })]} />
+          <Link label="Nothing" destination={to('nothing')} modifiers={[buttonStyle('bordered'), tint(green), font({ size: 15, weight: 'semibold' })]} />
+          <Link label="Accident" destination={to('accident')} modifiers={[buttonStyle('bordered'), tint(green), font({ size: 15, weight: 'semibold' })]} />
+        </HStack>
       </VStack>
     ),
     compactLeading: <Image systemName="toilet.fill" color={green} size={14} />,

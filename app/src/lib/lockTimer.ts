@@ -38,7 +38,7 @@ export function syncLockTimer() {
       live.forEach(x => { x.end('immediate').catch(() => {}); });
       return;
     }
-    const props: PottyTimerProps = { title: `${S.child.name || 'Your child'}'s next potty try`, at: `at ${fmt(show.due)}`, start: show.due - show.total, due: show.due };
+    const props: PottyTimerProps = { title: `${S.child.name || 'Your child'}'s next potty try`, at: `at ${fmt(show.due)}`, start: show.due - show.total, due: show.due, link: 'upairypotty://' };
     const key = JSON.stringify(props);
     if (key === last && live.length === 1) return;   // nothing changed
     last = key;
