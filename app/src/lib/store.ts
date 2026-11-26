@@ -43,6 +43,10 @@ export interface State {
   aiOk?: boolean;
   /** When the app asked for a store rating (it only asks once). */
   rateAsked?: number;
+  /** The parent turned the timer on during quiet hours: quiet hours are ignored until this time (the end of that night). */
+  quietSkip?: number;
+  /** Show the timer on the iPhone lock screen. On unless switched off in Potty timing. */
+  lockTimer?: boolean;
   /** true while the demo "sample week" logs are loaded */
   sample?: boolean;
 }

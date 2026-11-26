@@ -58,7 +58,8 @@
         }
       ],
       "expo-asset",
-      "expo-iap"
+      "expo-iap",
+      "expo-widgets"
     ],
     "scheme": "upairypotty",
     "experiments": {

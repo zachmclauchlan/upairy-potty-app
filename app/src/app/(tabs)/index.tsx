@@ -69,8 +69,8 @@ function Timer() {
   let big = '', unit = '', sub = '', note: [IconName, string] = ['info', ''], gone: number | null = null, ends: [string, string, string] | null = null, due = false;
   if (!p) { big = item().iv ? 'Log a wake-up to start' : 'Routine sits today'; sub = item().iv ? '' : 'After waking, meals and before bath'; note = ['info', item().iv ? `${item().t}: offer every ${item().iv} min` : 'No timer needed at this step']; }
   else if (p.state === 'paused') { big = 'Paused'; sub = `until ${fmt(p.until)}`; note = ['pause', `${p.why || 'Paused'}. No reminders. Logging anything restarts the timer`]; }
-  else if (p.state === 'quiet-soon') { big = 'Nearly bedtime'; sub = 'A last wee before bed'; note = ['moon', `Quiet hours start at ${hm(S.quietStart)}. No more timed tries today`]; }
-  else if (p.state === 'quiet') { big = 'Quiet hours'; sub = `Timer starts again at ${fmt(p.until)}`; note = ['moon', 'No reminders overnight. You can still log anything']; }
+  else if (p.state === 'quiet-soon') { big = 'Nearly bedtime'; sub = 'A last wee before bed'; note = ['moon', `Quiet hours start at ${hm(S.quietStart)}, so there are no more timed tries today. Tap Start timer to keep going tonight`]; }
+  else if (p.state === 'quiet') { big = 'Quiet hours'; sub = `Timer is off until ${fmt(p.until)}`; note = ['moon', 'No reminders overnight. You can still log anything. Tap Start timer to turn it on tonight']; }
   else {
     const rem = p.due - now;
     note = [p.why[0] as IconName, p.why[1]];
@@ -79,11 +79,16 @@ function Timer() {
     else { big = String(Math.ceil(rem / 60000)); unit = 'min'; gone = 1 - rem / p.total; }
   }
   const paused = S.pausedUntil > Date.now();
+  // Quiet hours (or just before them): the timer is off, so the button turns it on for tonight instead of offering a pause.
+  const quiet = p?.state === 'quiet' || p?.state === 'quiet-soon';
+  const awake = (S.quietSkip ?? 0) > now;   // the parent turned the timer on tonight
+  const startTonight = () => { const until = p && 'until' in p ? p.until : 0; update(s => { s.quietSkip = until; s.pausedUntil = 0; }); toast('Timer on for tonight', `Quiet hours are back tomorrow at ${hm(S.quietStart)}`); };
   return <>
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
       <T w="s" size={14}>Next potty try</T>
       <View style={{ flexDirection: 'row', gap: 16 }}>
-        <Link icon={paused ? 'sunrise' : 'pause'} label={paused ? 'Resume' : 'Pause'} onPress={() => { if (paused) { update(s => { s.pausedUntil = Date.now(); }); toast('Timer resumed', 'A try soon is a good idea'); } else emit('pause'); }} />
+        {quiet ? <Link icon="sunrise" label="Start timer" onPress={startTonight} /> :
+        <Link icon={paused ? 'sunrise' : 'pause'} label={paused ? 'Resume' : 'Pause'} onPress={() => { if (paused) { update(s => { s.pausedUntil = Date.now(); }); toast('Timer resumed', 'A try soon is a good idea'); } else emit('pause'); }} />}
         <Link after="chevD" label={S.mode === 'smart' ? (learned().gap.ok ? 'Learned timing' : 'Smart timing') : `Every ${S.interval} min`} onPress={() => emit('timer')} />
       </View>
     </View>
@@ -101,6 +106,7 @@ function Timer() {
     {note[1] ? <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginTop: 12 }}>
       <View style={{ marginTop: 2 }}><Icon name={note[0]} size={15} color={C.ink2} /></View><T size={13} color={C.ink2} style={{ flex: 1 }}>{note[1]}</T>
     </View> : null}
+    {awake && !quiet ? <View style={{ marginTop: 12 }}><Link icon="moon" label="Timer is on tonight. Back to quiet hours" onPress={() => { update(s => { s.quietSkip = 0; }); toast('Quiet hours on'); }} /></View> : null}
   </>;
 }
 
