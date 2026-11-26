@@ -10,7 +10,7 @@
 import { useEffect, useState } from 'react';
 import { Linking, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { T, Sub, Btn, Card, Input, Label, Link, Row, Tip, toast } from './ui';
+import { T, Sub, Btn, Card, Input, Label, Link, Row, Tip, toast, kbDismiss } from './ui';
 import Icon from './Icon';
 import Logo from './Logo';
 import { C, outline, shadow } from '@/lib/theme';
@@ -237,7 +237,7 @@ export default function Auth() {
     </>;
   }
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: C.bg }} contentContainerStyle={{ flexGrow: 1, paddingTop: ins.top + 24, paddingHorizontal: 24, paddingBottom: ins.bottom + 24 }} keyboardShouldPersistTaps="handled">
+    <ScrollView style={{ flex: 1, backgroundColor: C.bg }} contentContainerStyle={{ flexGrow: 1, paddingTop: ins.top + 24, paddingHorizontal: 24, paddingBottom: ins.bottom + 24 }} keyboardShouldPersistTaps="handled" {...kbDismiss}>
       {body}
     </ScrollView>
   );

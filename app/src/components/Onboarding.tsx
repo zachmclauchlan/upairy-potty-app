@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { T, Sub, Btn, Card, Input, Label, Chip, Chips, Badge, IconBox } from './ui';
+import { T, Sub, Btn, Card, Input, Label, Chip, Chips, Badge, IconBox, kbDismiss } from './ui';
 import Icon, { type IconName } from './Icon';
 import { C, outline, shadow } from '@/lib/theme';
 import type { Tone } from '@/lib/theme';
@@ -364,7 +364,7 @@ export default function Onboarding() {
   }
   return (
     <View style={{ flex: 1, backgroundColor: C.bg, paddingTop: ins.top + 12, paddingBottom: ins.bottom + 20, paddingHorizontal: 20 }}>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>{body}</ScrollView>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }} keyboardShouldPersistTaps="handled" {...kbDismiss} showsVerticalScrollIndicator={false}>{body}</ScrollView>
       {cta ? <Btn title={cta} onPress={action} disabled={!ok} /> : null}
     </View>
   );
